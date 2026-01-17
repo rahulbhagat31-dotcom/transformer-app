@@ -1,0 +1,58 @@
+[
+  {
+    "userId": "admin",
+    "password": "admin123",
+    "name": "Senior Engineer",
+    "role": "admin",
+    "email": "admin@company.com",
+    "department": "Management"
+  },
+  {
+    "userId": "quality",
+    "password": "qc123",
+    "name": "Priya Sharma",
+    "role": "quality",
+    "email": "priya@company.com",
+    "department": "Quality Control"
+  },
+  {
+    "userId": "production",
+    "password": "prod123",
+    "name": "Amit Singh",
+    "role": "production",
+    "email": "amit@company.com",
+    "department": "Production"
+  },
+  {
+    "userId": "quality2",
+    "password": "qc123",
+    "name": "Neha Verma",
+    "role": "quality",
+    "email": "neha@company.com",
+    "department": "Quality Control"
+  },
+  {
+    "userId": "production2",
+    "password": "prod123",
+    "name": "Rohit Patel",
+    "role": "production",
+    "email": "rohit@company.com",
+    "department": "Production"
+  },
+  {
+    "userId": "customer1",
+    "password": "cust123",
+    "name": "UPPTCL",
+    "role": "customer",
+    "email": "upptcl@customer.com",
+    "customerId": "CUST001"
+  },
+  {
+    "userId": "customer2",
+    "password": "cust123",
+    "name": "PGCIL",
+    "role": "customer",
+    "email": "pgcil@customer.com",
+    "customerId": "CUST002"
+  }
+]

@@ -1,0 +1,2605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Manufacturing Software | Engineering PMS</title>
+   <!-- Load jsPDF from unpkg (more reliable) -->
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+<!-- Load autoTable plugin -->
+<script src="https://unpkg.com/jspdf-autotable@latest"></script>
+<!-- Load html2canvas -->
+<script src="https://unpkg.com/html2canvas@latest/dist/html2canvas.min.js"></script>
+<style>
+        :root {
+            --sidebar-width: 260px;
+            --navy: #2c3e50;
+            --blue: #3498db;
+            --green: #27ae60;
+            --red: #e74c3c;
+            --light-bg: #f4f7f6;
+            --orange: #e67e22;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: var(--light-bg); min-height: 100vh; }
+
+        /* --- Login Page Design --- */
+        #loginPage {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 2000;
+        }
+        .login-container {
+            background: white; width: 450px; border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); overflow: hidden;
+        }
+        .login-header { background: #2c3e50; color: white; padding: 30px; text-align: center; }
+        .login-body { padding: 40px 35px; }
+        .login-body label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+        .login-input { width: 100%; padding: 14px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 25px; font-size: 16px; }
+        .btn-login { width: 100%; padding: 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 18px; cursor: pointer; }
+
+        /* --- Role Badge --- */
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .role-admin { background: #e74c3c; color: white; }
+        .role-engineer { background: #3498db; color: white; }
+        .role-customer { background: #27ae60; color: white; }
+       .role-production { background: #e67e22; color: white; }
+.role-quality { background: #3498db; color: white; }
+        /* --- Sidebar & Layout --- */
+        #mainApp { display: none; min-height: 100vh; }
+        aside.sidebar {
+            width: var(--sidebar-width); background: var(--navy);
+            height: 100vh; position: fixed; color: white; z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar-brand { padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .nav-item {
+            padding: 18px 25px; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; transition: 0.3s; color: #bdc3c7;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--blue); color: white; border-left: 5px solid white; }
+        .nav-item.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+        /* --- Sub-menu Styles --- */
+        .nav-submenu {
+    display: none;
+    background: rgba(0,0,0,0.2);
+}
+/* ✅ ALWAYS SHOW CHECKLIST SUBMENU */
+#nav-checklist.active + #checklistSubmenu {
+    display: block;
+}
+.nav-submenu.active {
+    display: block;
+}
+        
+        .nav-subitem {
+            padding: 12px 25px 12px 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: #bdc3c7;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+        }
+        .nav-subitem:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-left-color: var(--blue);
+        }
+        .nav-subitem.active {
+            background: rgba(52, 152, 219, 0.3);
+            color: white;
+            border-left-color: white;
+        }
+
+        main.main-content { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); }
+        header.top-bar {
+            background: white; padding: 15px 30px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 999;
+        }
+
+        /* --- Content Sections --- */
+        .content-body { padding: 30px; max-width: 1400px; margin: 0 auto; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .card { background: white; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* --- Permission Notice --- */
+        .permission-notice {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            color: #856404;
+        }
+
+        /* --- Transformer Management & Search --- */
+        .ui-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; margin-top: 5px; }
+        .search-card { background: #f9f9f9; padding: 15px; border-left: 5px solid var(--green); margin-top: 10px; border-radius: 4px; }
+
+        /* --- Checklist Paper --- */
+        .checklist-paper { background: white; padding: 30px; border: 1px solid #000; color: #000; font-size: 11px; }
+        .form-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: 10px; }
+        .form-table th, .form-table td { border: 1px solid #000; padding: 6px; }
+        .section-header { background: #f2f2f2; font-weight: bold; }
+        .radio-grp { display: flex; justify-content: center; gap: 8px; }
+
+        /* --- Winding Info --- */
+        .info-table { width: 100%; border-collapse: collapse; margin-top: 20px; border: 1px solid #ddd; }
+        .info-table th { background: var(--blue); color: white; text-align: left; padding: 12px; }
+        .info-table td { padding: 12px; border-bottom: 1px solid #eee; }
+
+        /* --- Stage Navigation --- */
+        .stage-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .stage-btn {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            transition: 0.3s;
+        }
+        .stage-btn:hover {
+            background: #e0e0e0;
+        }
+        .stage-btn.active {
+            background: var(--blue);
+            color: white;
+        }
+        .stage-btn.active {
+    background: var(--blue);
+    color: white;
+}
+
+/* --- Checklist Level Navigation --- */
+.checklist-level-nav {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.checklist-level-btn {
+    padding: 10px 18px;
+    background: #ecf0f1;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    border: 2px solid transparent;
+    transition: 0.3s;
+}
+.checklist-level-btn:hover {
+    background: #dfe6e9;
+}
+.checklist-level-btn.active {
+    background: var(--blue);
+    color: white;
+    border-color: #1f6fb2;
+}
+
+/* ✅ Checklist table vertical alignment */
+.form-table td {
+    vertical-align: top;
+}
+
+.form-table th {
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+        /* --- Advanced Calculation Styles --- */
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 15px; 
+        }
+        
+        .form-group { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .form-group label { 
+            font-weight: 600; 
+            color: #2c3e50; 
+            margin-bottom: 5px; 
+            font-size: 14px; 
+        }
+        .form-group input, .form-group select { 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 14px; 
+        }
+        .form-group input:focus { 
+            outline: none; 
+            border-color: #3498db; 
+        }
+        .form-group input:disabled, .form-group select:disabled {
+            background: #f0f0f0;
+            cursor: not-allowed;
+        }
+        
+        .winding-card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+        .winding-header { 
+            background: #3498db; 
+            color: white; 
+            padding: 10px 15px; 
+            border-radius: 5px; 
+            margin-bottom: 15px; 
+            font-weight: bold; 
+        }
+        
+        .results-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+        .results-table th { 
+            background: #34495e; 
+            color: white; 
+            padding: 12px; 
+            text-align: left; 
+            font-size: 13px; 
+        }
+        .results-table td { 
+            padding: 10px; 
+            border-bottom: 1px solid #ecf0f1; 
+            font-size: 13px; 
+        }
+        .results-table tbody tr:hover { 
+            background: #f8f9fa; 
+        }
+        
+        .summary-box { 
+            background: #e8f5e9; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-top: 20px; 
+            border-left: 4px solid #27ae60; 
+        }
+        .summary-box h3 { 
+            color: #27ae60; 
+            margin-bottom: 15px; 
+        }
+        .summary-item { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 8px 0; 
+            border-bottom: 1px solid #c8e6c9; 
+        }
+        .summary-item:last-child { 
+            border-bottom: none; 
+        }
+        .summary-label { 
+            font-weight: 600; 
+            color: #2c3e50; 
+        }
+        .summary-value { 
+            color: #27ae60; 
+            font-weight: bold; 
+        }
+
+        /* --- Button Styles --- */
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loginPage">
+        <div class="login-container">
+            <div class="login-header"><h1>⚡ Transformer Manufacturing</h1><p>Engineering Project Management System</p></div>
+            <div class="login-body">
+                <form id="authForm" autocomplete="off">
+    <label>User ID / Email:</label>
+    <input type="text" 
+           id="userInput" 
+           name="username"
+           class="login-input" 
+           placeholder="admin / quality / production / customer1" 
+           autocomplete="off"
+           required>
+    <label>Password:</label>
+    <input type="password" 
+           id="passInput" 
+           name="password"
+           class="login-input" 
+           placeholder="Password" 
+           autocomplete="new-password"
+           required>
+                    <button type="submit" class="btn-login">Login</button>
+                </form>
+                <div style="margin-top:20px; font-size:12px; color:#666; background:#f8f9fa; padding:15px; border-radius:8px;">
+                   <b>Demo Accounts:</b><br>
+Admin: <code>admin</code> / <code>admin123</code><br>
+Quality Engineer: <code>quality</code> / <code>qc123</code><br>
+Production Engineer: <code>production</code> / <code>prod123</code><br>
+Customer: <code>customer1</code> / <code>cust123</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainApp">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><h3>⚡ MFG SYSTEM</h3></div>
+            <nav class="nav-menu" id="navMenu">
+                <div class="nav-item active" onclick="showTab('home', this)">🏠 Home</div>
+                
+                <div class="nav-item" id="nav-transformer" onclick="showTab('transformerMaster', this)">
+                    🔧 Transformer Master
+                </div>
+                
+                <div class="nav-item" id="nav-bom" onclick="showTab('bomUpload', this)">
+                    📋 BOM Upload
+                </div>
+                
+                <div class="nav-item" id="nav-docs" onclick="showTab('designDocuments', this)">
+                    📐 Design Documents
+                </div>
+                
+                <div class="nav-item" id="nav-checklist" onclick="toggleSubmenu(this)">
+                    ✅ Manufacturing Checklist
+                </div>
+                <div class="nav-submenu" id="checklistSubmenu">
+                    <div class="nav-subitem" onclick="showChecklistStage('winding', this)">Winding</div>
+                    <div class="nav-subitem" onclick="showChecklistStage('vpd', this)">VPD</div>
+                    <div class="nav-subitem" onclick="showChecklistStage('coreCoil', this)">Core Coil Assembly</div>
+                    <div class="nav-subitem" onclick="showChecklistStage('tanking', this)">Tanking</div>
+                    <div class="nav-subitem" onclick="showChecklistStage('tankFilling', this)">Tank Filling</div>
+                </div>
+                
+                <div class="nav-item" id="nav-calc" onclick="showTab('designCalculations', this)">
+                    📊 Design Calculations
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h3 id="viewTitle">Home</h3>
+                <div>
+                    User: <b id="uLabel">Engineer</b>
+                    <span id="roleBadge" class="role-badge role-engineer">Engineer</span> | 
+                    <a href="#" onclick="location.reload()" style="color:var(--red); text-decoration:none;">Logout</a>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- HOME SECTION -->
+                <section id="home" class="section active">
+                    <div class="card">
+                        <h1>Welcome to Transformer Manufacturing System 👋</h1>
+                        <p style="color: #666; margin-top: 10px;">Digital manufacturing, inspection & documentation system</p>
+                        <p style="color: #666; margin-top: 5px;">Use the sidebar to manage transformer data, upload BOMs, track manufacturing stages, and perform design calculations.</p>
+                        
+                        <div id="customerNotice" style="display:none; margin-top: 20px;" class="permission-notice">
+                            <strong>📋 Customer View:</strong> You can view your transformer data, documents, and calculation reports. For any modifications, please contact our engineering team.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TRANSFORMER MASTER SECTION -->
+                <section id="transformerMaster" class="section">
+                    <div class="card">
+                        <h2>🔧 Transformer Master</h2>
+                        <p style="color: #666; margin-bottom: 20px;">Enter and manage transformer details like kVA rating, HV/LV voltages, windings and turns.</p>
+                        
+                        <!-- 🔍 SEARCH -->
+                        <h3>🔍 Search Transformer</h3>
+                        <input type="text" id="q" class="ui-input"
+                               placeholder="Enter Customer Name or W.O. No..."
+                               onkeyup="doSearch()">
+                        <div id="results"></div>
+                    </div>
+
+                    <!-- ➕ ADD NEW TRANSFORMER (Engineer/Admin only) -->
+                    <div class="card" id="addTransformerCard">
+                        <h3>➕ Add New Transformer</h3>
+
+                        <label>Customer:</label>
+                        <select id="customerSelect" class="ui-input">
+                            <option value="">-- Select Customer --</option>
+                        </select>
+
+                        <label>W.O. No / Unit No:</label>
+                        <input type="text" id="w" class="ui-input">
+
+                        <label>Rating (KVA):</label>
+                        <input type="text" id="r" class="ui-input">
+
+                        <label>HV Voltage (V):</label>
+                        <input type="text" id="hv_master" class="ui-input">
+
+                        <label>LV Voltage (V):</label>
+                        <input type="text" id="lv_master" class="ui-input">
+
+                        <button class="btn-login" id="saveTransformerBtn"
+                                style="width:auto; padding:10px 20px; font-size:14px;"
+                                onclick="addTransformer()">
+                          Save Transformer
+                        </button>
+                    </div>
+                </section>
+
+                <!-- BOM UPLOAD SECTION -->
+                <section id="bomUpload" class="section">
+                    <div class="card">
+                        <h2>📋 BOM Upload</h2>
+                        <p style="color: #666; margin-bottom: 20px;">Upload and store Bill of Materials (PDF / Excel) linked with transformer data.</p>
+                        
+                        <label>Select Transformer (W.O. No):</label>
+                        <select id="bomTransformer" class="ui-input">
+                            <option value="">-- Select Transformer --</option>
+                        </select>
+
+                        <div id="bomUploadSection">
+                            <label>Upload BOM File:</label>
+                            <input type="file" id="bomFile" class="ui-input" accept=".pdf,.xlsx,.xls">
+
+                            <button class="btn-login" id="uploadBOMBtn" style="width:auto; padding:10px 20px; font-size:14px;" onclick="uploadBOM()">
+                                Upload BOM
+                            </button>
+                        </div>
+
+                        <div id="bomList" style="margin-top: 20px;"></div>
+                    </div>
+                </section>
+
+                <!-- DESIGN DOCUMENTS SECTION -->
+                <section id="designDocuments" class="section">
+                    <div class="card">
+                        <h2>📐 Design Documents</h2>
+                        <p style="color: #666; margin-bottom: 20px;">Upload transformer design drawings for winding, core / coil and oil tank.</p>
+                        
+                        <label>Select Transformer (W.O. No):</label>
+                        <select id="docTransformer" class="ui-input">
+                            <option value="">-- Select Transformer --</option>
+                        </select>
+
+                        <div id="docUploadSection">
+                            <label>Document Type:</label>
+                            <select id="docType" class="ui-input">
+                                <option value="winding">Winding Drawing</option>
+                                <option value="core">Core Drawing</option>
+                                <option value="tank">Oil Tank Drawing</option>
+                            </select>
+
+                            <label>Upload Document:</label>
+                            <input type="file" id="docFile" class="ui-input" accept=".pdf,.dwg,.dxf">
+
+                            <button class="btn-login" id="uploadDocBtn" style="width:auto; padding:10px 20px; font-size:14px;" onclick="uploadDocument()">
+                                Upload Document
+                            </button>
+                        </div>
+
+                        <div id="docList" style="margin-top: 20px;"></div>
+                    </div>
+                </section>
+
+                <!-- MANUFACTURING CHECKLIST SECTION -->
+<section id="manufacturingChecklist" class="section">
+    <div class="card">
+        <h2>✅ Manufacturing Checklist</h2>
+        <p style="color: #666; margin-bottom: 20px;">Stage-wise inspection workflow including winding, VPD, core-coil assembly and tanking.</p>
+        
+        <div id="checklistEditNotice" style="display:none;" class="permission-notice">
+            <strong>👀 View Only:</strong> You can view checklists but cannot edit them. Contact engineering team for modifications.
+        </div>
+
+        <!-- W.O. Number Selection - NEW SECTION -->
+        <div class="card" style="background: #e3f2fd; border-left: 4px solid var(--blue); margin-bottom: 20px;">
+            <h3 style="color: var(--navy); margin-bottom: 15px;">📋 Select Transformer</h3>
+            <label><strong>W.O. Number:</strong></label>
+            <select id="checklistWOSelect" class="ui-input" onchange="onWOChange()">
+                <option value="">-- Select Transformer W.O. --</option>
+            </select>
+            <div id="woDetails" style="display: none; margin-top: 15px; padding: 15px; background: white; border-radius: 5px;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <div><strong>Customer:</strong> <span id="woCustomer">-</span></div>
+                    <div><strong>Rating:</strong> <span id="woRating">-</span> kVA</div>
+                    <div><strong>Voltage:</strong> <span id="woVoltage">-</span></div>
+                </div>
+            </div>
+        </div>
+
+<!-- ✅ ADD THIS PROGRESS BAR SECTION -->
+<div id="progressBar" style="margin: 20px 0; display: none;">
+    <h4 style="color: var(--navy); margin-bottom: 10px;">📊 Stage Completion Progress</h4>
+    <div style="background: #f0f0f0; border-radius: 10px; height: 35px; position: relative; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+        <div id="progressFill" style="background: linear-gradient(90deg, #e74c3c, #c0392b); height: 100%; width: 0%; transition: width 0.5s ease;"></div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: #2c3e50; font-size: 14px;">
+            <span id="progressText">0% Complete</span>
+        </div>
+    </div>
+    <div style="margin-top: 10px; display: flex; justify-content: space-around; font-size: 13px; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+        <span>✅ Completed: <b id="completedCount" style="color: #27ae60;">0</b></span>
+        <span>⏳ Pending: <b id="pendingCount" style="color: #e67e22;">0</b></span>
+        <span>📊 Total Items: <b id="totalCount" style="color: #3498db;">0</b></span>
+    </div>
+</div>
+
+        <div id="checklistMainContent" style="display: none;">
+            <!-- Stage Navigation -->
+           <div class="stage-nav" id="mainStageNav">
+    <button class="stage-btn active" onclick="showMainStage('winding', this)">Winding</button>
+    <button class="stage-btn" onclick="showMainStage('vpd', this)">VPD</button>
+    <button class="stage-btn" onclick="showMainStage('coreCoil', this)">Core Coil Assembly</button>
+    <button class="stage-btn" onclick="showMainStage('tanking', this)">Tanking</button>
+    <button class="stage-btn" onclick="showMainStage('tankFilling', this)">Tank Filling</button>
+</div>
+
+<!-- Sub-stage navigation (shown when Winding is selected) -->
+<div class="stage-nav" id="windingSubNav" style="display: none; margin-top: 10px; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+    <button class="stage-btn active" onclick="switchStage('winding1', this)" style="font-size: 12px; padding: 8px 15px;">Continuous Disc</button>
+    <button class="stage-btn" onclick="switchStage('winding2', this)" style="font-size: 12px; padding: 8px 15px;">Start Details</button>
+    <button class="stage-btn" onclick="switchStage('winding3', this)" style="font-size: 12px; padding: 8px 15px;">Finish Coil</button>
+    <button class="stage-btn" onclick="switchStage('winding4', this)" style="font-size: 12px; padding: 8px 15px;">Brazed Joints</button>
+    <button class="stage-btn" onclick="switchStage('winding5', this)" style="font-size: 12px; padding: 8px 15px;">Shield & Drum</button>
+</div>
+
+            <!-- Stage Content -->
+            <div id="stageContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+
+        <div id="noWOMessage" style="padding: 40px; text-align: center; color: #666;">
+            <h3>📋 Please Select a Transformer W.O. Number</h3>
+            <p>Select a transformer above to view and manage its manufacturing checklist.</p>
+        </div>
+    </div>
+</section>
+
+                <!-- DESIGN CALCULATIONS SECTION -->
+                <section id="designCalculations" class="section">
+                    <!-- Customer View: Only show completed calculations -->
+                    <div class="card" id="customerCalcView" style="display:none;">
+                        <h2>📊 Your Calculation Reports</h2>
+                        <p style="color: #666; margin-bottom: 20px;">View and download your transformer calculation reports.</p>
+                        
+                        <div class="permission-notice">
+                            <strong>📋 Customer Access:</strong> You can view and download calculation reports for your transformers. For new calculations, please contact our engineering team.
+                        </div>
+
+                        <div id="customerCalcList">
+                            <p>No calculation reports available yet. Please contact engineering team for assistance.</p>
+                        </div>
+                    </div>
+
+                    <!-- Engineer/Admin View: Full calculation form -->
+                    <div id="engineerCalcView">
+                        <div class="card">
+                            <h2>📊 Transformer Winding Calculation</h2>
+                            <p style="color: #666; margin-bottom: 20px;">Copper Weight, Resistance, Load Losses & Current Density</p>
+                            
+                            <!-- BASIC INFO -->
+                            <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 Basic Transformer Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Transformer Rating (MVA):</label>
+                                    <input type="number" step="0.001" id="calc_rating" placeholder="e.g., 100">
+                                </div>
+                                <div class="form-group">
+                                    <label>Voltage (kV):</label>
+                                    <input type="text" id="calc_voltage" placeholder="e.g., 132/33kV">
+                                </div>
+                                <div class="form-group">
+                                    <label>Customer:</label>
+                                    <input type="text" id="calc_customer" placeholder="e.g., UPPTCL">
+                                </div>
+                                <div class="form-group">
+                                    <label>Number of Windings:</label>
+                                    <select id="numWindings" onchange="generateWindingForms()">
+                                        <option value="2">2 (LV + HV)</option>
+                                        <option value="3">3 (LV + HV + Tap)</option>
+                                        <option value="4">4 (LV + HV + Tap + Tertiary)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- WINDING FORMS -->
+                        <div id="windingFormsContainer"></div>
+                        
+                        <!-- BUTTONS -->
+                        <div style="margin-top: 20px;">
+                            <button class="btn-login" id="calculateBtn" style="width:auto; padding:12px 30px; font-size:16px;" onclick="calculateAll()">🔍 Calculate</button>
+                            <button class="btn-login" style="width:auto; padding:12px 30px; font-size:16px; background:#3498db; margin-left:10px; display:none;" id="pdfBtn" onclick="exportWindingPDF()">📄 Export PDF</button>
+                        </div>
+                        
+                        <!-- RESULTS -->
+                        <div id="windingResultsSection"></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+<script>
+/* ===============================
+   GLOBAL VARIABLES
+================================ */
+let currentUserRole = "";
+let currentUserName = "";
+let currentUserId = "";
+let currentCustomerId = "";
+let dataStore = [];
+let designData = {};
+let currentStage = 'winding1';
+let windingData = [];
+let customerList = [];
+let currentWO = "";  // ✅ ADD THIS
+let currentTransformerData = null;  // ✅ ADD THIS
+
+// Atlanta constants
+const COPPER_DENSITY = 8.89;      // gm/cm³
+const RESISTIVITY = 0.0211;       // ohm-mm²/m at 75°C
+const EDDY_STRAY = 43000;         // Fixed eddy & stray loss (W)
+
+const API_BASE = "http://localhost:3000";
+
+/* ===============================
+   API HELPER
+================================ */
+async function apiCall(endpoint, method = 'GET', body = null) {
+    const options = {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            'user-id': currentUserId
+        }
+    };
+    
+    if (body) {
+        options.body = JSON.stringify(body);
+    }
+    
+    const response = await fetch(`${API_BASE}${endpoint}`, options);
+    return response.json();
+}
+
+/* ===============================
+   PERMISSION HELPERS
+================================ */
+function hasPermission(requiredRole) {
+    const hierarchy = { 
+        'admin': 3, 
+        'quality': 2, 
+        'production': 1, 
+        'customer': 0 
+    };
+    return hierarchy[currentUserRole] >= hierarchy[requiredRole];
+}
+
+function applyRoleRestrictions() {
+    const isCustomer = currentUserRole === 'customer';
+    const isQuality = currentUserRole === 'quality';
+    const isProduction = currentUserRole === 'production';
+    const isAdmin = currentUserRole === 'admin';
+    const canEdit = isAdmin || isQuality;  // Only quality and admin can add/edit transformers
+    
+    // Update role badge with proper display names
+    const roleBadge = document.getElementById('roleBadge');
+    const roleClass = `role-${currentUserRole}`;
+    roleBadge.className = `role-badge ${roleClass}`;
+    
+    const roleNames = {
+        'admin': 'Admin',
+        'quality': 'Quality Engineer',
+        'production': 'Production Engineer',
+        'customer': 'Customer'
+    };
+    roleBadge.textContent = roleNames[currentUserRole] || currentUserRole;
+    
+    // Show customer notice on home page
+    if (isCustomer) {
+        document.getElementById('customerNotice').style.display = 'block';
+    }
+    
+    // Hide add transformer form for customers and production
+    if (!canEdit) {
+        const addCard = document.getElementById('addTransformerCard');
+        if (addCard) addCard.style.display = 'none';
+    }
+    
+    // Hide upload sections for customers and production
+    if (!canEdit) {
+        const bomUploadSection = document.getElementById('bomUploadSection');
+        const docUploadSection = document.getElementById('docUploadSection');
+        if (bomUploadSection) bomUploadSection.style.display = 'none';
+        if (docUploadSection) docUploadSection.style.display = 'none';
+    }
+    
+    // Show checklist notice for customers
+    if (isCustomer) {
+        document.getElementById('checklistEditNotice').style.display = 'block';
+    }
+    
+    // ===== CALCULATION VIEW CONTROL =====
+    if (isCustomer) {
+        document.getElementById('customerCalcView').style.display = 'block';
+        document.getElementById('engineerCalcView').style.display = 'none';
+        loadCustomerCalculations();
+    } else {
+        document.getElementById('customerCalcView').style.display = 'none';
+        document.getElementById('engineerCalcView').style.display = 'block';
+    }
+}
+/* ===============================
+   SUBMENU TOGGLE
+================================ */
+function toggleSubmenu(element) {
+    const submenu = document.getElementById('checklistSubmenu');
+    submenu.classList.toggle('active');
+    
+    if (submenu.classList.contains('active')) {
+        showTab('manufacturingChecklist', element);
+    }
+}
+
+/* ===============================
+   CHECKLIST STAGE NAVIGATION
+================================ */
+function showChecklistStage(stage, element) {
+    document.querySelectorAll('.nav-subitem').forEach(item => {
+        item.classList.remove('active');
+    });
+    element.classList.add('active');
+    
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('manufacturingChecklist').classList.add('active');
+    
+    const stageTitles = {
+        'winding': 'Winding Checklist',
+        'vpd': 'VPD Checklist',
+        'coreCoil': 'Core Coil Assembly',
+        'tanking': 'Tanking Checklist',
+        'tankFilling': 'Tank Filling Checklist'
+    };
+    
+    document.getElementById('viewTitle').textContent = stageTitles[stage] || 'Manufacturing Checklist';
+    
+    // Update main stage navigation
+    const mainStageButtons = document.querySelectorAll('#mainStageNav .stage-btn');
+    mainStageButtons.forEach(btn => btn.classList.remove('active'));
+    
+    const windingSubNav = document.getElementById('windingSubNav');
+    
+    // Find and activate the correct main stage button
+    if (stage === 'winding') {
+        mainStageButtons[0].classList.add('active');
+        windingSubNav.style.display = 'flex';
+        currentStage = 'winding1';
+        loadStageContent('winding1');
+    } else if (stage === 'vpd') {
+        mainStageButtons[1].classList.add('active');
+        windingSubNav.style.display = 'none';
+        currentStage = 'vpd';
+        loadStageContent('vpd');
+    } else if (stage === 'coreCoil') {
+        mainStageButtons[2].classList.add('active');
+        windingSubNav.style.display = 'none';
+        currentStage = 'coreCoil';
+        loadStageContent('coreCoil');
+    } else if (stage === 'tanking') {
+        mainStageButtons[3].classList.add('active');
+        windingSubNav.style.display = 'none';
+        currentStage = 'tanking';
+        loadStageContent('tanking');
+    } else if (stage === 'tankFilling') {
+        mainStageButtons[4].classList.add('active');
+        windingSubNav.style.display = 'none';
+        currentStage = 'tankFilling';
+        loadStageContent('tankFilling');
+    }
+    
+    setTimeout(() => {
+        loadChecklistData(currentStage);
+        updateProgress();
+    }, 100);
+}
+/* ===============================
+   MAIN STAGE NAVIGATION
+================================ */
+function showMainStage(mainStage, button) {
+    // Update main stage buttons
+    document.querySelectorAll('#mainStageNav .stage-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    button.classList.add('active');
+    
+    // Show/hide sub-navigation
+    const windingSubNav = document.getElementById('windingSubNav');
+    
+    if (mainStage === 'winding') {
+        // Show winding sub-navigation
+        windingSubNav.style.display = 'flex';
+        // Load first winding checklist by default
+        currentStage = 'winding1';
+        loadStageContent('winding1');
+        setTimeout(() => {
+            loadChecklistData('winding1');
+            updateProgress();
+        }, 100);
+    } else {
+        // Hide winding sub-navigation
+        windingSubNav.style.display = 'none';
+        // Load the selected main stage
+        currentStage = mainStage;
+        loadStageContent(mainStage);
+        setTimeout(() => {
+            loadChecklistData(mainStage);
+            updateProgress();
+        }, 100);
+    }
+}
+
+/* ===============================
+   W.O. SELECTION AND MANAGEMENT
+================================ */
+
+// Load transformer list into checklist WO dropdown
+async function loadChecklistTransformers() {
+    try {
+        const transformers = await apiCall('/transformers');
+        const select = document.getElementById('checklistWOSelect');
+        
+        if (transformers.length === 0) {
+            select.innerHTML = '<option value="">No transformers available</option>';
+            return;
+        }
+        
+        const options = transformers.map(t => 
+            `<option value="${t.wo}" data-transformer='${JSON.stringify(t)}'>${t.wo} - ${t.customer}</option>`
+        ).join('');
+        
+        select.innerHTML = '<option value="">-- Select Transformer W.O. --</option>' + options;
+    } catch (error) {
+        console.error('Error loading transformers:', error);
+    }
+}
+
+// Handle W.O. selection change
+function onWOChange() {
+    const select = document.getElementById('checklistWOSelect');
+    const selectedOption = select.options[select.selectedIndex];
+    currentWO = select.value;
+    
+    if (currentWO) {
+        // Parse transformer data from option
+        currentTransformerData = JSON.parse(selectedOption.getAttribute('data-transformer'));
+        
+        // Show transformer details
+        document.getElementById('woDetails').style.display = 'block';
+        document.getElementById('woCustomer').textContent = currentTransformerData.customer || 'N/A';
+        document.getElementById('woRating').textContent = currentTransformerData.rating || 'N/A';
+        document.getElementById('woVoltage').textContent = 
+            `HV: ${currentTransformerData.hv || 'N/A'}V / LV: ${currentTransformerData.lv || 'N/A'}V`;
+        
+         // Show checklist content
+        document.getElementById('checklistMainContent').style.display = 'block';
+        document.getElementById('noWOMessage').style.display = 'none';
+        
+        // Load the current stage with the selected W.O.
+        loadStageContent(currentStage);
+        setTimeout(() => {
+            loadChecklistData(currentStage);
+            updateProgress();  // ✅ ADD THIS
+        }, 100);
+    } else {
+        // Hide checklist content
+        document.getElementById('checklistMainContent').style.display = 'none';
+        document.getElementById('noWOMessage').style.display = 'block';
+        document.getElementById('woDetails').style.display = 'none';
+        document.getElementById('progressBar').style.display = 'none';  // ✅ ADD THIS
+        currentTransformerData = null;
+    }
+}
+/* ===============================
+   LOAD SAVED CHECKLIST DATA
+================================ */
+ async function loadChecklistData(stage) {
+    if (!currentWO) {
+        console.log('No W.O. selected');
+        return;
+    }
+    
+    try {
+        const checklistItems = await apiCall(`/checklist/${stage}/${encodeURIComponent(currentWO)}`);
+        
+        checklistItems.forEach(item => {
+            const rowId = item.rowId;
+            
+            // Set actual value
+            const actualValueInput = document.getElementById(`actualValue_${rowId}`);
+            if (actualValueInput) {
+                actualValueInput.value = item.actualValue || '';
+                if (item.locked && currentUserRole !== 'admin') {
+                    actualValueInput.disabled = true;
+                }
+            }
+            
+            // Set technician
+            const techSelect = document.getElementById(`technician_${rowId}`);
+            if (techSelect) {
+                techSelect.value = item.technician || '';
+                if (item.locked && currentUserRole !== 'admin') {
+                    techSelect.disabled = true;
+                }
+            }
+            
+            // Set shop supervisor
+            const shopSupSelect = document.getElementById(`shopSup_${rowId}`);
+            if (shopSupSelect) {
+                shopSupSelect.value = item.shopSupervisor || '';
+                if (item.locked && currentUserRole !== 'admin') {
+                    shopSupSelect.disabled = true;
+                }
+            }
+            
+            // Set QA supervisor
+            const qaSupSelect = document.getElementById(`qaSup_${rowId}`);
+            if (qaSupSelect) {
+                qaSupSelect.value = item.qaSupervisor || '';
+                if (item.locked && currentUserRole !== 'admin') {
+                    qaSupSelect.disabled = true;
+                }
+            }
+            
+            // Set remark
+            const remarkTextarea = document.getElementById(`remark_${rowId}`);
+            if (remarkTextarea) {
+                remarkTextarea.value = item.remark || '';
+                if (item.locked && currentUserRole !== 'admin') {
+                    remarkTextarea.disabled = true;
+                }
+            }
+            
+            // Display timestamps
+            if (item.timestamp) {
+                const techTime = document.getElementById(`techTime_${rowId}`);
+                const shopTime = document.getElementById(`shopTime_${rowId}`);
+                const qaTime = document.getElementById(`qaTime_${rowId}`);
+                
+                if (techTime) techTime.textContent = item.timestamp;
+                if (shopTime) shopTime.textContent = item.timestamp;
+                if (qaTime) qaTime.textContent = item.timestamp;
+            }
+            
+            // Update row lock status
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.setAttribute('data-locked', item.locked);
+                if (item.locked) {
+                    row.style.backgroundColor = '#f0f0f0';
+                }
+                if (!item.locked && currentUserRole === 'admin') {
+                    row.style.backgroundColor = '#fff3cd';
+                }
+            }
+            
+            // Update save button
+            const saveBtn = document.getElementById(`save_${rowId}`);
+            if (saveBtn) {
+                if (item.locked && currentUserRole !== 'admin') {
+                    saveBtn.innerHTML = '🔒 Locked';
+                    saveBtn.disabled = true;
+                    saveBtn.style.background = '#95a5a6';
+                } else if (item.locked && currentUserRole === 'admin') {
+                    saveBtn.innerHTML = '🔒 Update';
+                    saveBtn.style.background = '#3498db';
+                } else if (!item.locked) {
+                    saveBtn.innerHTML = '💾 Save';
+                    saveBtn.style.background = '#27ae60';
+                    saveBtn.disabled = false;
+                }
+            }
+            
+            // Update unlock button (admin only)
+            const unlockBtn = document.getElementById(`unlock_${rowId}`);
+            if (unlockBtn) {
+                if (item.locked) {
+                    unlockBtn.style.display = 'inline-block';
+                    unlockBtn.innerHTML = '🔓 Unlock';
+                } else {
+                    unlockBtn.style.display = 'none';
+                }
+            }
+        });
+        
+        console.log(`✅ Loaded ${checklistItems.length} saved items for ${stage} - WO: ${currentWO}`);
+    } catch (error) {
+        console.error('Error loading checklist data:', error);
+    }
+}
+
+
+function switchStage(stage, button) {
+    // Only update buttons in the same container
+    const container = button.parentElement;
+    container.querySelectorAll('.stage-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    button.classList.add('active');
+    
+    currentStage = stage;
+    loadStageContent(stage);
+    
+    // Load saved checklist data after rendering
+    setTimeout(() => {
+        loadChecklistData(stage);
+        updateProgress();
+    }, 100);
+}
+   
+   
+
+function loadStageContent(stage) {
+    const content = document.getElementById('stageContent');
+    const isCustomer = currentUserRole === 'customer';
+    const isAdmin = currentUserRole === 'admin';
+     const stageData = {
+   winding1: {
+    title: 'INSPECTION RECORD FOR EHV & UHV - CHECK LIST OF WINDING-SINGLE COIL',
+    subtitle: 'Page 1 of 6 - Form No: F/QAS/14',
+    sections: [
+        {
+            name: 'B - Type of winding (Continuous Disc/Layer/Multi Start Helical/Contrashield)',
+            items: [
+                { point: 'Physical condition of the former, Visual check', specifiedValue: 'No Sharp surface, No damage, Cleanliness' },
+                { point: 'Former diameter (ID of the cylinder) Tol. +2/-0mm (by Measuring Tape)', specifiedValue: 'TOP / Centre / Bottom' },
+                { point: 'Height and Thickness of cylinder (By Measuring Tape & Vernier)', specifiedValue: 'As per drawing' },
+                { point: 'Inspection of cylinder passing (Visual) Overlap =120 x thk+50mm', specifiedValue: 'No air voids in joints, No Wariness' },
+                { point: 'Cylinder O.D. (Tol.-0 to +2 mm) (By Measuring Tape)', specifiedValue: 'TOP / Centre / Bottom' },
+                { point: 'Keyed strip thickness & length (By Vernier caliper & Measuring Tape)', specifiedValue: 'As per drawing' },
+                { point: 'Keyed strip alignment (Visual) by Laser', specifiedValue: 'To be Done' },
+                { point: 'Type D (Block - HV or D Block - LV)', specifiedValue: 'Bottom / Centre / Top' },
+                { point: 'No. of dovetail blocks as per circle & width (Visual & Measuring tape)', specifiedValue: 'As per drawing' },
+                { point: 'Dimension of Dovetail block (LxWxT)', specifiedValue: 'Width / Length / Thickness' }
+            ]
+        },
+        {
+            name: 'Conductor Verification',
+            items: [
+                { point: 'Bare conductor dimension PTCC/BPICC/CTC (Label Verification)', specifiedValue: '' },
+                { point: 'Covered conductor dimensions (Label Verification)', specifiedValue: '' },
+                { point: 'Shield Conductor dimensions (Label Verification)', specifiedValue: '' },
+                { point: 'Conductor details and drum status', specifiedValue: 'No damage from approved vendor' }
+            ]
+        },
+        {
+            name: 'B - Winding start details',
+            items: [
+                { point: 'Starting space for winding from cylinder (by Measuring Tape)', specifiedValue: '' },
+                { point: 'Make of Bottom Guard Ring/End Collar', specifiedValue: '' },
+                { point: 'Lead length(-0,+100mm) (By Measuring Tape)', specifiedValue: '' },
+                { point: 'Type of lead bend at start (Radially/Axially)', specifiedValue: '' },
+                { point: 'Individual and Bunch insulation (By Vernier Caliper)', specifiedValue: '' },
+                { point: 'Lead position take out segment no.', specifiedValue: '' },
+                { point: 'Direction of winding (Std. /Non std.)', specifiedValue: '' }
+            ]
+        },
+        {
+            name: 'Winding Completion',
+            items: [
+                { point: 'Radial width of winding at 3rd disc (+/-1mm) (By Vernier Caliper)', specifiedValue: '' },
+                { point: 'Total no. of Disc/Turn', specifiedValue: '' },
+                { point: 'Line shield at start lead', specifiedValue: 'As per design' },
+                { point: 'Disc/Turn Numbering done at each disc/Turn', specifiedValue: 'To be Done' }
+            ]
+        },
+        {
+            name: 'C - Details of finish coil',
+            items: [
+                { point: 'Lead bend and insulation at finish end (Radially/Axially)', specifiedValue: '' },
+                { point: 'Disc and lead Anchoring', specifiedValue: 'To be Done as per drg' },
+                { point: 'Block alignment', specifiedValue: 'Visual and Laser verification' },
+                { point: 'Top insulation arrangement', specifiedValue: '' },
+                { point: 'OD Rider Provided', specifiedValue: 'To be Provided' },
+                { point: 'Line shield at end lead', specifiedValue: 'As per design' }
+            ]
+        },
+        {
+            name: 'Final Items',
+            items: [
+                { point: 'Arrangement of DOF washer (OD and ID) between Disc/turn', specifiedValue: 'OD DOF / ID DOF / DOF / Sign' },
+                { point: 'Top Guard Ring/End Collar with protection washer over it', specifiedValue: 'To be verified' },
+                { point: 'Coil OD measure in mm (0,+3mm)', specifiedValue: '' },
+                { point: 'Continuity test after finish between parallel strands (by continuity tester)', specifiedValue: 'To be Done' },
+                { point: 'Identification/Status tag provided', specifiedValue: 'To be Provided' }
+            ]
+        }
+    ],
+    specialSections: {
+        brazedJoints: {
+            title: 'Details of brazed joints',
+            columns: ['S.no', 'Brazed joint at Disc/Turn No.', 'check Brazing Joint finishing, No Sharp surface', 'Date/Shift', 'Sign of Brazor', 'Sign of Quality'],
+            rows: 10
+        },
+        shieldDetails: {
+            title: 'Details of Shield and preparation and placement',
+            columns: ['S.no', 'Disc Number', 'Segment number and marking on conductor', 'Date/Shift', 'sign of operators', 'Sign of Quality'],
+            rows: 15
+        },
+        drumDetails: {
+            title: 'Drum Details and Vender name',
+            columns: ['S.no', 'Bobbin no.', 'Vender', 'Drum length', 'Direction', 'Operator Sign & date'],
+            rows: 8
+        }
+    }
+},
+    
+    // Keep your existing VPD, Core Coil, Tanking, Tank Filling as-is
+    vpd: {
+        title: 'VPD (Vacuum Pressure Dry) Checklist',
+        sections: [{
+            name: 'Main Checks',
+            items: [
+                { point: 'Chamber cleanliness verified', specifiedValue: 'Clean and inspect' },
+                { point: 'Vacuum level achieved', specifiedValue: 'Check vacuum gauge' },
+                { point: 'Temperature settings', specifiedValue: 'Set per specification' },
+                { point: 'Moisture content checked', specifiedValue: 'Record readings' },
+                { point: 'Duration timer set', specifiedValue: 'As per requirement' },
+                { point: 'Safety valves checked', specifiedValue: 'Verify operation' }
+            ]
+        }]
+    },
+    coreCoil: {
+        title: 'Core Coil Assembly Checklist',
+        sections: [{
+            name: 'Main Checks',
+            items: [
+                { point: 'Core stacking completed', specifiedValue: 'Verify layer alignment' },
+                { point: 'Coil fitment checked', specifiedValue: 'Check clearances' },
+                { point: 'Insulation barriers placed', specifiedValue: 'As per drawing' },
+                { point: 'Clamping structure verified', specifiedValue: 'Torque as specified' },
+                { point: 'Lead connections', specifiedValue: 'Check continuity' },
+                { point: 'Ground connections', specifiedValue: 'Verify resistance' }
+            ]
+        }]
+    },
+    tanking: {
+        title: 'Tanking Stage Checklist',
+        sections: [{
+            name: 'Main Checks',
+            items: [
+                { point: 'Tank cleanliness', specifiedValue: 'Clean and dry' },
+                { point: 'Core-coil placement', specifiedValue: 'Center alignment' },
+                { point: 'Bushing installation', specifiedValue: 'Tighten per torque' },
+                { point: 'Gasket placement', specifiedValue: 'Check for damage' },
+                { point: 'Conservator fitting', specifiedValue: 'Verify connections' },
+                { point: 'Radiator connections', specifiedValue: 'Check for leaks' }
+            ]
+        }]
+    },
+    tankFilling: {
+        title: 'Tank Filling Checklist',
+        sections: [{
+            name: 'Main Checks',
+            items: [
+                { point: 'Oil quality verified', specifiedValue: 'BDV test passed' },
+                { point: 'Oil filtration done', specifiedValue: 'Filter verification' },
+                { point: 'Filling rate controlled', specifiedValue: 'Per specification' },
+                { point: 'Air venting checked', specifiedValue: 'No trapped air' },
+                { point: 'Oil level marked', specifiedValue: 'At correct level' },
+                { point: 'Leak test completed', specifiedValue: 'No leakage found' }
+            ]
+        }]
+    }
+};
+    
+const stageInfo = stageData[stage];
+
+if (!stageInfo) {
+    content.innerHTML = '<p>Stage data not found.</p>';
+    return;
+}
+
+const isQuality = currentUserRole === 'quality';
+const isProduction = currentUserRole === 'production';
+const disabledAttr = isCustomer ? 'disabled' : '';
+
+let itemCounter = 0;
+let checklistHTML = '';
+
+// Render all sections
+stageInfo.sections.forEach((section, sectionIndex) => {
+    checklistHTML += `
+        <h4 style="background: #ecf0f1; padding: 10px; margin-top: 20px; border-left: 4px solid var(--blue);">
+            ${section.name}
+        </h4>
+        <table class="form-table">
+           <thead>
+    <tr>
+        <th style="width:40px;">Sr.no</th>
+        <th style="width:300px;">Inspection Points</th>
+        <th style="width:150px;">Specified value</th>
+        <th style="width:120px;">Actual Value</th>
+        <th style="width:400px;">Checked by (Sign & date)</th>
+        <th style="width:120px;">Remarks</th>
+        <th style="width:80px;">Action</th>
+    </tr>
+</thead>
+            <tbody>
+    `;
+    
+    section.items.forEach((item, index) => {
+        itemCounter++;
+        const rowId = `row_${stage}_${itemCounter}`;
+        
+       checklistHTML += `
+    <tr id="${rowId}">
+        <td>${itemCounter}</td>
+        <td>${item.point}</td>
+        <td style="font-size: 11px; color: #555;">${item.specifiedValue}</td>
+        <td>
+            <input type="text" 
+                   id="actualValue_${rowId}" 
+                   ${disabledAttr}
+                   placeholder="Enter value"
+                   style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+        </td>
+        <td style="padding: 0;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; height: 100%; border-collapse: collapse;">
+                <div style="border-right: 1px solid #000; padding: 8px;">
+                    <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px; text-align: center;">Technician</div>
+                    ${!isCustomer ? `
+                        <select id="technician_${rowId}" style="width: 100%; padding: 4px; font-size: 10px; border: 1px solid #ddd; margin-bottom: 3px;">
+                            <option value="">-- Select --</option>
+                            <option value="Deep Kumar">Deep Kumar</option>
+                            <option value="Priya Sharma">Priya Sharma</option>
+                            <option value="Vikram Singh">Vikram Singh</option>
+                        </select>
+                        <small id="techTime_${rowId}" style="font-size: 9px; color: #666; display: block;"></small>
+                    ` : '<span style="font-size: 10px; text-align: center; display: block;">-</span>'}
+                </div>
+                <div style="border-right: 1px solid #000; padding: 8px;">
+                    <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px; text-align: center;">Shop Supervisor</div>
+                    ${isProduction || isAdmin ? `
+                        <select id="shopSup_${rowId}" style="width: 100%; padding: 4px; font-size: 10px; border: 1px solid #ddd; margin-bottom: 3px;">
+                            <option value="">-- Select --</option>
+                            <option value="Amit Singh">Amit Singh</option>
+                            <option value="Sandeep Sharma">Sandeep Sharma</option>
+                        </select>
+                        <small id="shopTime_${rowId}" style="font-size: 9px; color: #666; display: block;"></small>
+                    ` : '<span style="font-size: 10px; text-align: center; display: block;">-</span>'}
+                </div>
+                <div style="padding: 8px;">
+                    <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px; text-align: center;">Quality Supervisor</div>
+                    ${isQuality || isAdmin ? `
+                        <select id="qaSup_${rowId}" style="width: 100%; padding: 4px; font-size: 10px; border: 1px solid #ddd; margin-bottom: 3px;">
+                            <option value="">-- Select --</option>
+                            <option value="QA - Suresh Reddy">QA - Suresh Reddy</option>
+                            <option value="QA - Prakash Joshi">QA - Prakash Joshi</option>
+                        </select>
+                        <small id="qaTime_${rowId}" style="font-size: 9px; color: #666; display: block;"></small>
+                    ` : '<span style="font-size: 10px; text-align: center; display: block;">-</span>'}
+                </div>
+            </div>
+        </td>
+        <td>
+            <textarea id="remark_${rowId}" 
+                      ${disabledAttr}
+                      placeholder="Optional"
+                      style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px; font-size: 11px; min-height: 60px;"></textarea>
+        </td>
+                <td style="text-align: center;">
+                    ${!isCustomer ? `
+                        <button class="btn-login" 
+                                id="save_${rowId}"
+                                style="width:auto; padding:6px 10px; font-size:11px; background: var(--green); margin-bottom: 5px;"
+                                onclick="saveNewChecklistItem('${stage}', ${itemCounter}, '${rowId}')">
+                            Save
+                        </button>
+                        ${isAdmin ? `<br>
+                            <button class="btn-login" 
+                                    id="unlock_${rowId}"
+                                    style="width:auto; padding:6px 10px; font-size:11px; background: var(--orange); display: none;"
+                                    onclick="unlockChecklistItem('${stage}', '${rowId}')">
+                                🔓 Unlock
+                            </button>
+                        ` : ''}
+                    ` : ''}
+                </td>
+            </tr>
+        `;
+    });
+    
+    checklistHTML += `
+            </tbody>
+        </table>
+    `;
+});
+
+// ===== ADD SPECIAL SECTIONS (Brazed Joints, Shield Details, Drum Details) =====
+if (stageInfo.specialSections) {
+    // Brazed Joints Table
+    if (stageInfo.specialSections.brazedJoints) {
+        const bj = stageInfo.specialSections.brazedJoints;
+        checklistHTML += `
+            <h4 style="background: #ecf0f1; padding: 10px; margin-top: 20px; border-left: 4px solid var(--blue);">
+                36. ${bj.title}
+            </h4>
+            <table class="form-table">
+                <thead>
+                    <tr>
+                        ${bj.columns.map(col => `<th style="font-size: 11px;">${col}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        for (let i = 1; i <= bj.rows; i++) {
+            checklistHTML += `
+                    <tr>
+                        <td style="text-align: center;">${i}</td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                    </tr>`;
+        }
+        
+        checklistHTML += `
+                </tbody>
+            </table>`;
+    }
+    
+    // Shield Details Table
+    if (stageInfo.specialSections.shieldDetails) {
+        const sd = stageInfo.specialSections.shieldDetails;
+        checklistHTML += `
+            <h4 style="background: #ecf0f1; padding: 10px; margin-top: 20px; border-left: 4px solid var(--blue);">
+                37. ${sd.title}
+            </h4>
+            <table class="form-table">
+                <thead>
+                    <tr>
+                        ${sd.columns.map(col => `<th style="font-size: 11px;">${col}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        for (let i = 1; i <= sd.rows; i++) {
+            checklistHTML += `
+                    <tr>
+                        <td style="text-align: center;">${i}</td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                    </tr>`;
+        }
+        
+        checklistHTML += `
+                </tbody>
+            </table>`;
+    }
+    
+    // Drum Details Table
+    if (stageInfo.specialSections.drumDetails) {
+        const dd = stageInfo.specialSections.drumDetails;
+        checklistHTML += `
+            <h4 style="background: #ecf0f1; padding: 10px; margin-top: 20px; border-left: 4px solid var(--blue);">
+                38. ${dd.title}
+            </h4>
+            <table class="form-table">
+                <thead>
+                    <tr>
+                        ${dd.columns.map(col => `<th style="font-size: 11px;">${col}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        for (let i = 1; i <= dd.rows; i++) {
+            checklistHTML += `
+                    <tr>
+                        <td style="text-align: center;">${i}</td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                        <td><input type="text" ${disabledAttr} style="width: 100%; border: none; padding: 3px;"></td>
+                    </tr>`;
+        }
+        
+        checklistHTML += `
+                </tbody>
+            </table>`;
+    }
+    
+    // Final Sign-off Section
+    checklistHTML += `
+        <h4 style="background: #ecf0f1; padding: 10px; margin-top: 20px; border-left: 4px solid var(--blue);">
+            Details of observation/Nonconformity or balance work
+        </h4>
+        <table class="form-table">
+            <tbody>
+                <tr>
+                    <td style="height: 100px;">
+                        <textarea ${disabledAttr} style="width: 100%; height: 90px; border: none; padding: 5px;" placeholder="Enter observations, nonconformities, or balance work details..."></textarea>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h4 style="background: #d4edda; padding: 10px; margin-top: 20px; border-left: 4px solid var(--green);">
+            Winding cleared for Next Stage
+        </h4>
+        <table class="form-table">
+            <tbody>
+                <tr>
+                    <td style="width: 50%;"><strong>Format Prepared By:</strong> Indrapal sahu</td>
+                    <td style="width: 50%;"><strong>Sign of QA Name/Date:</strong> <input type="text" ${disabledAttr} style="border: none; border-bottom: 1px solid #000; width: 200px;"></td>
+                </tr>
+                <tr>
+                    <td><strong>Format Review By:</strong> Sunil Kumar Rai</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    `;
+}
+
+content.innerHTML = `
+    <h3>${stageInfo.title}</h3>
+    ${stageInfo.subtitle ? `<p style="color: #666; font-size: 14px;">${stageInfo.subtitle}</p>` : ''}
+    <button class="btn-login" 
+            style="width:auto; padding:10px 20px; font-size:14px; background:var(--red); margin:15px 0;" 
+            onclick="exportStageChecklistPDF('${stage}')">
+        📄 Download ${stageInfo.title} PDF
+    </button>
+    
+    <div class="checklist-paper" id="stageChecklist_${stage}">
+        <h2 style="text-align:center">${stageInfo.title.toUpperCase()}</h2>
+        
+        <table class="form-table" style="margin-bottom: 15px;">
+            <tr>
+                <td><strong>W.O. No/ Unit No.:</strong> <input type="text" ${disabledAttr} value="${currentWO || ''}" style="border:none; border-bottom:1px dotted #000; width:200px;"></td>
+                <td><strong>M/c No</strong> <input type="text" ${disabledAttr} value="" style="border:none; border-bottom:1px dotted #000; width:100px;"></td>
+            </tr>
+            <tr>
+                <td><strong>Coil:</strong> <input type="text" ${disabledAttr} value="${currentTransformerData?.rating || 'N/A'} kVA" style="border:none; border-bottom:1px dotted #000; width:200px;"></td>
+                <td><strong>Date:</strong> <input type="date" ${disabledAttr} value="${new Date().toISOString().split('T')[0]}" style="border:none; border-bottom:1px dotted #000;"></td>
+            </tr>
+        </table>
+        
+        ${checklistHTML}
+        
+        <div style="margin-top: 30px;">
+            <table style="width:100%; border:none;">
+                <tr>
+                    <td style="border:none; padding: 10px;"><strong>Format Prepared By:</strong> __________________</td>
+                    <td style="border:none; padding: 10px;"><strong>Format Review By:</strong> __________________</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+`;
+}
+/* ===============================
+   SAVE NEW CHECKLIST ITEM - PHYSICAL FORM STRUCTURE
+================================ */
+async function saveNewChecklistItem(stage, itemNumber, rowId) {
+    if (!currentWO) {
+        alert('⚠️ Please select a transformer W.O. number first!');
+        return;
+    }
+    
+    // Get all the values
+    const actualValue = document.getElementById(`actualValue_${rowId}`)?.value || '';
+    const technician = document.getElementById(`technician_${rowId}`)?.value || '';
+    const shopSupervisor = document.getElementById(`shopSup_${rowId}`)?.value || '';
+    const qaSupervisor = document.getElementById(`qaSup_${rowId}`)?.value || '';
+    const remark = document.getElementById(`remark_${rowId}`)?.value || '';
+    
+    // Validation
+    if (!actualValue.trim()) {
+        alert('❌ Please enter Actual Value');
+        return;
+    }
+    
+    if (!technician) {
+        alert('❌ Please select Technician');
+        return;
+    }
+    
+    // Get current timestamp
+    const now = new Date();
+    const timestamp = now.toLocaleString('en-IN');
+    
+    const checklistData = {
+        wo: String(currentWO || ''),
+        customerId: String(currentTransformerData?.customerId || ''),
+        customer: String(currentTransformerData?.customer || ''),
+        stage: String(stage || ''),
+        itemNumber: Number(itemNumber),
+        rowId: String(rowId || ''),
+        actualValue: String(actualValue || ''),
+        technician: String(technician || ''),
+        shopSupervisor: String(shopSupervisor || ''),
+        qaSupervisor: String(qaSupervisor || ''),
+        remark: String(remark || ''),
+        timestamp: String(timestamp || ''),
+        userId: String(currentUserId || ''),
+        userName: String(currentUserName || ''),
+        userRole: String(currentUserRole || '')
+    };
+    
+    console.log('📤 Sending new checklist data:', JSON.stringify(checklistData, null, 2));
+    
+    try {
+        const response = await fetch(`${API_BASE}/checklist/save`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id': currentUserId
+            },
+            body: JSON.stringify(checklistData)
+        });
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('❌ Server returned non-JSON response:', text);
+            throw new Error('Server returned non-JSON response. Please check server logs.');
+        }
+        
+        const result = await response.json();
+        console.log('📥 Server response:', result);
+        
+        if (response.ok && result.success) {
+            console.log('✅ Checklist item saved:', result);
+            
+            // Display timestamps
+            if (technician) {
+                const techTime = document.getElementById(`techTime_${rowId}`);
+                if (techTime) {
+                    techTime.textContent = `${timestamp}`;
+                }
+            }
+            
+            if (shopSupervisor) {
+                const shopTime = document.getElementById(`shopTime_${rowId}`);
+                if (shopTime) {
+                    shopTime.textContent = `${timestamp}`;
+                }
+            }
+            
+            if (qaSupervisor) {
+                const qaTime = document.getElementById(`qaTime_${rowId}`);
+                if (qaTime) {
+                    qaTime.textContent = `${timestamp}`;
+                }
+            }
+            
+            // Lock the row
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.setAttribute('data-locked', 'true');
+                row.style.backgroundColor = '#f0f0f0';
+            }
+            
+            // Disable inputs if not admin
+            if (currentUserRole !== 'admin') {
+                const inputs = row ? row.querySelectorAll('input, select, textarea') : [];
+                inputs.forEach(input => input.disabled = true);
+                
+                // Update save button
+                const saveBtn = document.getElementById(`save_${rowId}`);
+                if (saveBtn) {
+                    saveBtn.innerHTML = '🔒 Locked';
+                    saveBtn.disabled = true;
+                    saveBtn.style.background = '#95a5a6';
+                }
+            } else {
+                // For admin, change button text
+                const saveBtn = document.getElementById(`save_${rowId}`);
+                if (saveBtn) {
+                    saveBtn.innerHTML = '🔒 Update';
+                    saveBtn.style.background = '#3498db';
+                }
+            }
+            
+            // Show unlock button for admin
+            const unlockBtn = document.getElementById(`unlock_${rowId}`);
+            if (unlockBtn && currentUserRole === 'admin') {
+                unlockBtn.style.display = 'inline-block';
+            }
+            
+            alert(`✅ Item ${itemNumber} saved successfully!\n\nActual Value: ${actualValue}\nTechnician: ${technician}\nShop Supervisor: ${shopSupervisor || 'N/A'}\nQA Supervisor: ${qaSupervisor || 'N/A'}\nTime: ${timestamp}`);
+            
+            // Update progress after save
+            setTimeout(() => updateProgress(), 200);
+        } else {
+            throw new Error(result.error || 'Failed to save checklist item');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error saving checklist item:', error);
+        alert(`❌ Error saving item. Please try again.\n\nError: ${error.message}`);
+    }
+}
+        
+/* ===============================
+   SAVE CHECKLIST ITEM - WITH AUTO ENGINEER ASSIGNMENT
+================================ */
+async function saveChecklistItem(stage, itemNumber, rowId) {
+    if (!currentWO) {
+        alert('⚠️ Please select a transformer W.O. number first!');
+        return;
+    }
+    
+    // Get status from radio buttons
+    const statusInputs = document.getElementsByName(`status_${rowId}`);
+    let status = '';
+    for (let input of statusInputs) {
+        if (input.checked) {
+            status = input.value;
+            break;
+        }
+    }
+    
+    // ✅ AUTO-ASSIGN: Use logged-in user's name instead of dropdown
+    const engineer = currentUserName; // Automatically use logged-in user
+    
+    // Validation
+    if (!status) {
+        alert('❌ Please select Yes or No');
+        return;
+    }
+    
+    // Get current timestamp and shift
+    const now = new Date();
+    const shift = now.getHours() >= 6 && now.getHours() < 14 ? 'Morning' : 
+                  now.getHours() >= 14 && now.getHours() < 22 ? 'Afternoon' : 'Night';
+   const timestamp = now.toLocaleString('en-IN');
+
+
+    
+    const checklistData = {
+        wo: String(currentWO || ''),
+        customerId: String(currentTransformerData?.customerId || ''),
+        customer: String(currentTransformerData?.customer || ''),
+        stage: String(stage || ''),
+        itemNumber: Number(itemNumber),
+        rowId: String(rowId || ''),
+        status: String(status || ''),
+        engineer: String(engineer || ''), // ✅ Auto-assigned from logged-in user
+        shift: String(shift || ''),
+        timestamp: String(timestamp || ''),
+        userId: String(currentUserId || ''),
+        userName: String(currentUserName || '')
+    };
+    
+    console.log('📤 Sending checklist data:', JSON.stringify(checklistData, null, 2));
+    
+    try {
+        const response = await fetch(`${API_BASE}/checklist/save`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id': currentUserId
+            },
+            body: JSON.stringify(checklistData)
+        });
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('❌ Server returned non-JSON response:', text);
+            throw new Error('Server returned non-JSON response. Please check server logs.');
+        }
+        
+        const result = await response.json();
+        console.log('📥 Server response:', result);
+        
+        if (response.ok && result.success) {
+            console.log('✅ Checklist item saved:', result);
+            
+            // Update timestamp display
+            const timeDisplay = document.getElementById(`time_${rowId}`);
+            if (timeDisplay) {
+                timeDisplay.textContent = `${engineer} | ${shift} | ${timestamp}`;
+                timeDisplay.style.color = '#27ae60';
+                timeDisplay.style.whiteSpace = 'pre-line';
+            }
+            
+            // Lock the row
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.setAttribute('data-locked', 'true');
+                row.style.backgroundColor = '';
+            }
+            
+            // Disable inputs if not admin
+            if (currentUserRole !== 'admin') {
+                const inputs = row ? row.querySelectorAll('input, select') : [];
+                inputs.forEach(input => input.disabled = true);
+                
+                // Update save button
+                const saveBtn = document.getElementById(`save_${rowId}`);
+                if (saveBtn) {
+                    saveBtn.innerHTML = '🔒 Locked';
+                    saveBtn.disabled = true;
+                    saveBtn.style.background = '#95a5a6';
+                }
+            } else {
+                // For admin, change button text
+                const saveBtn = document.getElementById(`save_${rowId}`);
+                if (saveBtn) {
+                    saveBtn.innerHTML = '🔒 Update';
+                    saveBtn.style.background = '#3498db';
+                }
+            }
+            
+            // Show unlock button for admin
+            const unlockBtn = document.getElementById(`unlock_${rowId}`);
+            if (unlockBtn && currentUserRole === 'admin') {
+                unlockBtn.style.display = 'inline-block';
+                unlockBtn.innerHTML = '🔓 Unlock';
+            }
+            
+            const lockMessage = result.item && result.item.locked 
+                ? '\n\n🔒 Item is now LOCKED. Only admin can unlock it.' 
+                : '\n\n✅ Item saved and locked.';
+
+            alert(`✅ Item ${itemNumber} saved successfully for W.O. ${currentWO}!\n\nEngineer: ${engineer} (Auto-assigned)\nStatus: ${status.toUpperCase()}\nShift: ${shift}\nTime: ${timestamp}${lockMessage}`);
+            
+            // Update progress after save
+            setTimeout(() => updateProgress(), 200);
+        } else {
+            throw new Error(result.error || 'Failed to save checklist item');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error saving checklist item:', error);
+        alert(`❌ Error saving item. Please try again.\n\nError: ${error.message}\n\nPlease check:\n1. Server is running (http://localhost:3000)\n2. You are logged in as engineer or admin\n3. W.O. number is selected\n4. All fields are filled`);
+    }
+}
+            
+
+   
+/* ===============================
+   UNLOCK CHECKLIST ITEM (ADMIN ONLY) - WITH DROPDOWN
+================================ */
+async function unlockChecklistItem(stage, rowId) {
+    if (!currentWO) {
+        alert('⚠️ No W.O. selected!');
+        return;
+    }
+    
+    if (currentUserRole !== 'admin') {
+        alert('⚠️ Only admins can unlock items!');
+        return;
+    }
+    
+    // Create modal for unlock reason selection
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 12px; width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <h3 style="margin: 0 0 20px 0; color: #2c3e50;">🔓 Unlock Checklist Item</h3>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #34495e;">
+                    Select Reason for Unlocking:
+                </label>
+                <select id="unlockReasonSelect" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    <option value="">-- Select Reason --</option>
+                    <option value="Need to recheck after maintenance">Need to recheck after maintenance</option>
+                    <option value="Correction required">Correction required</option>
+                    <option value="Re-inspection needed">Re-inspection needed</option>
+                    <option value="Data entry error">Data entry error</option>
+                    <option value="Equipment malfunction">Equipment malfunction</option>
+                    <option value="Design change">Design change</option>
+                    <option value="Quality issue found">Quality issue found</option>
+                    <option value="Other">Other (specify below)</option>
+                </select>
+            </div>
+            
+            <div id="otherReasonDiv" style="margin-bottom: 20px; display: none;">
+                <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #34495e;">
+                    Specify Other Reason:
+                </label>
+                <input type="text" id="otherReasonInput" placeholder="Enter specific reason..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+            </div>
+            
+            <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <small style="color: #856404;">
+                    <strong>⚠️ Note:</strong> This action will allow engineers to edit this locked item again. 
+                    The unlock reason will be recorded in the system logs.
+                </small>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="cancelUnlockBtn" style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    Cancel
+                </button>
+                <button id="confirmUnlockBtn" style="padding: 10px 20px; background: #e67e22; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;">
+                    🔓 Unlock Item
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Handle "Other" selection
+    const reasonSelect = document.getElementById('unlockReasonSelect');
+    const otherReasonDiv = document.getElementById('otherReasonDiv');
+    const otherReasonInput = document.getElementById('otherReasonInput');
+    
+    reasonSelect.addEventListener('change', () => {
+        if (reasonSelect.value === 'Other') {
+            otherReasonDiv.style.display = 'block';
+            otherReasonInput.focus();
+        } else {
+            otherReasonDiv.style.display = 'none';
+            otherReasonInput.value = '';
+        }
+    });
+    
+    // Cancel button
+    document.getElementById('cancelUnlockBtn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+    
+    // Confirm unlock button
+    document.getElementById('confirmUnlockBtn').addEventListener('click', async () => {
+        let reason = reasonSelect.value;
+        
+        if (!reason) {
+            alert('❌ Please select a reason for unlocking!');
+            return;
+        }
+        
+        // If "Other" is selected, get the custom reason
+        if (reason === 'Other') {
+            const customReason = otherReasonInput.value.trim();
+            if (!customReason) {
+                alert('❌ Please specify the reason in the text box!');
+                otherReasonInput.focus();
+                return;
+            }
+            reason = customReason;
+        }
+        
+        // Remove modal
+        document.body.removeChild(modal);
+        
+        try {
+            const response = await fetch(`${API_BASE}/checklist/unlock`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'user-id': currentUserId
+                },
+                body: JSON.stringify({
+                    wo: currentWO,
+                    stage: stage,
+                    rowId: rowId,
+                    reason: reason
+                })
+            });
+            
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server returned non-JSON response.');
+            }
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                console.log('✅ Item unlocked:', result);
+                
+                // Enable the inputs
+                const row = document.getElementById(rowId);
+                if (row) {
+                    const inputs = row.querySelectorAll('input, select');
+                    inputs.forEach(input => input.disabled = false);
+                    row.style.backgroundColor = '#fff3cd';
+                    row.setAttribute('data-locked', 'false');
+                }
+                
+                // Update save button
+                const saveBtn = document.getElementById(`save_${rowId}`);
+                if (saveBtn) {
+                    saveBtn.innerHTML = '💾 Save';
+                    saveBtn.style.background = '#27ae60';
+                    saveBtn.disabled = false;
+                }
+                
+                // Hide unlock button
+                const unlockBtn = document.getElementById(`unlock_${rowId}`);
+                if (unlockBtn) {
+                    unlockBtn.style.display = 'none';
+                }
+                
+                // Update timestamp display
+                const timeDisplay = document.getElementById(`time_${rowId}`);
+                if (timeDisplay) {
+                    const originalText = timeDisplay.textContent.split('\n')[0];
+                    timeDisplay.textContent = `${originalText}\n🔓 Unlocked by: ${currentUserName}\nReason: ${reason}\nAt: ${new Date().toLocaleString('en-IN')}`;
+                    timeDisplay.style.color = '#e67e22';
+                    timeDisplay.style.whiteSpace = 'pre-line';
+                }
+                
+                alert(`✅ Item unlocked successfully!\n\nReason: ${reason}\n\nEngineers can now edit this item.`);
+            } else {
+                throw new Error(result.error || 'Failed to unlock item');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error unlocking item:', error);
+            alert(`❌ Error unlocking item:\n\n${error.message}`);
+        }
+    });
+    
+    // Close modal on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    });
+}
+/* ===============================
+   UPDATE PROGRESS BAR
+================================ */
+async function updateProgress() {
+    if (!currentWO || !currentStage) return;
+    
+    try {
+       const items = await apiCall(`/checklist/${currentStage}/${encodeURIComponent(currentWO)}`);
+        
+        // Count total items in current stage
+        const allRows = document.querySelectorAll('[id^="row_' + currentStage + '_"]');
+        const total = allRows.length;
+        
+        // Count completed (locked with status yes)
+        const completed = items.filter(i => i.locked && i.status === 'yes').length;
+        const pending = total - completed;
+        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+        
+        // Update UI
+        document.getElementById('progressBar').style.display = 'block';
+        document.getElementById('progressFill').style.width = percentage + '%';
+        document.getElementById('progressText').textContent = percentage + '% Complete';
+        document.getElementById('completedCount').textContent = completed;
+        document.getElementById('pendingCount').textContent = pending;
+        document.getElementById('totalCount').textContent = total;
+        
+        // Change color based on completion
+        const progressFill = document.getElementById('progressFill');
+        if (percentage === 100) {
+            progressFill.style.background = 'linear-gradient(90deg, #27ae60, #2ecc71)';
+        } else if (percentage >= 50) {
+            progressFill.style.background = 'linear-gradient(90deg, #f39c12, #f1c40f)';
+        } else {
+            progressFill.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+        }
+    } catch (error) {
+        console.error('Error updating progress:', error);
+    }
+}
+
+/* ===============================
+   EXPORT STAGE CHECKLIST PDF
+================================ */
+function exportStageChecklistPDF(stage) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("p", "mm", "a4");
+    
+    html2canvas(document.getElementById(`stageChecklist_${stage}`)).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const imgWidth = 190;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        doc.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+        doc.save(`${stage}_Checklist.pdf`);
+    });
+}
+
+/* ===============================
+   CUSTOMER CALCULATIONS VIEW
+================================ */
+async function loadCustomerCalculations() {
+    const listDiv = document.getElementById('customerCalcList');
+    
+    try {
+        // Get customer's transformers
+        const transformers = await apiCall('/transformers');
+        
+        if (transformers.length === 0) {
+            listDiv.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #666;">
+                    <p>No transformers found for your account.</p>
+                    <p>Please contact our engineering team for assistance.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Display list of transformers with their calculations
+        let html = '<div style="display: grid; gap: 15px;">';
+        
+        transformers.forEach(t => {
+            html += `
+                <div class="card" style="padding: 20px; border-left: 4px solid var(--blue);">
+                    <h3 style="color: var(--navy); margin-bottom: 10px;">
+                        ${t.customer || 'N/A'} - W.O. ${t.wo || 'N/A'}
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div><strong>Rating:</strong> ${t.rating || 'N/A'} kVA</div>
+                        <div><strong>HV:</strong> ${t.hv || 'N/A'} V</div>
+                        <div><strong>LV:</strong> ${t.lv || 'N/A'} V</div>
+                        <div><strong>Created:</strong> ${t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-login" style="width:auto; padding:8px 16px; font-size:14px; background: var(--blue);" 
+                                onclick="alert('Calculation report for W.O. ${t.wo} - Feature coming soon!')">
+                            📊 View Calculation Report
+                        </button>
+                        <button class="btn-login" style="width:auto; padding:8px 16px; font-size:14px; background: var(--green);" 
+                                onclick="alert('Download PDF for W.O. ${t.wo} - Feature coming soon!')">
+                            📄 Download PDF
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        listDiv.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading calculations:', error);
+        listDiv.innerHTML = `
+            <div class="permission-notice">
+                <strong>⚠️ Error:</strong> Unable to load calculation reports. Please try again later.
+            </div>
+        `;
+    }
+}
+
+/* ===============================
+   ATLANTA WINDING CALCULATION
+================================ */
+function generateWindingForms() {
+    const num = parseInt(document.getElementById('numWindings').value);
+    const container = document.getElementById('windingFormsContainer');
+    const names = ['LV Winding', 'HV Main Winding', 'HV Tap Winding', 'Tertiary Winding'];
+    const isCustomer = currentUserRole === 'customer';
+    const disabledAttr = isCustomer ? 'disabled' : '';
+    
+    container.innerHTML = '';
+    
+    for (let i = 0; i < num; i++) {
+        container.innerHTML += `
+            <div class="winding-card">
+                <div class="winding-header">${names[i]}</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" ${disabledAttr} id="name_${i}" value="${names[i]}">
+                    </div>
+                    <div class="form-group">
+                        <label>KVA (Power in VA units):</label>
+                        <input type="number" ${disabledAttr} id="kva_${i}" placeholder="e.g., 100000000 for 100MVA">
+                    </div>
+                    <div class="form-group">
+                        <label>Voltage (V - Line Voltage):</label>
+                        <input type="number" ${disabledAttr} id="volt_${i}" placeholder="LV: 33000V, HV: 132000V">
+                    </div>
+                    <div class="form-group">
+                        <label>Width (mm):</label>
+                        <input type="number" ${disabledAttr} step="0.01" id="width_${i}" placeholder="e.g., 9.30">
+                    </div>
+                    <div class="form-group">
+                        <label>Thickness (mm):</label>
+                        <input type="number" ${disabledAttr} step="0.01" id="thick_${i}" placeholder="e.g., 1.85">
+                    </div>
+                    <div class="form-group">
+                        <label>No. of Parallel Conductors:</label>
+                        <input type="number" ${disabledAttr} id="npc_${i}" placeholder="e.g., 46">
+                    </div>
+                    <div class="form-group">
+                        <label>No. of Parallel Coils:</label>
+                        <input type="number" ${disabledAttr} id="ncoil_${i}" placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label>Corner Radius (mm):</label>
+                        <input type="number" ${disabledAttr} step="0.001" id="corner_${i}" placeholder="e.g., 0.65">
+                    </div>
+                    <div class="form-group">
+                        <label>Coil ID (mm):</label>
+                        <input type="number" ${disabledAttr} id="id_${i}" placeholder="e.g., 832">
+                    </div>
+                    <div class="form-group">
+                        <label>Coil OD (mm):</label>
+                        <input type="number" ${disabledAttr} id="od_${i}" placeholder="e.g., 1035">
+                    </div>
+                    <div class="form-group">
+                        <label>No. of Turns:</label>
+                        <input type="number" ${disabledAttr} id="turns_${i}" placeholder="e.g., 121">
+                    </div>
+                    <div class="form-group">
+                        <label>Lead Weight (%):</label>
+                        <input type="number" ${disabledAttr} step="0.1" id="lead_${i}" value="0" placeholder="e.g., 10">
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function windingCalculation(d) {
+    const S = d.kva;
+    const I_phase = S / (Math.sqrt(3) * d.voltage);
+    
+    const A_single = d.width * d.thickness;
+    const r = d.corner_radius;
+    const A_corner = 0.8584 * r * r;
+    const A_net = (A_single - A_corner) * d.npc * d.ncoil;
+    
+    const J = I_phase / A_net;
+    
+    const mean_dia = (d.ID + d.OD) / 2;
+    const L_mean_mm = Math.PI * mean_dia;
+    const L_mean = L_mean_mm / 1000;
+    const total_length = L_mean * d.turns;
+    
+    const W = 3 * total_length * A_net * COPPER_DENSITY * 1e-3;
+    
+    let R = RESISTIVITY * total_length / A_net;
+    
+    if (d.name && d.name.toLowerCase().includes('lv')) {
+        R = R * 1.02;
+    }
+    
+    const Pcu = 3 * Math.pow(I_phase, 2) * R;
+    const lead_weight = (d.lead_percent / 100) * W;
+    
+    return {
+        name: d.name,
+        phase_current: I_phase,
+        bare_copper_size: `${d.width} X ${d.thickness}`,
+        npc: d.npc,
+        ncoil: d.ncoil,
+        gross_area: A_single,
+        corner_radius: r,
+        corner_reduction: A_corner,
+        net_area: A_net,
+        current_density: J,
+        turns: d.turns,
+        coil_id: d.ID,
+        coil_od: d.OD,
+        copper_density: COPPER_DENSITY,
+        bare_weight: W,
+        total_bare_weight: W,
+        lead_weight: lead_weight,
+        resistivity: RESISTIVITY,
+        resistance: R,
+        i2r_loss: Pcu,
+        copper_loss: Pcu,
+        mean_length: L_mean,
+        total_length: total_length
+    };
+}
+
+function calculateAll() {
+    if (currentUserRole === 'customer') {
+        alert('Calculation feature is available for engineers only.');
+        return;
+    }
+    
+    const num = parseInt(document.getElementById('numWindings').value);
+    windingData = [];
+    
+    let totalBareWeight = 0;
+let totalLeadWeight = 0;
+let totalCopperLoss = 0;
+    
+    for (let i = 0; i < num; i++) {
+        const data = {
+            name: document.getElementById(`name_${i}`).value,
+            kva: parseFloat(document.getElementById(`kva_${i}`).value),
+            voltage: parseFloat(document.getElementById(`volt_${i}`).value),
+            width: parseFloat(document.getElementById(`width_${i}`).value),
+            thickness: parseFloat(document.getElementById(`thick_${i}`).value),
+            npc: parseInt(document.getElementById(`npc_${i}`).value),
+            ncoil: parseInt(document.getElementById(`ncoil_${i}`).value),
+            corner_radius: parseFloat(document.getElementById(`corner_${i}`).value),
+            ID: parseFloat(document.getElementById(`id_${i}`).value),
+            OD: parseFloat(document.getElementById(`od_${i}`).value),
+            turns: parseInt(document.getElementById(`turns_${i}`).value),
+            lead_percent: parseFloat(document.getElementById(`lead_${i}`).value)
+        };
+        
+        const result = windingCalculation(data);
+        windingData.push(result);
+        
+          totalBareWeight += result.bare_weight;
+    totalLeadWeight += result.lead_weight;
+    totalCopperLoss += result.copper_loss;
+    }
+    
+    displayWindingResults(totalBareWeight, totalLeadWeight, totalCopperLoss);
+    document.getElementById('pdfBtn').style.display = 'inline-block';
+}
+
+function displayWindingResults(totalBareWeight, totalLeadWeight, totalLoss) {
+    const section = document.getElementById('windingResultsSection');
+    const totalFullLoad = totalLoss + EDDY_STRAY;
+    const totalCopperWeight = totalBareWeight + totalLeadWeight;  // ✅ Total including leads
+    
+    let html = '<div class="card"><h2 style="color:#27ae60; margin-bottom:20px;">📊 Calculation Results</h2>';
+    
+    windingData.forEach((w, index) => {
+        html += `
+            <div class="winding-card">
+                <h3 style="color:#3498db; margin-bottom:15px;">${w.name}</h3>
+                <table class="results-table">
+                    <tr><td><b>Phase Current</b></td><td>${w.phase_current.toFixed(2)} A</td></tr>
+                    <tr><td><b>Bare Copper Size</b></td><td>${w.bare_copper_size}</td></tr>
+                    <tr><td><b>No. of Parallel Conductors</b></td><td>${w.npc}</td></tr>
+                    <tr><td><b>No. of Parallel Coils</b></td><td>${w.ncoil}</td></tr>
+                    <tr><td><b>Gross Cross Sectional Area</b></td><td>${w.gross_area.toFixed(3)} mm²</td></tr>
+                    <tr><td><b>Corner Radius</b></td><td>${w.corner_radius.toFixed(3)} mm</td></tr>
+                    <tr><td><b>Corner Area Reduction</b></td><td>${w.corner_reduction.toFixed(3)} mm²</td></tr>
+                    <tr><td><b>Total Net Cross Sectional Area</b></td><td>${w.net_area.toFixed(3)} mm²</td></tr>
+                    <tr><td><b>Current Density</b></td><td>${w.current_density.toFixed(3)} A/mm²</td></tr>
+                    <tr><td><b>No. of Turns</b></td><td>${w.turns}</td></tr>
+                    <tr><td><b>Coil ID</b></td><td>${w.coil_id} mm</td></tr>
+                    <tr><td><b>Coil OD</b></td><td>${w.coil_od} mm</td></tr>
+                    <tr><td><b>Copper Density</b></td><td>${w.copper_density} gm/cm³</td></tr>
+                    <tr><td><b>Bare Copper Weight (3 x Length x Area x Density x 10⁻³)</b></td><td>${w.bare_weight.toFixed(2)} kg</td></tr>
+                    <tr><td><b>Lead Weight</b></td><td>${w.lead_weight.toFixed(2)} kg</td></tr>
+                    <tr><td><b>Resistivity @ 75°C</b></td><td>${w.resistivity}</td></tr>
+                    <tr><td><b>Resistance (Ω)</b></td><td>${w.resistance.toFixed(6)}</td></tr>
+                    <tr><td><b>I²R Loss</b></td><td>${w.i2r_loss.toFixed(2)} W</td></tr>
+                </table>
+            </div>
+        `;
+    });
+    
+    html += `
+        <div class="summary-box">
+            <h3>📋 Summary</h3>
+            <div class="summary-item">
+                <span class="summary-label">Total Copper Bare Weight</span>
+                <span class="summary-value">${totalBareWeight.toFixed(2)} kg</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Total Lead Weight</span>
+                <span class="summary-value">${totalLeadWeight.toFixed(2)} kg</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Total Copper Weight (Bare + Lead)</span>
+                <span class="summary-value">${totalCopperWeight.toFixed(2)} kg</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Total I²R Loss</span>
+                <span class="summary-value">${totalLoss.toFixed(2)} W</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Eddy & Stray Loss</span>
+                <span class="summary-value">${EDDY_STRAY.toFixed(2)} W</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Total Full Load Loss</span>
+                <span class="summary-value">${totalFullLoad.toFixed(2)} W</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Guaranteed Load Loss</span>
+                <span class="summary-value">${(totalFullLoad / 1000).toFixed(0)} kW (MAX.)</span>
+            </div>
+        </div>
+    </div>`;
+    
+    section.innerHTML = html;
+}
+        
+
+function exportWindingPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    const rating = document.getElementById('calc_rating').value;
+    const voltage = document.getElementById('calc_voltage').value;
+    const customer = document.getElementById('calc_customer').value;
+    
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('Copper Weight, Resistance, Load Losses & Current', 105, 12, { align: 'center' });
+    doc.text('Density Calculations at Normal tap', 105, 18, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Transformer Rating: ${rating} MVA, ${voltage}`, 14, 28);
+    doc.text(`Customer: ${customer}`, 14, 34);
+    
+    const tableData = [];
+    let srNo = 1;
+    
+    const lvData = windingData[0];
+    const hvData = windingData[1];
+    
+    tableData.push([srNo++, 'Phase Current', lvData.phase_current.toFixed(2), hvData ? hvData.phase_current.toFixed(2) : '']);
+    tableData.push([srNo++, 'Bare Copper Size', lvData.bare_copper_size, hvData ? hvData.bare_copper_size : '']);
+    tableData.push([srNo++, 'No. of Parallel Cond.', lvData.npc, hvData ? hvData.npc : '']);
+    tableData.push([srNo++, 'No. of Parallel Coil', lvData.ncoil, hvData ? hvData.ncoil : '']);
+    tableData.push([srNo++, 'Gross cross sectional area of single cond.(mm²)', lvData.gross_area.toFixed(3), hvData ? hvData.gross_area.toFixed(3) : '']);
+    tableData.push([srNo++, 'Corner Radius (in mm)', lvData.corner_radius.toFixed(3), hvData ? hvData.corner_radius.toFixed(3) : '']);
+    tableData.push([srNo++, 'Corner area Reduction', lvData.corner_reduction.toFixed(3), hvData ? hvData.corner_reduction.toFixed(3) : '']);
+    tableData.push([srNo++, 'Total Net Cross sectional area (mm²)', lvData.net_area.toFixed(3), hvData ? hvData.net_area.toFixed(3) : '']);
+    tableData.push([srNo++, 'Current Density in A/mm²', lvData.current_density.toFixed(3), hvData ? hvData.current_density.toFixed(3) : '']);
+    tableData.push([srNo++, 'No. of Turns', lvData.turns, hvData ? hvData.turns : '']);
+    tableData.push([srNo++, 'Coil ID in mm', lvData.coil_id, hvData ? hvData.coil_id : '']);
+    tableData.push([srNo++, 'Coil OD in mm', lvData.coil_od, hvData ? hvData.coil_od : '']);
+    tableData.push([srNo++, 'Copper Density gm/cm³', lvData.copper_density, hvData ? hvData.copper_density : '']);
+    tableData.push([srNo++, 'Bare Copper Weight (in Kg.) = 3 X Length of mean turn X Area X Copper Density X 10⁻³', lvData.bare_weight.toFixed(2), hvData ? hvData.bare_weight.toFixed(2) : '']);
+    tableData.push([srNo++, 'Lead Weight (in Kg.)', lvData.lead_weight.toFixed(2), hvData ? hvData.lead_weight.toFixed(2) : '']);
+    tableData.push([srNo++, 'Resistivity of copper @ 75°C', lvData.resistivity, hvData ? hvData.resistivity : '']);
+    tableData.push([srNo++, 'Resistance (in Ω) = Length of mean turn X Resistivity / Net Cross sectional area', lvData.resistance.toFixed(6), hvData ? hvData.resistance.toFixed(6) : '']);
+    tableData.push([srNo++, 'I²R Loss (in Watts)', lvData.i2r_loss.toFixed(2), hvData ? hvData.i2r_loss.toFixed(2) : '']);
+    
+    const totalWeight = windingData.reduce((sum, w) => sum + w.bare_weight, 0);
+    const totalLoss = windingData.reduce((sum, w) => sum + w.copper_loss, 0);
+    const totalFullLoad = totalLoss + EDDY_STRAY;
+    
+    tableData.push([srNo++, 'Total Copper bare weight (in Kg.)', totalWeight.toFixed(2), '']);
+    tableData.push([srNo++, 'Total I²R in (Watts)', totalLoss.toFixed(2), '']);
+    tableData.push([srNo++, 'Eddy & Stray Loss (in Watts)', EDDY_STRAY, '']);
+    tableData.push([srNo++, 'Total full Load loss (in Watts)', totalFullLoad.toFixed(2), '']);
+    
+    doc.autoTable({
+        startY: 40,
+        head: [['Sr No.', 'Particulars', 'LV Wdg.', 'HV Main Wdg.']],
+        body: tableData,
+        theme: 'grid',
+        styles: { 
+            fontSize: 8, 
+            cellPadding: 2,
+            halign: 'left'
+        },
+        headStyles: { 
+            fillColor: [200, 200, 200], 
+            textColor: [0, 0, 0],
+            fontStyle: 'bold'
+        },
+        columnStyles: {
+            0: { cellWidth: 15, halign: 'center' },
+            1: { cellWidth: 110 },
+            2: { cellWidth: 30, halign: 'center' },
+            3: { cellWidth: 30, halign: 'center' }
+        }
+    });
+    
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text(`GUARANTEED LOAD LOSS = ${(totalFullLoad / 1000).toFixed(0)} kW (MAX.)`, 14, finalY);
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    const sigY = finalY + 20;
+    doc.text('PREPARED BY:', 14, sigY);
+    doc.text('CHECKED BY:', 80, sigY);
+    doc.text('APPROVED BY:', 150, sigY);
+    
+    doc.save('Transformer_Winding_Calculation.pdf');
+}
+
+/* ===============================
+   TRANSFORMER SEARCH & ADD
+================================ */
+async function doSearch() {
+    const query = document.getElementById("q").value.toLowerCase();
+    const transformers = await apiCall('/transformers');
+    
+    const results = transformers.filter(t => 
+        t.customer?.toLowerCase().includes(query) || 
+        t.wo?.toLowerCase().includes(query)
+    );
+    
+    document.getElementById("results").innerHTML = results.length 
+        ? results.map(t => `
+            <div class="search-card">
+                <b>${t.customer}</b> | WO: ${t.wo} | ${t.rating} kVA | HV: ${t.hv}V / LV: ${t.lv}V
+            </div>
+        `).join("")
+        : "<p>No results found</p>";
+}
+
+async function addTransformer() {
+    if (!hasPermission('engineer')) {
+        alert('You do not have permission to add transformers.');
+        return;
+    }
+    
+    const customerId = document.getElementById("customerSelect").value;
+    const wo = document.getElementById("w").value;
+    const rating = document.getElementById("r").value;
+    const hv = document.getElementById("hv_master").value;
+    const lv = document.getElementById("lv_master").value;
+    
+    if (!customerId || !wo) {
+        alert("Please select customer and enter W.O. No");
+        return;
+    }
+    
+    const result = await apiCall('/transformers', 'POST', {
+        customerId,
+        customer: customerList.find(c => c.customerId === customerId)?.name,
+        wo,
+        rating,
+        hv,
+        lv
+    });
+    
+    if (result.success) {
+        alert("Transformer added successfully!");
+        document.getElementById("w").value = "";
+        document.getElementById("r").value = "";
+        document.getElementById("hv_master").value = "";
+        document.getElementById("lv_master").value = "";
+        updateTransformerDropdowns();
+    }
+}
+
+async function updateTransformerDropdowns() {
+    const transformers = await apiCall('/transformers');
+    
+    const bomSelect = document.getElementById('bomTransformer');
+    const docSelect = document.getElementById('docTransformer');
+    
+    const options = transformers.map(t => 
+        `<option value="${t.wo}">${t.wo} - ${t.customer}</option>`
+    ).join('');
+    
+    bomSelect.innerHTML = '<option value="">-- Select Transformer --</option>' + options;
+    docSelect.innerHTML = '<option value="">-- Select Transformer --</option>' + options;
+}
+
+async function loadCustomerList() {
+    if (hasPermission('engineer')) {
+        customerList = await apiCall('/customers');
+        const select = document.getElementById('customerSelect');
+        select.innerHTML = '<option value="">-- Select Customer --</option>' + 
+            customerList.map(c => `<option value="${c.customerId}">${c.name}</option>`).join('');
+    }
+}
+
+/* ===============================
+   BOM UPLOAD
+================================ */
+function uploadBOM() {
+    alert('BOM upload functionality ready - requires multipart/form-data handling');
+}
+
+/* ===============================
+   DOCUMENT UPLOAD
+================================ */
+function uploadDocument() {
+    alert('Document upload functionality ready - requires multipart/form-data handling');
+}
+
+/* ===============================
+   LOGIN
+================================ */
+document.getElementById('authForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    try {
+        const response = await fetch(`${API_BASE}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: document.getElementById('userInput').value,
+                password: document.getElementById('passInput').value
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Check if login was successful
+        if (response.ok && data.userId) {
+            currentUserRole = data.role;
+            currentUserName = data.name;
+            currentUserId = data.userId;
+            currentCustomerId = data.customerId;
+            
+            document.getElementById('loginPage').style.display = "none";
+            document.getElementById('mainApp').style.display = "block";
+            document.getElementById('uLabel').innerText = data.name;
+            
+            applyRoleRestrictions();
+            loadStageContent('winding');
+            generateWindingForms();
+            loadCustomerList();
+            updateTransformerDropdowns();
+            loadChecklistTransformers();
+        } else {
+            alert("Invalid credentials - " + (data.error || "Please check username and password"));
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        alert("Login failed: " + error.message);
+    }
+});
+
+/* ===============================
+   TAB NAVIGATION
+================================ */
+function showTab(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    
+    if (id !== 'manufacturingChecklist') {
+        document.getElementById('checklistSubmenu').classList.remove('active');
+    }
+    
+    const titles = {
+        'home': 'Home',
+        'transformerMaster': 'Transformer Master',
+        'bomUpload': 'BOM Upload',
+        'designDocuments': 'Design Documents',
+        'manufacturingChecklist': 'Manufacturing Checklist',
+        'designCalculations': 'Winding Calculation'
+    };
+    document.getElementById('viewTitle').textContent = titles[id] || 'Home';
+}
+</script>
+
+</body>
+</html>

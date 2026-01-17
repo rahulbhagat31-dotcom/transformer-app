@@ -1,4 +1,4 @@
-# Transformer App
+# Transformer website
 
 A web-based application for managing transformer-related data, inspections, and checklists.  
 This project helps organize transformer records, user data, and checklist workflows in a simple and structured way.

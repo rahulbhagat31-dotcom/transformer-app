@@ -1,0 +1,333 @@
+/* ====================================================
+   ITEM STATUS BADGE SYSTEM
+   5 states — flat industrial — no gradients
+   Draft | Pending Review | Verified | Approved | Rejected
+   ===================================================== */
+
+/* ── Base badge ──────────────────────────────────── */
+.item-status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 3px;
+    border: 1.5px solid transparent;
+    line-height: 1.6;
+    white-space: nowrap;
+    font-family: inherit;
+    /* Entrance animation — runs once when badge first appears or state changes */
+    animation: statusBadgeIn 180ms ease both;
+}
+
+@keyframes statusBadgeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ── Draft — grey ────────────────────────────────── */
+.item-status--draft {
+    color: #5a6474;
+    background: #f0f2f5;
+    border-color: #d0d5dd;
+}
+
+/* ── Pending Review — orange ─────────────────────── */
+.item-status--pending {
+    color: #7a3b00;
+    background: #fff3e0;
+    border-color: #e67e22;
+}
+
+/* ── Verified — blue ─────────────────────────────── */
+.item-status--verified {
+    color: #0d3d6b;
+    background: #e8f4fd;
+    border-color: #2980b9;
+}
+
+/* ── Approved — green ────────────────────────────── */
+.item-status--approved {
+    color: #1a4d2e;
+    background: #eafaf0;
+    border-color: #27ae60;
+}
+
+/* ── Rejected — red ──────────────────────────────── */
+.item-status--rejected {
+    color: #7b1d1d;
+    background: #fdf3f3;
+    border-color: #e74c3c;
+}
+
+/* ── State-change transition (JS toggles classes) ── */
+/* Class swap triggers re-animation via removing and re-adding the element.
+   For in-place updates (replaceClass), use this transition instead: */
+.item-status-badge.status-updating {
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 100ms ease, transform 100ms ease;
+}
+
+.item-status-badge.status-updated {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 150ms ease, transform 150ms ease;
+}
+
+/* ── Stage-level aggregate counts row ────────────── */
+.stage-status-counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 0.72rem;
+}
+
+.stage-status-counts .count-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.count-pill.pill-draft {
+    color: #5a6474;
+    background: #f0f2f5;
+}
+
+.count-pill.pill-pending {
+    color: #7a3b00;
+    background: #fff3e0;
+}
+
+.count-pill.pill-verified {
+    color: #0d3d6b;
+    background: #e8f4fd;
+}
+
+.count-pill.pill-approved {
+    color: #1a4d2e;
+    background: #eafaf0;
+}
+
+.count-pill.pill-rejected {
+    color: #7b1d1d;
+    background: #fdf3f3;
+}
+
+/* ── Activity line badge (smaller, inline) ───────── */
+.activity-status-chip {
+    display: inline-block;
+    padding: 1px 7px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    vertical-align: middle;
+}
+
+.chip-draft {
+    color: #5a6474;
+    background: #f0f2f5;
+}
+
+.chip-pending {
+    color: #7a3b00;
+    background: #fff3e0;
+}
+
+.chip-verified {
+    color: #0d3d6b;
+    background: #e8f4fd;
+}
+
+.chip-approved {
+    color: #1a4d2e;
+    background: #eafaf0;
+}
+
+.chip-rejected {
+    color: #7b1d1d;
+    background: #fdf3f3;
+}
+
+/* ── Workflow action buttons ─────────────────────── */
+/* Flat industrial — colours match badge language     */
+
+.btn-submit {
+    background: #27ae60;
+    color: #fff;
+    border: 1.5px solid #219a52;
+    font-weight: 600;
+    transition: background 150ms ease, transform 80ms ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+    background: #219a52;
+    transform: scale(1.02);
+}
+
+.btn-submit:disabled {
+    background: #95a5a6;
+    border-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+.btn-verify {
+    background: #2980b9;
+    color: #fff;
+    border: 1.5px solid #2471a3;
+    font-weight: 600;
+    transition: background 150ms ease, transform 80ms ease;
+}
+
+.btn-verify:hover:not(:disabled) {
+    background: #2471a3;
+    transform: scale(1.02);
+}
+
+.btn-verify:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-approve {
+    background: #1e8449;
+    color: #fff;
+    border: 1.5px solid #196f3d;
+    font-weight: 600;
+    transition: background 150ms ease, transform 80ms ease;
+}
+
+.btn-approve:hover:not(:disabled) {
+    background: #196f3d;
+    transform: scale(1.02);
+}
+
+.btn-approve:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-reject {
+    background: #e74c3c;
+    color: #fff;
+    border: 1.5px solid #cb4335;
+    font-weight: 600;
+    transition: background 150ms ease, transform 80ms ease;
+}
+
+.btn-reject:hover:not(:disabled) {
+    background: #cb4335;
+    transform: scale(1.02);
+}
+
+.btn-reject:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+/* ============================================
+   STAGE TRACKING BADGES (merged from stage-badges.css)
+============================================ */
+/* ========== STAGE TRACKING BADGES ========== */
+/* Color-coded stage badges for transformer tracking */
+
+.stage-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+/* Individual stage colors */
+.stage-design {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stage-winding {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+}
+
+.stage-vpd {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    color: white;
+}
+
+.stage-coreCoil {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    color: white;
+}
+
+.stage-tanking {
+    background: linear-gradient(135deg, #16a085 0%, #138d75 100%);
+    color: white;
+}
+
+.stage-tankFilling {
+    background: linear-gradient(135deg, #3498db 0%, #2874a6 100%);
+    color: white;
+}
+
+.stage-testing {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    color: white;
+}
+
+.stage-completed {
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    color: white;
+}
+
+.stage-unknown {
+    background: #95a5a6;
+    color: white;
+}
+
+/* Filter group styling */
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* Logout button styling */
+.btn-logout {
+    padding: 8px 16px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.btn-logout:hover {
+    background: #c0392b;
+}

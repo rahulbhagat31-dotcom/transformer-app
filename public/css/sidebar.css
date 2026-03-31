@@ -1,0 +1,319 @@
+/* ============================================
+   SIDEBAR — Toggle + Badges
+   Consolidated from sidebar-toggle.css + sidebar-badges.css
+============================================ */
+
+/* ─────────────────────────────────────────────
+   HAMBURGER TOGGLE BUTTON  (from sidebar-toggle.css)
+───────────────────────────────────────────── */
+
+/* Hamburger Menu Button Styles */
+.sidebar-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: all 0.3s ease;
+    margin-right: 15px;
+}
+
+.sidebar-toggle span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: #2c3e50;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover span {
+    background: #3498db;
+}
+
+/* Animated hamburger to X */
+.sidebar-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(7px, 7px);
+}
+
+.sidebar-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.sidebar-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    aside.sidebar {
+        transform: translateX(-100%);
+    }
+
+    aside.sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    main.main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Overlay when sidebar is open on mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
+
+/* ─────────────────────────────────────────────
+   SIDEBAR NAV BADGES  (from sidebar-badges.css)
+   Shows pending supervisor / QA sign-off counts
+───────────────────────────────────────────── */
+
+/* ── Nav item wrapper needs relative positioning ── */
+.nav-item,
+.nav-subitem {
+    position: relative;
+}
+
+/* ── Badge pill ─────────────────────────────────── */
+.nav-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    margin-left: 7px;
+    vertical-align: middle;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    animation: badgePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Supervisor pending — amber */
+.nav-badge.badge-supervisor {
+    background: #e67e22;
+    color: #fff;
+    box-shadow: 0 0 6px rgba(230, 126, 34, 0.55);
+}
+
+/* QA pending — purple */
+.nav-badge.badge-qa {
+    background: #8e44ad;
+    color: #fff;
+    box-shadow: 0 0 6px rgba(142, 68, 173, 0.55);
+}
+
+/* Both pending (combined on parent nav item) — red */
+.nav-badge.badge-both {
+    background: #e74c3c;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(231, 76, 60, 0.6);
+}
+
+/* Pulsing dot for urgency when count ≥ 5 */
+.nav-badge.badge-urgent {
+    animation: badgeUrge 1.4s ease-in-out infinite;
+}
+
+@keyframes badgeUrge {
+
+    0%,
+    100% {
+        box-shadow: 0 0 4px rgba(231, 76, 60, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 12px rgba(231, 76, 60, 0.9);
+    }
+}
+
+/* ── CHECKLIST ROW TIER COLOR-CODING ── */
+tr.row-tier-unsaved,
+div.row-tier-unsaved {
+    background: transparent !important;
+}
+
+tr.row-tier-tech,
+div.row-tier-tech {
+    background: linear-gradient(90deg, rgba(39, 174, 96, 0.08) 0%, transparent 100%) !important;
+    border-left: 3px solid #27ae60 !important;
+}
+
+tr.row-tier-supervisor,
+div.row-tier-supervisor {
+    background: linear-gradient(90deg, rgba(41, 128, 185, 0.10) 0%, transparent 100%) !important;
+    border-left: 3px solid #2980b9 !important;
+}
+
+tr.row-tier-qa-approved,
+div.row-tier-qa-approved {
+    background: linear-gradient(90deg, rgba(142, 68, 173, 0.12) 0%, transparent 100%) !important;
+    border-left: 3px solid #8e44ad !important;
+    opacity: 0.88;
+}
+
+tr.row-tier-qa-rejected,
+div.row-tier-qa-rejected {
+    background: linear-gradient(90deg, rgba(231, 76, 60, 0.12) 0%, transparent 100%) !important;
+    border-left: 3px solid #e74c3c !important;
+}
+
+tr.row-tier-unlocked,
+div.row-tier-unlocked {
+    background: linear-gradient(90deg, rgba(230, 126, 34, 0.10) 0%, transparent 100%) !important;
+    border-left: 3px solid #e67e22 !important;
+}
+
+/* ── SIGN-OFF BADGE SYSTEM ── */
+.signoff-badges-row {
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.signoff-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.signoff-badge.pending {
+    background: #dee2e6;
+    color: #555;
+    border-color: #ccc;
+}
+
+.signoff-badge.tier-tech {
+    background: rgba(39, 174, 96, 0.18);
+    color: #1a6b3c;
+    border-color: #27ae60;
+}
+
+.signoff-badge.tier-sup {
+    background: rgba(41, 128, 185, 0.18);
+    color: #1a5276;
+    border-color: #2980b9;
+}
+
+.signoff-badge.tier-qa-ok {
+    background: rgba(142, 68, 173, 0.18);
+    color: #6c3483;
+    border-color: #8e44ad;
+}
+
+.signoff-badge.tier-qa-rej {
+    background: rgba(231, 76, 60, 0.18);
+    color: #922b21;
+    border-color: #e74c3c;
+}
+
+.signoff-action-btn {
+    padding: 3px 12px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 4px;
+    transition: opacity 0.2s, transform 0.15s;
+    white-space: nowrap;
+}
+
+.signoff-action-btn:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.signoff-btn-supervisor {
+    background: #2980b9;
+    color: white;
+}
+
+.signoff-btn-qa {
+    background: #8e44ad;
+    color: white;
+}
+
+/* ── Tier status chip ── */
+.tier-status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.tier-chip-unsaved {
+    background: #dee2e6;
+    color: #555;
+}
+
+.tier-chip-tech {
+    background: rgba(39, 174, 96, 0.18);
+    color: #1e8449;
+    border: 1px solid #27ae60;
+}
+
+.tier-chip-sup {
+    background: rgba(41, 128, 185, 0.18);
+    color: #1a5276;
+    border: 1px solid #2980b9;
+}
+
+.tier-chip-qa-ok {
+    background: rgba(142, 68, 173, 0.18);
+    color: #6c3483;
+    border: 1px solid #8e44ad;
+}
+
+.tier-chip-qa-rej {
+    background: rgba(231, 76, 60, 0.18);
+    color: #922b21;
+    border: 1px solid #e74c3c;
+}

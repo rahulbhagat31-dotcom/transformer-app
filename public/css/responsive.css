@@ -1,0 +1,377 @@
+/* ===================================================
+   RESPONSIVE CSS — SIDEBAR + CHECKLIST
+   Breakpoints:
+     1200px — wide laptop (sidebar trim)
+     1024px — tablet landscape (sidebar off-canvas)
+      768px — tablet portrait / large phone
+      480px — small phone (checklist card flip)
+=================================================== */
+
+/* ─────────────────────────────────────────────────
+   SHARED TRANSITION on sidebar & main-content
+   (complement sidebar-toggle.css which does mobile)
+───────────────────────────────────────────────── */
+aside.sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+main.main-content {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─────────────────────────────────────────────────
+   ► 1200px — squeeze layout for smaller laptops
+───────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+    :root {
+        --sidebar-width: 220px;
+    }
+
+    header.top-bar {
+        padding: 12px 20px;
+    }
+
+    .content-area {
+        padding: 20px;
+    }
+}
+
+/* ─────────────────────────────────────────────────
+   ► 1024px — TABLET LANDSCAPE
+   Sidebar goes off-canvas. Hamburger always visible.
+───────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    :root {
+        --sidebar-width: 260px;
+        /* keep full width, just hidden */
+    }
+
+    /* ── Sidebar off-canvas by default ── */
+    aside.sidebar {
+        transform: translateX(-100%);
+        z-index: 1100;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.35);
+    }
+
+    aside.sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    /* ── Main content fills everything ── */
+    main.main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* ── Always show the hamburger ── */
+    .sidebar-toggle {
+        display: flex !important;
+    }
+
+    /* ── Top bar tighter ── */
+    header.top-bar {
+        padding: 10px 16px;
+        gap: 10px;
+    }
+
+    /* ── Hide verbose labels in top bar ── */
+    #uLabel {
+        display: none !important;
+    }
+
+    .content-area {
+        padding: 16px;
+    }
+
+    /* ── Stage badges row wraps ── */
+    .stage-badges {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* ── Stage nav pills wrap ── */
+    .stage-nav {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* ── KPI grid — 2 columns ── */
+    #kpiGrid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* ── WO details grid ── */
+    #woDetails {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* ── Breadcrumbs hidden on tablet ── */
+    #breadcrumbs {
+        display: none !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────
+   ► CHECKLIST TABLE — always scrollable wrapper
+   Applied at all widths as a safety net.
+───────────────────────────────────────────────── */
+.checklist-paper {
+    padding: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Wrapper injected around .form-table by JS or existing HTML */
+.form-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 4px;
+}
+
+/* Min column widths so columns don't collapse to nothing */
+.form-table {
+    min-width: 680px;
+    /* forces scroll rather than squish */
+}
+
+.form-table td input[type="text"],
+.form-table td select,
+.form-table td textarea {
+    min-width: 80px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ─────────────────────────────────────────────────
+   ► 768px — TABLET PORTRAIT / LARGE PHONE
+───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* ── Top bar ── */
+    header.top-bar {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    h3#viewTitle {
+        font-size: 15px;
+    }
+
+    /* ── Content ── */
+    .content-area {
+        padding: 12px;
+    }
+
+    /* ── KPI Grid — 1 column ── */
+    #kpiGrid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── Stage control buttons stack ── */
+    #stageControlButtons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    #stageControlButtons button {
+        width: 100%;
+    }
+
+    /* ── Tier stats row wraps ── */
+    #tierStats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 12px;
+    }
+
+    /* ── Stage badges smaller ── */
+    .stage-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    /* ── Checklist paper ── */
+    .checklist-paper {
+        padding: 10px;
+    }
+
+    /* ── Form grid — single column ── */
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── Cards full width ── */
+    .card {
+        border-radius: 6px;
+        padding: 16px;
+    }
+
+    /* ── WO selector full width ── */
+    #checklistWOSelect {
+        width: 100%;
+    }
+
+    /* ── Progress bar text smaller ── */
+    #progressText {
+        font-size: 12px;
+    }
+
+    /* ── Sign-off badges row wraps tighter ── */
+    .signoff-badges-row {
+        gap: 3px;
+    }
+
+    .signoff-badge {
+        font-size: 10px;
+        padding: 2px 7px;
+    }
+
+    .signoff-action-btn {
+        font-size: 10px;
+        padding: 2px 8px;
+    }
+
+    /* ── Nav badge slightly smaller ── */
+    .nav-badge {
+        font-size: 9px;
+        min-width: 15px;
+        height: 15px;
+    }
+}
+
+/* ─────────────────────────────────────────────────
+   ► 480px — SMALL PHONE
+   Flip form-table to card layout so each row
+   becomes a self-contained stacked card.
+───────────────────────────────────────────────── */
+@media (max-width: 480px) {
+
+    /* ── Hide table headers ── */
+    .form-table thead {
+        display: none;
+    }
+
+    /* ── Each row becomes a card ── */
+    .form-table,
+    .form-table tbody,
+    .form-table tr,
+    .form-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .form-table tr {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        margin-bottom: 14px;
+        padding: 10px;
+        background: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+    }
+
+    /* Tier border still shows on left of card */
+    .form-table tr.row-tier-tech {
+        border-left: 4px solid #27ae60 !important;
+    }
+
+    .form-table tr.row-tier-supervisor {
+        border-left: 4px solid #2980b9 !important;
+    }
+
+    .form-table tr.row-tier-qa-approved {
+        border-left: 4px solid #8e44ad !important;
+    }
+
+    .form-table tr.row-tier-qa-rejected {
+        border-left: 4px solid #e74c3c !important;
+    }
+
+    .form-table tr.row-tier-unlocked {
+        border-left: 4px solid #e67e22 !important;
+    }
+
+    .form-table td {
+        border: none;
+        padding: 4px 6px;
+        text-align: left;
+    }
+
+    /* Inline label from data-label attribute */
+    .form-table td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 2px;
+    }
+
+    .form-table td input,
+    .form-table td select,
+    .form-table td textarea {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .content-area {
+        padding: 8px;
+    }
+
+    header.top-bar {
+        padding: 6px 10px;
+    }
+
+    /* ── Role badge hidden on very small screens ── */
+    #roleBadge {
+        display: none !important;
+    }
+
+    /* ── Customer label truncated ── */
+    #customerLabel {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+/* ─────────────────────────────────────────────────
+   OVERLAY — close sidebar by tapping outside
+   (extends existing sidebar-toggle.css overlay)
+───────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1099;
+        /* just below sidebar's 1100 */
+        backdrop-filter: blur(2px);
+        cursor: pointer;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+        animation: overlayFadeIn 0.25s ease;
+    }
+
+    @keyframes overlayFadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+}

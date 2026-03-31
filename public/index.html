@@ -1,0 +1,2455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Manufacturing Software | Engineering PMS</title>
+
+    <!-- â•â•â• STYLESHEETS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         Load order: design system â†’ layout â†’ features â†’ utils
+    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+
+    <!-- Design system & layout -->
+    <link rel="stylesheet" href="/css/design-tokens.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <link rel="stylesheet" href="/css/animations.css">
+    <link rel="stylesheet" href="/css/toast-modal.css">
+
+    <!-- Auth -->
+    <link rel="stylesheet" href="/css/login-modern.css">
+
+    <!-- Sidebar (toggle + badges, merged) -->
+    <link rel="stylesheet" href="/css/sidebar.css">
+
+    <!-- Feature sections -->
+    <link rel="stylesheet" href="/css/dashboard-premium.css">
+    <link rel="stylesheet" href="/css/analytics-dashboard.css">
+    <link rel="stylesheet" href="/css/calculator-modern.css">
+    <link rel="stylesheet" href="/css/calculator-enhancements.css">
+    <link rel="stylesheet" href="/css/transformer-master.css">
+    <link rel="stylesheet" href="/css/digital-twin.css">
+    <link rel="stylesheet" href="/css/wo-timeline.css">
+    <link rel="stylesheet" href="/css/checklist-premium.css">
+    <link rel="stylesheet" href="/css/audit-log.css">
+    <link rel="stylesheet" href="/css/bom-upload.css">
+
+    <!-- Shared utilities -->
+    <link rel="stylesheet" href="/css/item-status.css">
+
+    <!-- Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- External Libraries -->
+    <script defer src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script defer src="https://unpkg.com/jspdf-autotable@latest"></script>
+    <script defer src="https://unpkg.com/html2canvas@latest/dist/html2canvas.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Toast + Modal System (must load before all feature scripts) -->
+    <script defer src="/js/core/toast-modal.js"></script>
+</head>
+
+<body>
+
+    <!-- PREMIUM LOGIN PAGE -->
+    <div id="loginPage" class="lp-page">
+
+        <!-- Animated background layers -->
+        <div class="lp-bg">
+            <div class="lp-orb lp-orb-1"></div>
+            <div class="lp-orb lp-orb-2"></div>
+            <div class="lp-orb lp-orb-3"></div>
+            <div class="lp-grid"></div>
+        </div>
+
+        <!-- Main card -->
+        <div class="lp-card">
+
+            <!-- LEFT â€” Brand panel -->
+            <div class="lp-brand">
+                <div class="lp-brand-inner">
+                    <div class="lp-brand-icon">&#x26A1;</div>
+                    <h1 class="lp-brand-title">Transformer<br>MFG System</h1>
+                    <p class="lp-brand-sub">Engineering Project Management Platform</p>
+
+                    <div class="lp-features">
+                        <div class="lp-feat"><span>&#x1F4CA;</span><span>IEC 60076 Calculator</span></div>
+                        <div class="lp-feat"><span>&#x1F4F0;</span><span>Digital Twin Tracking</span></div>
+                        <div class="lp-feat"><span>&#x1F4CA;</span><span>Real-time Analytics</span></div>
+                        <div class="lp-feat"><span>&#x2705;</span><span>Quality Management</span></div>
+                        <div class="lp-feat"><span>&#x1F4DC;</span><span>Full Audit Trail</span></div>
+                    </div>
+
+                    <div class="lp-brand-badge">IEC 60076 &middot; IS 2026 Compliant</div>
+                </div>
+            </div>
+
+            <!-- RIGHT â€” Login form -->
+            <div class="lp-form-wrap">
+                <div class="lp-form-inner">
+                    <div class="lp-form-header">
+                        <h2 class="lp-form-title">Welcome back</h2>
+                        <p class="lp-form-sub">Sign in to your account</p>
+                    </div>
+
+                    <form id="authForm" class="lp-form" autocomplete="off">
+
+                        <!-- User ID -->
+                        <div class="lp-field">
+                            <span class="lp-field-icon">&#x1F464;</span>
+                            <input type="text" id="userInput" name="username" class="lp-input"
+                                placeholder="User ID or email" autocomplete="username" required>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="lp-field">
+                            <span class="lp-field-icon">&#x1F512;</span>
+                            <input type="password" id="passInput" name="password" class="lp-input"
+                                placeholder="Password" autocomplete="current-password" required>
+                        </div>
+
+                        <!-- Error -->
+                        <div id="loginError" class="lp-error" style="display:none;"></div>
+
+                        <!-- Submit -->
+                        <button type="submit" class="lp-btn" id="loginBtn">
+                            <span id="loginBtnText">Sign In</span>
+                            <span id="loginBtnArrow" class="lp-btn-arrow">&#x2192;</span>
+                            <span id="loginBtnSpinner" class="lp-spinner" style="display:none;">&#x25CC;</span>
+                        </button>
+
+                    </form>
+
+                    <!-- Demo Accounts -->
+                    <div class="lp-demo">
+                        <button class="lp-demo-toggle" onclick="toggleDemoAccounts()" id="demoToggleBtn">
+                            <span>&#x1F511; Demo Accounts</span>
+                            <span class="lp-demo-chevron" id="demoChevron">&#x25BE;</span>
+                        </button>
+
+                        <div id="demoAccountsList" class="lp-demo-list" style="display:none;">
+                            <div class="lp-demo-label">&#x1F3ED; Manufacturing Company</div>
+                            <div class="lp-demo-grid">
+                                <div class="lp-demo-item lp-role-admin" onclick="fillCredentials('admin','admin123')">
+                                    <span class="lp-demo-role">Admin</span>
+                                    <span class="lp-demo-id">admin</span>
+                                </div>
+                                <div class="lp-demo-item lp-role-quality" onclick="fillCredentials('quality','qc123')">
+                                    <span class="lp-demo-role">Quality</span>
+                                    <span class="lp-demo-id">quality</span>
+                                </div>
+                                <div class="lp-demo-item lp-role-prod"
+                                    onclick="fillCredentials('production','prod123')">
+                                    <span class="lp-demo-role">Production</span>
+                                    <span class="lp-demo-id">production</span>
+                                </div>
+                                <div class="lp-demo-item lp-role-cust" onclick="fillCredentials('customer1','cust123')">
+                                    <span class="lp-demo-role">Customer</span>
+                                    <span class="lp-demo-id">customer1</span>
+                                </div>
+                            </div>
+                            <p class="lp-demo-note">Click any account to auto&#x2011;fill</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div><!-- /lp-card -->
+
+    </div><!-- /loginPage -->
+
+    <!-- MAIN APPLICATION -->
+    <div id="mainApp" style="display: none;">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h3>&#x26A1; MFG SYSTEM</h3>
+            </div>
+            <nav class="nav-menu" id="navMenu">
+                <div class="nav-item active" id="nav-dashboard"
+                    onclick="showTab('dashboardSection', this); if(typeof initAnalytics==='function') initAnalytics()">
+                    &#x1F4CA; Dashboard</div>
+                <div class="nav-item" id="nav-transformer" onclick="showTab('transformerMaster', this)">&#128295; Transformer Master</div>
+                <div class="nav-item" id="nav-documents" onclick="showTab('documentsSection', this)">&#128193; Documents</div>
+
+                <div class="nav-item" id="nav-checklist" onclick="toggleSubmenu(this)">
+                    &#x2705; Manufacturing Checklist
+                    <span id="nav-badge-checklist"></span>
+                </div>
+                <div class="nav-submenu" id="checklistSubmenu">
+                    <div class="nav-subitem" data-stage="winding" onclick="showChecklistStage('winding', this)">Winding
+                        <span id="nav-badge-winding"></span>
+                    </div>
+                    <div class="nav-subitem" data-stage="vpd" onclick="showChecklistStage('vpd', this)">VPD <span
+                            id="nav-badge-vpd"></span></div>
+                    <div class="nav-subitem" data-stage="coreCoil" onclick="showChecklistStage('coreCoil', this)">Core
+                        Coil <span id="nav-badge-coreCoil"></span></div>
+                    <div class="nav-subitem" data-stage="tanking" onclick="showChecklistStage('tanking', this)">
+                        Repacking &amp; Tanking
+                        <span id="nav-badge-tanking"></span>
+                    </div>
+                    <div class="nav-subitem" data-stage="tankFilling" onclick="showChecklistStage('tankFilling', this)">
+                        Tank Filling <span id="nav-badge-tankFilling"></span></div>
+                </div>
+
+                <!-- IEC 60076 Calculator (internal section) -->
+                <div class="nav-item" id="nav-calculator" onclick="showTab('designCalculations', this)">
+                    &#128208; IEC 60076 Calculator
+                </div>
+
+                <!-- Digital Twin -->
+                <div class="nav-item" id="nav-digital-twin" onclick="showTab('digitalTwin', this)">
+                    &#x1F52E; Digital Twin
+                </div>
+
+                <!-- Questions (Admin only) -->
+                <div class="nav-item" id="questionsNav" onclick="showTab('questions', this)" style="display:none;">&#x2753;
+                    Questions</div>
+
+                <!-- User Management (Admin only) -->
+                <div class="nav-item" id="nav-users" onclick="showTab('usersSection', this)" style="display:none;">&#x1F465; User Management</div>
+
+                <!-- MCQ Exam System -->
+                <div class="nav-item" id="nav-exam" onclick="toggleSubmenu(this)">
+                    &#x1F393; MCQ Exam
+                </div>
+                <div class="nav-submenu" id="examSubmenu">
+                    <div class="nav-subitem" onclick="window.open('/exam/winding','_blank')">&#x1F535; Winding Exam</div>
+                    <div class="nav-subitem" onclick="window.open('/exam/core','_blank')">&#x1F7E2; Core Building Exam</div>
+                    <div class="nav-subitem" onclick="window.open('/exam/tanking','_blank')">&#x1F7E1; Tanking Exam</div>
+                </div>
+
+                <!-- Audit Log is now a tab inside Dashboard -->
+            </nav>
+
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="top-bar">
+                <!-- Hamburger Menu Button -->
+                <button id="sidebarToggle" class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <!-- Breadcrumbs -->
+                <nav id="breadcrumbs" class="breadcrumbs"
+                    style="display:none; font-size:13px; color:#666; margin-right:15px;">
+                    <span class="breadcrumb-item" onclick="showTab('home', null)"
+                        style="cursor:pointer;">Dashboard</span>
+                    <span style="margin:0 5px;">›</span>
+                    <span class="breadcrumb-current"></span>
+                </nav>
+
+                <h3 id="viewTitle">Dashboard</h3>
+                <div class="top-bar-user-group">
+                    <span id="customerLabel"
+                        style="display: none; color: #3498db; font-weight: 600; font-size: 14px; padding: 6px 12px; background: #ecf0f1; border-radius: 6px;">&#x1F3E2;
+                        Customer</span>
+                    <span id="roleBadge" class="role-badge">User</span>
+                    <span id="uLabel" style="font-weight: 600;">User</span>
+                    <button class="btn-logout" onclick="location.reload()">Logout</button>
+                </div>
+            </header>
+
+            <div class="content-body">
+
+                <!-- HOME / DASHBOARD -->
+                <section id="home" class="section">
+                    <div class="hp-wrap">
+
+                        <!-- Hero Banner -->
+                        <div class="hp-hero">
+                            <div class="hp-hero-left">
+                                <span class="hp-hero-icon">&#x26A1;</span>
+                                <div>
+                                    <h1 class="hp-hero-title" id="homeGreeting">Good morning &#x1F44B;</h1>
+                                    <p class="hp-hero-sub">MFG System â€” Real-time manufacturing intelligence</p>
+                                </div>
+                            </div>
+                            <div class="hp-hero-right">
+                                <div class="hp-clock" id="homeClock">â€”</div>
+                                <div class="hp-date" id="homeDate">â€”</div>
+                            </div>
+                        </div>
+
+                        <!-- KPI Grid (dynamic) -->
+                        <div id="kpiGrid" class="kpi-grid"></div>
+
+                        <!-- Manufacturing Timeline (dynamic) -->
+                        <div class="manufacturing-timeline"></div>
+
+                        <!-- Pending Actions (dynamic) -->
+                        <div class="pending-actions-panel"></div>
+
+                        <!-- Activity Stream (dynamic) -->
+                        <div class="activity-stream"></div>
+
+                        <!-- Quick Access Tools -->
+                        <div class="hp-tools-section">
+                            <h2 class="hp-tools-title">&#x1F6E0; Engineering Tools</h2>
+                            <div class="hp-tools-grid">
+
+                                <!-- IEC Calculator -->
+                                <div class="hp-tool-card hp-tool-calc">
+                                    <div class="hp-tool-shine"></div>
+                                    <div class="hp-tool-top">
+                                        <span class="hp-tool-icon">&#x1F50D;</span>
+                                        <div>
+                                            <h3 class="hp-tool-name">IEC 60076 Calculator</h3>
+                                            <p class="hp-tool-tagline">Industry-Grade Design Tool</p>
+                                        </div>
+                                    </div>
+                                    <p class="hp-tool-desc">Professional transformer design calculator with IEC 60076 /
+                                        IS 2026 compliance. Features OCTC tap analysis, validation warnings, and PDF
+                                        export.</p>
+                                    <div class="hp-tool-chips">
+                                        <span>&#x2705; IEC Compliant</span>
+                                        <span>&#x26A1; Real-time Validation</span>
+                                        <span>&#x1F4CA; 11 Modules</span>
+                                        <span>&#x1F504; OCTC Analysis</span>
+                                    </div>
+                                    <button class="hp-tool-btn" onclick="showTab('designCalculations', document.querySelector('[onclick*=designCalculations]'))">
+                                        Open Calculator â†’
+                                    </button>
+                                </div>
+
+                                <!-- Digital Twin -->
+                                <div class="hp-tool-card hp-tool-twin">
+                                    <div class="hp-tool-shine"></div>
+                                    <div class="hp-tool-top">
+                                        <span class="hp-tool-icon">&#x1F52E;</span>
+                                        <div>
+                                            <h3 class="hp-tool-name">Digital Twin</h3>
+                                            <p class="hp-tool-tagline">Real-time Lifecycle Tracking</p>
+                                        </div>
+                                    </div>
+                                    <p class="hp-tool-desc">Complete transformer lifecycle visualization with real-time
+                                        stage tracking, manufacturing history, and comprehensive audit trail.</p>
+                                    <div class="hp-tool-chips">
+                                        <span>&#x1F504; Live Updates</span>
+                                        <span>&#x1F4C8; Stage Timeline</span>
+                                        <span>&#x1F4F8; Media Gallery</span>
+                                        <span>&#x1F4DC; Audit Log</span>
+                                    </div>
+                                    <button class="hp-tool-btn" onclick="showTab('digitalTwin', document.querySelector('[onclick*=digitalTwin]'))">
+                                        Open Digital Twin â†’
+                                    </button>
+                                </div>
+
+                                <!-- WO Timeline -->
+                                <div class="hp-tool-card hp-tool-timeline">
+                                    <div class="hp-tool-shine"></div>
+                                    <div class="hp-tool-top">
+                                        <span class="hp-tool-icon">&#x1F4C5;</span>
+                                        <div>
+                                            <h3 class="hp-tool-name">WO Timeline</h3>
+                                            <p class="hp-tool-tagline">Full Audit History</p>
+                                        </div>
+                                    </div>
+                                    <p class="hp-tool-desc">Complete work order event history with saves, supervisor
+                                        approvals, QA sign-offs, stage transitions and locking events.</p>
+                                    <div class="hp-tool-chips">
+                                        <span>&#x1F511; Sign-offs</span>
+                                        <span>&#x1F512; Lock Events</span>
+                                        <span>&#x1F4CA; Stage History</span>
+                                    </div>
+                                    <button class="hp-tool-btn"
+                                        onclick="showTab('digitalTwin', document.querySelector('[onclick*=digitalTwin]'))">
+                                        View Timeline â†’
+                                    </button>
+                                </div>
+
+                                <!-- Analytics -->
+                                <div class="hp-tool-card hp-tool-analytics">
+                                    <div class="hp-tool-shine"></div>
+                                    <div class="hp-tool-top">
+                                        <span class="hp-tool-icon">&#x1F4CA;</span>
+                                        <div>
+                                            <h3 class="hp-tool-name">Analytics Dashboard</h3>
+                                            <p class="hp-tool-tagline">Manufacturing Intelligence</p>
+                                        </div>
+                                    </div>
+                                    <p class="hp-tool-desc">Production trends, stage health radar, quality heatmap and
+                                        cost distribution â€” all in one powerful overview.</p>
+                                    <div class="hp-tool-chips">
+                                        <span>&#x1F4C8; Trends</span>
+                                        <span>&#x1F3AF; Quality KPIs</span>
+                                        <span>&#x1F4B0; Cost Analysis</span>
+                                    </div>
+                                    <button class="hp-tool-btn"
+                                        onclick="showTab('dashboardSection', document.querySelector('[onclick*=dashboardSection]')); if(typeof initAnalytics==='function') initAnalytics()">
+                                        View Analytics â†’
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Customer Notice -->
+                        <div id="customerNotice" style="display:none; margin: 0 24px 24px;" class="permission-notice">
+                            <strong>&#x1F4CB; Customer View:</strong> You can view your transformer data and reports.
+                        </div>
+
+                    </div>
+                </section>
+
+
+                <!-- DIGITAL TWIN -->
+                <section id="digitalTwin" class="section">
+                    <div class="digital-twin-page">
+
+                        <!-- Premium Hero / WO Selector -->
+                        <div class="dt-search-card">
+                            <div class="dt-search-icon">&#x1F52E;</div>
+                            <div class="dt-search-body">
+                                <h1 class="dt-search-title">Digital Twin</h1>
+                                <p class="dt-search-subtitle">Real-time lifecycle tracking &middot; Stage visibility &middot; Full
+                                    audit trail</p>
+                                <div class="dt-search-row">
+                                    <select id="dtWOSelect" class="dt-wo-input"
+                                        onchange="if(this.value) initDigitalTwin(this.value)">
+                                        <option value="">â€” Select W.O. Number â€”</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="dt-hero-chips">
+                                <div class="dt-hero-chip">&#x1F527; Lifecycle</div>
+                                <div class="dt-hero-chip">&#x1F50D; BOM</div>
+                                <div class="dt-hero-chip">&#x2705; Checklist</div>
+                                <div class="dt-hero-chip">&#x1F4DC; Audit</div>
+                            </div>
+                        </div>
+
+                        <!-- Premium Empty State -->
+                        <div id="dtEmptyState" class="dt-empty-premium">
+                            <div class="dt-empty-orb"></div>
+                            <div class="dt-empty-icon">&#x1F52E;</div>
+                            <h3 class="dt-empty-title">No Transformer Selected</h3>
+                            <p class="dt-empty-sub">Select a W.O. number above to view its real-time lifecycle,
+                                stage tracking, documents and audit trail.</p>
+                            <div class="dt-empty-features">
+                                <span class="dt-empty-feat">&#x1F50D; Specs &amp; BOM</span>
+                                <span class="dt-empty-feat">&#x1F3ED; Stage Timeline</span>
+                                <span class="dt-empty-feat">&#x2705; Checklist Progress</span>
+                                <span class="dt-empty-feat">&#x1F4DC; Audit History</span>
+                            </div>
+                        </div>
+
+                        <!-- Navigation Bar (populated by digital-twin.js) -->
+                        <div class="dt-nav" id="dtNav" style="display:none;"></div>
+
+                        <!-- Main Content (populated by digital-twin.js) -->
+                        <div class="dt-content" id="dtContent" style="display:none;">
+                            <section class="dt-header" id="dtHeader"></section>
+                            <section class="dt-section-placeholder" id="dtLifecycle" data-role-visibility="internal">
+                            </section>
+                            <section class="dt-section-placeholder" id="dtStageSnapshot"
+                                data-role-visibility="internal"></section>
+                            <section class="dt-section-placeholder" id="dtHistory" data-role-visibility="internal">
+                            </section>
+                            <section class="dt-section-placeholder" id="dtDocuments"></section>
+                            <section class="dt-section-placeholder" id="dtAudit" data-role-visibility="quality-admin">
+                            </section>
+                        </div>
+
+                    </div>
+                </section>
+
+
+                <!-- DASHBOARD -->
+                <section id="dashboardSection" class="section active">
+
+                    <!-- Hero Banner -->
+                    <div class="analytics-hero">
+                        <div class="analytics-hero-content">
+                            <div class="analytics-hero-icon">&#x1F4CA;</div>
+                            <div>
+                                <h1 class="analytics-hero-title">Analytics Dashboard</h1>
+                                <p class="analytics-hero-sub">Real-time manufacturing intelligence &amp; performance
+                                    metrics</p>
+                            </div>
+                        </div>
+                        <button class="analytics-refresh-btn" onclick="refreshAnalytics()">
+                            <span class="refresh-icon">&#x1F504;</span> Refresh
+                        </button>
+                    </div>
+
+                    <!-- KPI Cards Row -->
+                    <div class="kpi-container-v2">
+                        <div class="kpi-card-v2 kpi-purple kpi-animate" style="animation-delay:0ms">
+                            <div class="kpi-icon-badge">&#x1F527;</div>
+                            <div class="kpi-label">Total Transformers</div>
+                            <div class="kpi-value-v2" id="kpiTotal" data-target="0">0</div>
+                            <div class="kpi-sub">All registered units</div>
+                            <div class="kpi-shine"></div>
+                        </div>
+                        <div class="kpi-card-v2 kpi-pink kpi-animate" style="animation-delay:80ms">
+                            <div class="kpi-icon-badge">&#x2699;</div>
+                            <div class="kpi-label">In Production</div>
+                            <div class="kpi-value-v2" id="kpiInProduction" data-target="0">0</div>
+                            <div class="kpi-sub">Currently manufacturing</div>
+                            <div class="kpi-shine"></div>
+                        </div>
+                        <div class="kpi-card-v2 kpi-blue kpi-animate" style="animation-delay:160ms">
+                            <div class="kpi-icon-badge">&#x2705;</div>
+                            <div class="kpi-label">Completed</div>
+                            <div class="kpi-value-v2" id="kpiCompleted" data-target="0">0</div>
+                            <div class="kpi-sub">Finished units</div>
+                            <div class="kpi-shine"></div>
+                        </div>
+                        <div class="kpi-card-v2 kpi-green kpi-animate" style="animation-delay:240ms">
+                            <div class="kpi-icon-badge">&#x2B50;</div>
+                            <div class="kpi-label">Quality Score</div>
+                            <div class="kpi-value-v2" id="kpiQuality" data-target="98" data-suffix="%">98%</div>
+                            <div class="kpi-sub">Average quality rating</div>
+                            <div class="kpi-shine"></div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="analytics-charts-grid" id="analyticsSection">
+                        <div class="analytics-chart-card chart-animate" style="animation-delay:300ms">
+                            <div class="chart-card-header">
+                                <span class="chart-title-icon">&#x1F4C8;</span>
+                                <h3 class="chart-title-text">Production Trends</h3>
+                                <span class="chart-badge">Last 6 months</span>
+                            </div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="productionChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card chart-animate" style="animation-delay:400ms">
+                            <div class="chart-card-header">
+                                <span class="chart-title-icon">&#x1F3ED;</span>
+                                <h3 class="chart-title-text">Stage Health</h3>
+                                <span class="chart-badge">Radar</span>
+                            </div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="stageHealthChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card chart-animate" style="animation-delay:480ms">
+                            <div class="chart-card-header">
+                                <span class="chart-title-icon">&#x1F3AF;</span>
+                                <h3 class="chart-title-text">Quality Heatmap</h3>
+                                <span class="chart-badge">Reworks</span>
+                            </div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="qualityHeatmapChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card chart-animate" style="animation-delay:560ms">
+                            <div class="chart-card-header">
+                                <span class="chart-title-icon">&#x1F4B0;</span>
+                                <h3 class="chart-title-text">Cost Distribution</h3>
+                                <span class="chart-badge">Doughnut</span>
+                            </div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="costBudgetChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="dashboardContent" style="margin-top: 20px;"></div>
+
+                    <!-- â”€â”€ AUDIT LOG PANEL (merged into Dashboard) â”€â”€ -->
+                    <div id="auditSection" style="margin-top:28px; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.07); border:1px solid #e8ecf0; overflow:hidden;">
+                        <div class="audit-panel-header" onclick="toggleAuditPanel()">
+                            <span class="audit-panel-title">&#x1F4DC; Audit Log</span>
+                            <span id="auditPanelChevron" class="audit-panel-chevron">&#9660;</span>
+                        </div>
+                        <div id="auditPanel" style="display:none; padding:20px;">
+                            <div id="auditLogContent">
+                                <p style="color:#888; font-size:13px; text-align:center; padding:20px 0;">Click the panel above to load audit logâ€¦</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+
+                <!-- TRANSFORMER MASTER -->
+                <!-- TRANSFORMER MASTER -->
+                <section id="transformerMaster" class="section">
+
+                    <!-- Hero Search Bar -->
+                    <div class="tm-hero">
+                        <div class="tm-hero-top">
+                            <div class="tm-hero-title-group">
+                                <span class="tm-hero-icon">&#x26A1;</span>
+                                <div>
+                                    <h1 class="tm-hero-title">Transformer Registry</h1>
+                                    <p class="tm-hero-sub">Search, filter and manage all registered units</p>
+                                </div>
+                            </div>
+                            <button class="tm-add-btn"
+                                onclick="document.getElementById('addTransformerCard').scrollIntoView({behavior:'smooth'})">
+                                &#x2795; Register New
+                            </button>
+                        </div>
+
+                        <div class="tm-search-row">
+                            <div class="tm-search-wrap">
+                                <span class="tm-search-icon">&#x1F50D;</span>
+                                <input type="text" id="q" class="tm-search-input"
+                                    placeholder="Search by W.O., Customer, Rating, Voltage..." onkeyup="doSearch()">
+                            </div>
+                            <select id="customerFilterDropdown" class="tm-filter-select" onchange="doSearch()">
+                                <option value="">&#x1F464; All Customers</option>
+                            </select>
+                            <select id="stageFilterDropdown" class="tm-filter-select" onchange="doSearch()">
+                                <option value="">&#x1F3ED; All Stages</option>
+                                <option value="design">&#x1F3A8; Design</option>
+                                <option value="winding">&#x1F527; Winding</option>
+                                <option value="vpd">&#x1F4A8; VPD</option>
+                                <option value="coreCoil">&#x2699; Core Coil</option>
+                                <option value="tanking">&#x1F6E2; Tanking</option>
+                                <option value="tankFilling">&#x1F4A7; Tank Filling</option>
+                                <option value="testing">&#x1F9EA; Testing</option>
+                                <option value="completed">&#x2705; Completed</option>
+                            </select>
+                            <button class="tm-clear-btn" onclick="clearTransformerFilters()">âœ• Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- Results Area -->
+                    <div class="tm-results-wrap">
+                        <div id="results">
+                            <div class="tm-empty-state">
+                                <div class="tm-empty-icon">&#x26A1;</div>
+                                <h3>No transformers found</h3>
+                                <p>Use the search and filters above, or register a new unit below.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Register New Transformer -->
+                    <div class="tm-register-card" id="addTransformerCard">
+                        <div class="tm-register-header">
+                            <span>&#x2795;</span>
+                            <h3>Register New Transformer Unit</h3>
+                        </div>
+                        <div class="tm-register-grid">
+                            <div class="tm-form-group">
+                                <label>Customer</label>
+                                <select id="customerSelect" class="tm-filter-select" style="width:100%">
+                                    <option value="">-- Select Customer --</option>
+                                </select>
+                            </div>
+                            <div class="tm-form-group">
+                                <label>W.O. Number</label>
+                                <input type="text" id="w" class="tm-search-input" placeholder="e.g. WO-2024-001">
+                            </div>
+                            <div class="tm-form-group">
+                                <label>Rating (KVA)</label>
+                                <input type="text" id="r" class="tm-search-input" placeholder="e.g. 2500">
+                            </div>
+                            <div class="tm-form-group">
+                                <label>HV Voltage (V)</label>
+                                <input type="text" id="hv_master" class="tm-search-input" placeholder="e.g. 33000">
+                            </div>
+                            <div class="tm-form-group">
+                                <label>LV Voltage (V)</label>
+                                <input type="text" id="lv_master" class="tm-search-input" placeholder="e.g. 433">
+                            </div>
+                        </div>
+                        <div class="tm-register-actions">
+                            <button class="tm-register-btn" onclick="addTransformer()">
+                                &#x1F4BE; Register Transformer
+                            </button>
+                        </div>
+                    </div>
+
+                </section>
+
+
+                <!-- DOCUMENTS SECTION (BOM + Design Docs merged) -->
+                <section id="documentsSection" class="section">
+
+                    <!-- Tab bar -->
+                    <div style="display:flex; gap:0; border-bottom:2px solid #dde1e7; margin-bottom:0; padding:0 24px; background:#fff; border-radius:12px 12px 0 0; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                        <button id="docTab-bom" onclick="switchDocTab('bom')" class="doc-tab doc-tab-active">&#x1F4CB; BOM Upload</button>
+                        <button id="docTab-design" onclick="switchDocTab('design')" class="doc-tab">&#x1F50D; Design Documents</button>
+                    </div>
+
+                    <!-- BOM TAB -->
+                    <div id="docPanel-bom">
+                <!-- BOM UPLOAD -->
+                <section id="bomUpload">
+
+                    <!-- Hero -->
+                    <div class="bu-hero bu-hero-bom">
+                        <div class="bu-hero-title-group">
+                            <span class="bu-hero-icon">&#x1F4CB;</span>
+                            <div>
+                                <h1 class="bu-hero-title">Bill of Materials</h1>
+                                <p class="bu-hero-sub">Upload and manage BOM files per transformer unit</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Card -->
+                    <div class="bu-card">
+                        <div class="bu-wo-row">
+                            <label class="bu-label">&#x1F4E6; Transformer Unit</label>
+                            <select id="bomTransformer" class="bu-select">
+                                <option value="">-- Select Transformer --</option>
+                            </select>
+                        </div>
+
+                        <!-- Drag & Drop Zone -->
+                        <div class="bu-dropzone" id="bomDropzone" ondragover="buDragOver(event,'bomDropzone')"
+                            ondragleave="buDragLeave('bomDropzone')" ondrop="buDrop(event,'bomFile','bomDropzone')"
+                            onclick="document.getElementById('bomFile').click()">
+                            <div class="bu-drop-icon">&#x1F4C4;</div>
+                            <div class="bu-drop-title">Drop BOM file here</div>
+                            <div class="bu-drop-sub">or click to browse</div>
+                            <div class="bu-drop-types">Accepted: .pdf &middot; .xlsx &middot; .xls</div>
+                            <input type="file" id="bomFile" accept=".pdf,.xlsx,.xls" style="display:none;"
+                                onchange="buFileSelected('bomFile','bomFilePreview')">
+                        </div>
+
+                        <!-- File preview -->
+                        <div class="bu-file-preview" id="bomFilePreview" style="display:none;"></div>
+
+                        <!-- Progress bar (hidden until upload) -->
+                        <div class="bu-progress-wrap" id="bomProgress" style="display:none;">
+                            <div class="bu-progress-label">Uploadingâ€¦</div>
+                            <div class="bu-progress-bar-bg">
+                                <div class="bu-progress-bar" id="bomProgressBar"></div>
+                            </div>
+                        </div>
+
+                        <div class="bu-actions">
+                            <button class="bu-upload-btn" onclick="uploadBOM()">
+                                &#x1F4E4; Upload BOM
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Uploaded files list -->
+                    <div class="bu-list-card">
+                        <div class="bu-list-header">
+                            <span>&#x1F4C2; Uploaded BOM Files</span>
+                        </div>
+                        <div id="bomList" class="bu-file-list">
+                            <div class="bu-list-empty">
+                                <span>&#x1F4CB;</span>
+                                <p>Select a transformer to view its BOM files</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+                    </div><!-- /docPanel-bom -->
+
+                    <!-- DESIGN DOCS TAB -->
+                    <div id="docPanel-design" style="display:none;">
+                <!-- DESIGN DOCUMENTS -->
+                <section id="designDocuments">
+
+                    <!-- Hero -->
+                    <div class="bu-hero bu-hero-doc">
+                        <div class="bu-hero-title-group">
+                            <span class="bu-hero-icon">&#x1F50D;</span>
+                            <div>
+                                <h1 class="bu-hero-title">Technical Drawings &amp; Documents</h1>
+                                <p class="bu-hero-sub">Upload DWG, DXF and PDF design documents per unit</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Card -->
+                    <div class="bu-card">
+                        <div class="bu-wo-row bu-wo-row-2">
+                            <div>
+                                <label class="bu-label">&#x26A1; Transformer Unit</label>
+                                <select id="docTransformer" class="bu-select">
+                                    <option value="">-- Select Transformer --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="bu-label">&#x1F50D; Document Type</label>
+                                <select id="docType" class="bu-select">
+                                    <option value="winding">&#x1F527; Winding Drawing</option>
+                                    <option value="core">&#x2699; Core Drawing</option>
+                                    <option value="tank">&#x1F6E2; Oil Tank Drawing</option>
+                                    <option value="ga">&#x1F50D; GA Drawing</option>
+                                    <option value="other">&#x1F4C4; Other Technical Doc</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Drag & Drop Zone -->
+                        <div class="bu-dropzone bu-dropzone-doc" id="docDropzone"
+                            ondragover="buDragOver(event,'docDropzone')" ondragleave="buDragLeave('docDropzone')"
+                            ondrop="buDrop(event,'docFile','docDropzone')"
+                            onclick="document.getElementById('docFile').click()">
+                            <div class="bu-drop-icon">&#x1F50D;</div>
+                            <div class="bu-drop-title">Drop design document here</div>
+                            <div class="bu-drop-sub">or click to browse</div>
+                            <div class="bu-drop-types">Accepted: .pdf &middot; .dwg &middot; .dxf</div>
+                            <input type="file" id="docFile" accept=".pdf,.dwg,.dxf" style="display:none;"
+                                onchange="buFileSelected('docFile','docFilePreview')">
+                        </div>
+
+                        <!-- File preview -->
+                        <div class="bu-file-preview" id="docFilePreview" style="display:none;"></div>
+
+                        <!-- Progress bar -->
+                        <div class="bu-progress-wrap" id="docProgress" style="display:none;">
+                            <div class="bu-progress-label">Uploadingâ€¦</div>
+                            <div class="bu-progress-bar-bg">
+                                <div class="bu-progress-bar bu-progress-doc" id="docProgressBar"></div>
+                            </div>
+                        </div>
+
+                        <div class="bu-actions">
+                            <button class="bu-upload-btn bu-upload-doc" onclick="uploadDocument()">
+                                &#x1F4E4; Upload Document
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Uploaded files list -->
+                    <div class="bu-list-card">
+                        <div class="bu-list-header">
+                            <span>&#x1F4C2; Uploaded Documents</span>
+                        </div>
+                        <div id="docList" class="bu-file-list">
+                            <div class="bu-list-empty">
+                                <span>&#x1F50D;</span>
+                                <p>Select a transformer to view its design documents</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+                    </div><!-- /docPanel-design -->
+
+                </section><!-- /documentsSection -->
+
+
+                <!-- MANUFACTURING CHECKLIST -->
+                <section id="manufacturingChecklist" class="section">
+                    <div class="card">
+
+                        <!-- Premium Hero -->
+                        <div class="clk-hero">
+                            <div class="clk-hero-left">
+                                <span class="clk-hero-icon">&#x2705;</span>
+                                <div>
+                                    <h1 class="clk-hero-title">Manufacturing Checklist</h1>
+                                    <p class="clk-hero-sub">Stage-by-stage inspection &amp; sign-off workflow</p>
+                                </div>
+                            </div>
+                            <div class="clk-hero-right">
+                                <div class="clk-hero-stat">
+                                    <span class="hs-num" id="heroCompleted">â€”</span>
+                                    <span class="hs-lbl">Done</span>
+                                </div>
+                                <div class="clk-hero-stat">
+                                    <span class="hs-num" id="heroPending">â€”</span>
+                                    <span class="hs-lbl">Pending</span>
+                                </div>
+                                <div class="clk-hero-stat">
+                                    <span class="hs-num" id="heroTotal">â€”</span>
+                                    <span class="hs-lbl">Total</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="checklistEditNotice" style="display:none;" class="permission-notice">
+                            <strong>&#x1F440; View Only:</strong> You can view checklists but cannot edit them.
+                        </div>
+
+                        <!-- W.O. Selection -->
+                        <div class="card clk-wo-card">
+                            <h3>&#x1F4CB; Select Transformer</h3>
+                            <label><strong>W.O. Number:</strong></label>
+                            <select id="checklistWOSelect" class="ui-input" onchange="onWOChange()">
+                                <option value="">-- Select Transformer W.O. --</option>
+                            </select>
+                            <div id="woDetails" class="clk-wo-details">
+                                <div class="clk-wo-grid">
+                                    <div><strong>Customer:</strong> <span id="woCustomer">-</span></div>
+                                    <div><strong>Rating:</strong> <span id="woRating">-</span> kVA</div>
+                                    <div><strong>Voltage:</strong> <span id="woVoltage">-</span></div>
+                                </div>
+                            </div>
+
+                            <!-- â•â• STAGE PROGRESS CARD â•â•
+                                 Unified: stage visual tiles + progress bar + stats
+                                 Both blocks share one card â€” same mental model -->
+                            <div class="stage-progress-card">
+
+                                <!-- Stage tile row (filled by updateStageUI()) -->
+                                <div id="stageStatusContainer" class="clk-stage-status"></div>
+
+                                <!-- Divider -->
+                                <div class="spc-divider"></div>
+
+                                <!-- Progress bar + counts -->
+                                <div id="progressBar" class="clk-progress-bar">
+                                    <div class="clk-progress-track">
+                                        <div class="clk-progress-fill" id="progressFill"></div>
+                                        <div class="clk-progress-label">
+                                            <span id="progressText">0% Complete</span>
+                                        </div>
+                                    </div>
+                                    <div class="clk-progress-stats">
+                                        <span>&#x2705; Submitted: <b id="completedCount" class="clk-stat-done">0</b></span>
+                                        <span>&#x23F3; Awaiting: <b id="pendingCount" class="clk-stat-pending">0</b></span>
+                                        <span>&#x1F4CA; Total: <b id="totalCount" class="clk-stat-total">0</b></span>
+                                    </div>
+                                    <div id="tierStats" class="clk-tier-stats"></div>
+                                    <div id="stageSummaryPills" class="stage-status-counts" style="padding:0 4px 6px;">
+                                    </div>
+                                </div>
+
+                            </div><!-- /stage-progress-card -->
+
+                            <!-- Checklist Content -->
+                            <div id="checklistMainContent" style="display: none;">
+                                <!-- Toolbar: Bulk Sign-Off + Export PDF -->
+                                <div class="clk-toolbar">
+                                    <div class="clk-toolbar-left">
+                                        <span class="clk-label-hint">&#x1F4CB; Inspection Workflow</span>
+                                        <!-- Bulk submission â€” only shown when rows are ready -->
+                                        <button id="bulkSignOffBtn" class="btn btn-success" style="display:none;"
+                                            onclick="bulkSupervisorSignOff()">
+                                            &#x270D; Bulk Submit for Review
+                                        </button>
+                                    </div>
+                                    <div class="clk-toolbar-right">
+                                        <button id="exportPDFBtn" class="btn btn-navy" onclick="exportChecklistPDF()">
+                                            &#x1F4C4; Export PDF
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="stage-nav" id="mainStageNav">
+                                    <button class="stage-btn active" data-stage="winding"
+                                        onclick="showMainStage('winding', this)">Winding</button>
+                                    <button class="stage-btn" data-stage="vpd"
+                                        onclick="showMainStage('vpd', this)">VPD</button>
+                                    <button class="stage-btn" data-stage="coreCoil"
+                                        onclick="showMainStage('coreCoil', this)">Core Coil</button>
+                                    <button class="stage-btn" data-stage="tanking"
+                                        onclick="showMainStage('tanking', this)">Repacking &amp; Tanking</button>
+                                    <button class="stage-btn" data-stage="tankFilling"
+                                        onclick="showMainStage('tankFilling', this)">Tank
+                                        Filling</button>
+                                </div>
+
+                                <div class="stage-nav" id="windingSubNav" style="display: none;">
+                                    <button class="stage-btn active" onclick="switchStage('winding1', this)">Continuous
+                                        Disc</button>
+                                    <button class="stage-btn" onclick="switchStage('winding2', this)">Start
+                                        Details</button>
+                                    <button class="stage-btn" onclick="switchStage('winding3', this)">Finish
+                                        Coil</button>
+                                </div>
+
+                                <div id="stageControlButtons" class="clk-stage-controls">
+                                    <button class="btn btn-success"
+                                        onclick="markStageComplete(window.currentWO, window.currentStage)">
+                                        &#x2705; Submit Stage for QA Review
+                                    </button>
+                                    <!-- Production-only: signal stage is ready for QA inspection -->
+                                    <button id="readyForQABtn" class="btn"
+                                        style="display:none; background:#2980b9; color:#fff; margin-left:8px;"
+                                        onclick="submitStageForQAReview()">
+                                        &#x1F4CB; Ready for QA
+                                    </button>
+                                    <button class="btn btn-info" id="adminUnlockBtn" style="display:none;"
+                                        onclick="showUnlockDialog(window.currentWO, window.currentStage)">
+                                        &#x1F511; Re-open Stage (Admin)
+                                    </button>
+                                </div>
+
+                                <!-- Stage Locked â€” awaiting QA approval -->
+                                <div id="stageLockMessage" class="clk-stage-locked">
+                                    <p>&#x1F50D; This stage has been submitted for QA review.</p>
+                                    <p id="stageLockSubMsg">Awaiting verification â€” contact your administrator to
+                                        re-open.
+                                    </p>
+                                    <!-- QA / Admin: Approve button shown when stage is completed (submitted) -->
+                                    <button id="approveStageBtn" class="btn btn-success"
+                                        style="display:none; margin-top:14px; font-size:15px; padding: 10px 28px;"
+                                        onclick="approveCurrentStage()">
+                                        &#x2714; Approve Stage
+                                    </button>
+                                    <button id="rejectStageBtn" class="btn btn-danger"
+                                        style="display:none; margin-top:14px; margin-left:10px; font-size:15px; padding: 10px 28px;"
+                                        onclick="showRejectStageModal()">
+                                        &#x274C; Reject Stage
+                                    </button>
+                                    <button id="adminUnlockBtnLocked" class="btn btn-warning"
+                                        style="display:none; margin-top:12px;"
+                                        onclick="showUnlockDialog(window.currentWO, window.currentStage)">
+                                        &#x1F511; Re-open This Stage (Admin)
+                                    </button>
+                                </div>
+
+                                <!-- Awaiting QA panel (production submitted â€” QA reviewing) -->
+                                <div id="stageAwaitingQAMessage"
+                                    style="display:none; border-left:4px solid #2980b9; background:linear-gradient(135deg,#eaf4fd,#d6eaf8); padding:16px 20px; border-radius:8px; margin-bottom:16px;">
+                                    <p style="color:#1a3a5c; font-weight:700; font-size:16px; margin:0 0 4px;">&#x1F4CB; Stage
+                                        Submitted for QA Review</p>
+                                    <p id="stageAwaitingSubMsg" style="color:#1a3a5c; font-size:13px; margin:0;">QA is
+                                        reviewing this stage. You will be notified when approved or returned for
+                                        corrections.</p>
+                                    <button id="adminUnlockBtnAwaiting" class="btn btn-warning"
+                                        style="display:none; margin-top:12px;"
+                                        onclick="showUnlockDialog(window.currentWO, window.currentStage)">
+                                        &#x1F511; Re-open This Stage (Admin)
+                                    </button>
+                                </div>
+
+                                <!-- Stage Approved panel (shown when status = approved) -->
+                                <div id="stageApprovedMessage" class="clk-stage-locked"
+                                    style="display:none; background: linear-gradient(135deg,#eafaf0,#d5f5e3); border-left: 4px solid #27ae60;">
+                                    <p style="color:#1a4d2e; font-weight:700; font-size:16px;">&#x2714; Stage Approved</p>
+                                    <p id="stageApprovedSubMsg" style="color:#1a4d2e;">This stage has been verified and
+                                        approved by QA.</p>
+                                    <button id="adminUnlockBtnApproved" class="btn btn-warning"
+                                        style="display:none; margin-top:12px;"
+                                        onclick="showUnlockDialog(window.currentWO, window.currentStage)">
+                                        &#x1F511; Re-open This Stage (Admin)
+                                    </button>
+                                </div>
+                                <!-- Stage Rejected panel (shown to production when status reverts to in-progress after QA rejection) -->
+                                <div id="stageRejectedMessage"
+                                    style="display:none; border-left:4px solid #e74c3c; background:linear-gradient(135deg,#fef9f9,#fde8e8); padding:16px 20px; border-radius:8px; margin-bottom:16px;">
+                                    <p style="color:#7b1c1c; font-weight:700; font-size:16px; margin:0 0 6px;">&#x26A0; Stage
+                                        Returned for Corrections</p>
+                                    <p id="stageRejectedByMsg" style="color:#7b1c1c; font-size:13px; margin:0 0 6px;">QA
+                                        found issues with this stage.</p>
+                                    <div id="stageRejectionReasonBox"
+                                        style="background:#fff0f0; border:1px solid #f1a1a1; border-radius:6px; padding:10px 14px; margin-top:8px;">
+                                        <span style="font-size:12px; font-weight:600; color:#c0392b;">&#x1F4DD; QA
+                                            Comment:</span>
+                                        <p id="stageRejectionReasonText"
+                                            style="margin:4px 0 0; color:#4a1212; font-size:13px; font-style:italic;">â€”
+                                        </p>
+                                    </div>
+                                    <p style="color:#7b1c1c; font-size:12px; margin:10px 0 0;">Correct the issues above
+                                        and
+                                        click <strong>&#x2705; Submit Stage for QA Review</strong> again.</p>
+                                </div>
+
+
+
+                                <div id="stageContent"></div>
+                            </div>
+
+                            <div id="noWOMessage" class="clk-empty-state">
+                                <h3>&#x1F4CB; Please Select a Transformer W.O. Number</h3>
+                            </div>
+                        </div>
+                </section>
+
+                <!-- ROW-LEVEL UNLOCK DIALOG -->
+                <div id="rowUnlockModal" class="legacy-modal-backdrop" style="display:none;">
+                    <div class="legacy-modal-box">
+                        <h3>&#x1F511; Re-open Checklist Row</h3>
+
+                        <div class="legacy-modal-field">
+                            <label><strong>Reason for Re-opening:</strong></label>
+                            <!-- Quick preset chips â€” one tap selects reason -->
+                            <div id="unlockReasonChips" style="display:flex; flex-wrap:wrap; gap:8px; margin:10px 0;">
+                                <button type="button" class="reason-chip"
+                                    onclick="selectUnlockReason(this, 'Data entry error')">&#x1F4DD; Data entry error</button>
+                                <button type="button" class="reason-chip"
+                                    onclick="selectUnlockReason(this, 'Re-inspection required')">&#x1F50D;
+                                    Re-inspection</button>
+                                <button type="button" class="reason-chip"
+                                    onclick="selectUnlockReason(this, 'Design change')">&#x1F4C4; Design change</button>
+                                <button type="button" class="reason-chip"
+                                    onclick="selectUnlockReason(this, 'Measurement correction needed')">&#x1F4CA; Measurement
+                                    fix</button>
+                                <button type="button" class="reason-chip"
+                                    onclick="selectUnlockReason(this, 'Quality check required')">&#x2705; Quality
+                                    check</button>
+                                <button type="button" class="reason-chip" onclick="selectUnlockReason(this, 'OTHER')">&#x270F;
+                                    Otherâ€¦</button>
+                            </div>
+                            <!-- Hidden input that stores the selected reason -->
+                            <input type="hidden" id="unlockReasonSelect" value="">
+                        </div>
+
+                        <div id="customReasonContainer" style="display:none;" class="legacy-modal-field">
+                            <label><strong>Specify Reason:</strong></label>
+                            <textarea id="customUnlockReason" class="ui-input"
+                                placeholder="Describe the reason for re-openingâ€¦" style="height:70px; resize:vertical;"
+                                oninput="document.getElementById('unlockReasonSelect').value = this.value"></textarea>
+                        </div>
+
+                        <div class="legacy-modal-field">
+                            <p class="legacy-modal-info">
+                                <strong>â„¹ Note:</strong> This will re-open the row for corrections. The reason will be
+                                recorded in the audit trail.
+                            </p>
+                        </div>
+
+                        <div class="legacy-modal-footer">
+                            <button class="btn btn-muted" onclick="closeRowUnlockModal()">Cancel</button>
+                            <button class="btn btn-success" onclick="confirmRowUnlock()">&#x1F511; Confirm Re-open</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LOCK ROW DIALOG -->
+                <div id="rowLockModal"
+                    style="display: none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+                    <div
+                        style="background:white; padding:28px; border-radius:10px; width:90%; max-width:500px; box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+                        <h3 style="margin-top:0;">&#x2705; Submit Row for Review</h3>
+
+                        <div style="margin:16px 0;">
+                            <label><strong>Why are you submitting?</strong></label>
+                            <!-- Quick preset chips -->
+                            <div id="lockReasonChips" style="display:flex; flex-wrap:wrap; gap:8px; margin:10px 0;">
+                                <button type="button" class="reason-chip"
+                                    onclick="selectLockReason(this, 'Inspection complete')">&#x1F4CB; Inspection
+                                    complete</button>
+                                <button type="button" class="reason-chip"
+                                    onclick="selectLockReason(this, 'Measurement recorded')">&#x1F4CA; Measurement
+                                    recorded</button>
+                                <button type="button" class="reason-chip"
+                                    onclick="selectLockReason(this, 'Data finalized')">&#x2714; Data finalized</button>
+                                <button type="button" class="reason-chip"
+                                    onclick="selectLockReason(this, 'Ready for QA review')">&#x1F50D; Ready for QA</button>
+                                <button type="button" class="reason-chip" onclick="selectLockReason(this, 'OTHER')">&#x270F;
+                                    Otherâ€¦</button>
+                            </div>
+                            <input type="hidden" id="lockReasonSelect" value="">
+                        </div>
+
+                        <div id="customLockReasonContainer" style="display:none; margin:16px 0;">
+                            <label><strong>Specify Reason:</strong></label>
+                            <textarea id="customLockReason" class="ui-input"
+                                placeholder="Describe reason for submissionâ€¦" style="height:70px; resize:vertical;"
+                                oninput="document.getElementById('lockReasonSelect').value = this.value"></textarea>
+                        </div>
+
+                        <div style="margin:16px 0;">
+                            <p
+                                style="margin:0; padding:10px; background:#eafaf0; border-left:4px solid #27ae60; color:#1a4d2e; font-size:13px;">
+                                <strong>&#x2705; Note:</strong> This row will be submitted for supervisor and QA review. Only
+                                an admin can re-open it after submission.
+                            </p>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px;">
+                            <button class="btn-login" style="width: auto; padding: 10px 20px; background: #95a5a6;"
+                                onclick="closeRowLockModal()">
+                                Cancel
+                            </button>
+                            <button class="btn-login" style="width: auto; padding: 10px 20px; background: #27ae60;"
+                                onclick="confirmRowLock()">
+                                &#x2705; Submit for Review
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REJECT STAGE MODAL -->
+                <div id="rejectStageModal" class="legacy-modal-backdrop" style="display:none;">
+                    <div class="legacy-modal-box" style="border-top: 5px solid #e74c3c; max-width: 500px;">
+                        <h3 style="color:#c0392b; margin-top:0;">&#x274C; Reject Stage â€” Return to Production</h3>
+                        <p style="color:#555; font-size:13px; margin-bottom:18px;">
+                            Provide a clear reason so the production engineer knows what to fix.
+                            This will be recorded in the audit trail.
+                        </p>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">
+                                &#x1F4DD; Rejection Reason <span style="color:red;">*</span>
+                            </label>
+                            <textarea id="rejectStageReason"
+                                placeholder="Describe what needs to be corrected (min 10 characters)â€¦" rows="4"
+                                style="width:100%; padding:10px; border:1px solid #e74c3c; border-radius:6px; font-size:13px; resize:vertical; box-sizing:border-box;"></textarea>
+                            <div id="rejectReasonError"
+                                style="color:#e74c3c; font-size:12px; margin-top:4px; display:none;">
+                                &#x26A0; Please enter at least 10 characters.
+                            </div>
+                        </div>
+
+                        <div class="legacy-modal-footer">
+                            <button class="btn btn-muted" onclick="closeRejectStageModal()">Cancel</button>
+                            <button class="btn btn-danger" onclick="confirmRejectStage()" style="background:#e74c3c;">
+                                &#x274C; Confirm Rejection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WO TIMELINE / HISTORY VIEW -->
+                <section id="woTimeline" class="section">
+
+                    <!-- Hero Header -->
+                    <div class="wt-hero">
+                        <div class="wt-hero-top">
+                            <div class="wt-hero-title-group">
+                                <span class="wt-hero-icon">&#x1F4C5;</span>
+                                <div>
+                                    <h1 class="wt-hero-title">W.O. History &amp; Timeline</h1>
+                                    <p class="wt-hero-sub">Full audit trail â€” saves, approvals, stage events</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Inline filter bar -->
+                        <div class="wt-filter-bar">
+                            <select id="tlWOSelect" class="wt-select wt-select-wo">
+                                <option value="">â€” Select Work Order â€”</option>
+                            </select>
+                            <select id="tlTypeFilter" class="wt-select">
+                                <option value="all">&#x1F4CB; All Events</option>
+                                <option value="save">&#x1F4BE; Saves</option>
+                                <option value="supervisor">&#x1F511; Supervisor Sign-Off</option>
+                                <option value="qa-ok">&#x2705; QA Approved</option>
+                                <option value="qa-rej">&#x274C; QA Rejected</option>
+                                <option value="lock">&#x1F512; Stage Locked</option>
+                                <option value="unlock">&#x1F513; Unlocked</option>
+                                <option value="stage">&#x1F504; Stage Events</option>
+                            </select>
+                            <div class="wt-search-wrap">
+                                <span class="wt-search-icon">&#x1F50D;</span>
+                                <input id="tlSearch" type="search" class="wt-search-input" placeholder="Search eventsâ€¦">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="wt-body">
+                        <!-- Stage progress strip -->
+                        <div id="tlStageStrip" class="wo-stage-strip"></div>
+
+                        <!-- Summary chips -->
+                        <div id="tlSummaryRow" class="tl-summary-row"></div>
+
+                        <!-- Empty / skeleton states -->
+                        <div id="tlSkeletonState" style="display:none;"></div>
+                        <div id="tlEmptyState">
+                            <div class="tl-empty">
+                                <span class="tl-empty-icon">&#x1F4CB;</span>
+                                <p>Select a Work Order above to view its history.</p>
+                            </div>
+                        </div>
+
+                        <!-- Timeline events -->
+                        <div class="timeline-container">
+                            <div id="tlEventList"></div>
+                        </div>
+
+                        <!-- Load more -->
+                        <div class="tl-load-more">
+                            <button id="tlLoadMoreBtn" class="btn btn-muted" style="display:none;">
+                                Load more â†“
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- DESIGN CALCULATIONS (MODERN UI) -->
+                <section id="designCalculations" class="section">
+                    <div class="card" id="customerCalcView" style="display:none;">
+                        <h2>&#x1F4CA; Your Calculation Reports</h2>
+                        <div class="permission-notice">
+                            <strong>&#x1F4CB; Customer Access:</strong> View your calculation reports.
+                        </div>
+                        <div id="customerCalcList"></div>
+                    </div>
+
+                    <div id="engineerCalcView">
+                        <div class="calc-container">
+                            <!-- Input Section -->
+                            <div class="input-section">
+                                <div class="input-card">
+                                    <div class="card-header">
+                                        <h3>&#x2699; Design Parameters</h3>
+                                    </div>
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label>Rating (MVA)</label>
+                                            <input type="number" id="calc_rating" class="modern-input"
+                                                placeholder="e.g. 100">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Voltage Ratio (kV)</label>
+                                            <input type="text" id="calc_voltage" class="modern-input"
+                                                placeholder="e.g. 132/33">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Customer Name</label>
+                                            <input type="text" id="calc_customer" class="modern-input"
+                                                placeholder="Client Name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Winding Configuration</label>
+                                            <select id="numWindings" class="modern-select"
+                                                onchange="generateWindingForms()">
+                                                <option value="2">2 Windings (HV + LV)</option>
+                                                <option value="3">3 Windings (HV + LV + Tap)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="windingFormsContainer">
+                                    <!-- Dynamic Winding inputs will appear here -->
+                                </div>
+
+                                <div class="action-buttons">
+                                    <button class="btn-primary btn-large" onclick="calculateDesign()">
+                                        <span>&#x1F680; Calculate Design</span>
+                                    </button>
+                                    <button class="btn-secondary btn-large" id="pdfBtn" onclick="exportWindingPDF()"
+                                        style="display:none;">
+                                        <span>&#x1F4C4; Export Report</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Results Section -->
+                            <div class="results-panel">
+                                <div id="windingResultsSection" class="empty-state">
+                                    <div style="text-align: center; color: var(--gray); padding: 40px;">
+                                        <div style="font-size: 48px; margin-bottom: 20px;">&#x1F4CA;</div>
+                                        <h3>Ready to Calculate</h3>
+                                        <p>Enter design parameters and click Calculate to view detailed results.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AUDIT LOG -->
+                <section id="auditLog" class="section">
+
+                    <!-- Hero -->
+                    <div class="al-hero">
+                        <div class="al-hero-top">
+                            <div class="al-hero-title-group">
+                                <span class="al-hero-icon">&#x1F4DC;</span>
+                                <div>
+                                    <h1 class="al-hero-title">Audit Trail</h1>
+                                    <p class="al-hero-sub">Complete system activity log â€” every change, every user</p>
+                                </div>
+                            </div>
+                            <button class="al-export-btn" onclick="exportAuditLogs()">
+                                &#x1F4C4; Export
+                            </button>
+                        </div>
+
+                        <!-- Filter bar -->
+                        <div class="al-filter-bar">
+                            <select id="auditEntity" class="al-select">
+                                <option value="">&#x1F50D; All Types</option>
+                                <option value="transformer">&#x26A1; Transformer</option>
+                                <option value="bom">&#x1F4CB; BOM</option>
+                                <option value="checklist">&#x2705; Checklist</option>
+                                <option value="document">&#x1F4C4; Document</option>
+                                <option value="design">&#x1F3A8; Design</option>
+                                <option value="calculation">&#x1F50D; Calculation</option>
+                            </select>
+                            <div class="al-search-wrap">
+                                <span class="al-search-icon">&#x1F50D;</span>
+                                <input type="text" id="auditEntityId" class="al-search-input"
+                                    placeholder="W.O. / Entity IDâ€¦">
+                            </div>
+                            <input type="date" id="auditStartDate" class="al-date-input" title="Start Date">
+                            <input type="date" id="auditEndDate" class="al-date-input" title="End Date">
+                            <button class="al-search-btn" onclick="loadAuditLogs()">Search</button>
+                            <button class="al-clear-btn" onclick="clearAuditFilters()">âœ• Clear</button>
+                        </div>
+
+                        <!-- Action type legend -->
+                        <div class="al-legend">
+                            <span class="al-legend-chip al-create">&#x25CF; CREATE</span>
+                            <span class="al-legend-chip al-update">&#x25CF; UPDATE</span>
+                            <span class="al-legend-chip al-delete">&#x25CF; DELETE</span>
+                            <span class="al-legend-chip al-login">&#x25CF; LOGIN</span>
+                            <span class="al-legend-chip al-stage">&#x25CF; STAGE</span>
+                            <span class="al-legend-chip al-lock">&#x25CF; LOCK</span>
+                            <span class="al-legend-chip al-export">&#x25CF; EXPORT</span>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Results -->
+                    <div class="al-body">
+                        <div id="auditResults">
+                            <div class="al-empty">
+                                <span class="al-empty-icon">&#x1F4DC;</span>
+                                <h3>No logs loaded</h3>
+                                <p>Use the filters above and click Search to view audit entries.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+
+                <!-- DIGITAL TWIN (legacy fallback — hidden, superseded by premium section above) -->
+                <section id="digitalTwinLegacy" class="section" hidden>
+                    <div class="content-area">
+                        <h2 style="margin-bottom:20px;">&#x1F52E; Digital Twin</h2>
+
+                        <!-- Work Order Selection -->
+                        <div class="card" style="margin-bottom:20px;">
+                            <h3 style="margin-bottom:15px;">Select Transformer</h3>
+                            <div style="display:flex; gap:12px; align-items:center;">
+                                <input type="text" id="woInput"
+                                    placeholder="Enter Work Order Number (e.g., WO_2024_001)" class="ui-input"
+                                    style="margin:0; flex:1;">
+                                <button onclick="loadDigitalTwinFromInput()"
+                                    style="padding:12px 24px; background:#3498db; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer; white-space:nowrap;">Load
+                                    Digital Twin</button>
+                            </div>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="dtLoadingState" style="display:none; text-align:center; padding:40px; color:#666;">
+                            <p>&#x23F3; Loading Digital Twin...</p>
+                        </div>
+
+                        <!-- Error State -->
+                        <div id="dtErrorState"
+                            style="display:none; background:#fee; border:1px solid #fcc; border-radius:8px; padding:20px; color:#c33;">
+                            <p id="dtErrorMessage"></p>
+                        </div>
+
+                        <!-- Digital Twin JS Component (renders into #dtContainer) -->
+                        <div id="dtContainer"></div>
+                    </div>
+                </section>
+
+                <!-- QUESTIONS (Admin Only) -->
+                <section id="questions" class="section">
+                    <div class="card">
+                        <h2>&#x2753; MCQ Question Bank</h2>
+                        <p style="color:#666; margin-bottom:20px;">Manage multiple-choice questions and operator exam
+                            links by section.</p>
+
+                        <!-- Inner Tab Nav -->
+                        <div style="display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap;">
+                            <button id="qtab-bank" class="btn-login" style="width:auto;padding:8px 18px;font-size:13px;"
+                                onclick="switchQTab('bank')">&#x1F4DA; Question Bank</button>
+                            <button id="qtab-add" class="btn-login"
+                                style="width:auto;padding:8px 18px;font-size:13px;background:#27ae60;"
+                                onclick="switchQTab('add')">&#x2795; Add Question</button>
+                            <button id="qtab-links" class="btn-login"
+                                style="width:auto;padding:8px 18px;font-size:13px;background:#8e44ad;"
+                                onclick="switchQTab('links')">&#x1F517; Exam Links</button>
+                            <button id="qtab-results" class="btn-login"
+                                style="width:auto;padding:8px 18px;font-size:13px;background:#e67e22;"
+                                onclick="switchQTab('results')">&#x1F4CA; Results</button>
+                        </div>
+
+                        <!-- â”€â”€ TAB: Question Bank â”€â”€ -->
+                        <div id="qpanel-bank">
+                            <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+                                <button class="btn-login" style="width:auto;padding:6px 16px;font-size:12px;"
+                                    onclick="filterQSection('all')">All</button>
+                                <button class="btn-login"
+                                    style="width:auto;padding:6px 16px;font-size:12px;background:#7c3aed;"
+                                    onclick="filterQSection('winding')">Winding</button>
+                                <button class="btn-login"
+                                    style="width:auto;padding:6px 16px;font-size:12px;background:#0ea5e9;"
+                                    onclick="filterQSection('core')">Core Building</button>
+                                <button class="btn-login"
+                                    style="width:auto;padding:6px 16px;font-size:12px;background:#f59e0b;"
+                                    onclick="filterQSection('tanking')">Tanking</button>
+                            </div>
+                            <div id="questionsList"></div>
+                        </div>
+
+                        <!-- â”€â”€ TAB: Add Question â”€â”€ -->
+                        <div id="qpanel-add" style="display:none;">
+                            <div style="display:grid; gap:14px;">
+                                <div>
+                                    <label
+                                        style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Section
+                                        *</label>
+                                    <select id="qSection" class="ui-input" style="max-width:320px;">
+                                        <option value="">-- Select Section --</option>
+                                        <option value="winding">Winding</option>
+                                        <option value="core">Core Building</option>
+                                        <option value="tanking">Tanking</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Question
+                                        Text *</label>
+                                    <textarea id="qText" class="ui-input" rows="3" placeholder="Enter the question..."
+                                        style="resize:vertical;"></textarea>
+                                </div>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                                    <div>
+                                        <label
+                                            style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Option
+                                            A *</label>
+                                        <input type="text" id="qOptA" class="ui-input" placeholder="Option A">
+                                    </div>
+                                    <div>
+                                        <label
+                                            style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Option
+                                            B *</label>
+                                        <input type="text" id="qOptB" class="ui-input" placeholder="Option B">
+                                    </div>
+                                    <div>
+                                        <label
+                                            style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Option
+                                            C *</label>
+                                        <input type="text" id="qOptC" class="ui-input" placeholder="Option C">
+                                    </div>
+                                    <div>
+                                        <label
+                                            style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Option
+                                            D *</label>
+                                        <input type="text" id="qOptD" class="ui-input" placeholder="Option D">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Correct
+                                        Answer *</label>
+                                    <select id="qCorrect" class="ui-input" style="max-width:200px;">
+                                        <option value="">-- Correct Option --</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button class="btn-login" style="width:auto;padding:11px 28px;background:#27ae60;"
+                                        onclick="addQuestion()">&#x2705; Add Question</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- â”€â”€ TAB: Exam Links â”€â”€ -->
+                        <div id="qpanel-links" style="display:none;">
+                            <p style="color:#666; margin-bottom:18px; font-size:13px;">Share these links with operators.
+                                Each link opens a random exam from that section.</p>
+                            <div style="display:grid; gap:14px;" id="examLinksContainer"></div>
+                        </div>
+
+                        <!-- â”€â”€ TAB: Results â”€â”€ -->
+                        <div id="qpanel-results" style="display:none;">
+                            <button class="btn-login" style="width:auto;padding:8px 20px;margin-bottom:16px;"
+                                onclick="loadExamResults()">&#x1F504; Refresh Results</button>
+                            <div id="examResultsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Answer Key Modal -->
+                    <div id="answerKeyModal"
+                        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center; overflow-y:auto;">
+                        <div
+                            style="background:white; padding:30px; border-radius:12px; width:95%; max-width:860px; margin:40px auto; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.3);">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="margin:0;">&#x1F4CB; Answer Key</h3>
+                                <button class="btn-login" style="width:auto;padding:6px 16px;background:#95a5a6;"
+                                    onclick="closeAnswerKey()">âœ• Close</button>
+                            </div>
+                            <div id="answerKeyContent"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+                     MCQ EXAM SYSTEM TAB
+                â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â••â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+                <section id="exam" class="section" style="display:none;">
+                    <style>
+                        /* â”€â”€ Exam Tab Styles â”€â”€ */
+                        #exam {
+                            padding: 0;
+                            background: none;
+                        }
+
+                        .exam-panel {
+                            max-width: 860px;
+                            margin: 0 auto;
+                            padding: 24px 20px;
+                        }
+
+                        .exam-view {
+                            display: none;
+                        }
+
+                        /* Home */
+                        .exam-home-header {
+                            text-align: center;
+                            margin-bottom: 28px;
+                        }
+
+                        .exam-home-header h2 {
+                            font-size: 26px;
+                            font-weight: 700;
+                            color: var(--text);
+                        }
+
+                        .exam-home-header p {
+                            color: #64748b;
+                            margin-top: 6px;
+                        }
+
+                        .exam-section-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                            gap: 16px;
+                            margin-bottom: 24px;
+                        }
+
+                        .exam-section-card {
+                            background: #fff;
+                            border-radius: 14px;
+                            padding: 24px 20px;
+                            box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+                            cursor: pointer;
+                            border: 2px solid transparent;
+                            transition: all .2s;
+                        }
+
+                        .exam-section-card:hover {
+                            border-color: var(--blue, #3b82f6);
+                            transform: translateY(-2px);
+                            box-shadow: 0 6px 20px rgba(0, 0, 0, .12);
+                        }
+
+                        .exam-section-icon {
+                            font-size: 32px;
+                            margin-bottom: 10px;
+                        }
+
+                        .exam-section-title {
+                            font-size: 17px;
+                            font-weight: 700;
+                            margin-bottom: 4px;
+                        }
+
+                        .exam-section-desc {
+                            font-size: 12px;
+                            color: #64748b;
+                            margin-bottom: 12px;
+                        }
+
+                        .exam-section-stat {
+                            font-size: 11px;
+                            color: #94a3b8;
+                        }
+
+                        .exam-admin-actions {
+                            display: flex;
+                            gap: 10px;
+                            flex-wrap: wrap;
+                            margin-top: 16px;
+                        }
+
+                        .exam-action-btn {
+                            padding: 10px 18px;
+                            border: none;
+                            border-radius: 8px;
+                            font-size: 13px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: .15s;
+                        }
+
+                        .exam-action-btn:hover {
+                            opacity: .85;
+                        }
+
+                        .exam-btn-admin {
+                            background: #1e293b;
+                            color: #fff;
+                        }
+
+                        .exam-btn-results {
+                            background: #0ea5e9;
+                            color: #fff;
+                        }
+
+                        /* Take exam */
+                        .exam-card {
+                            background: #fff;
+                            border-radius: 14px;
+                            padding: 26px 28px;
+                            margin-bottom: 18px;
+                            box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+                        }
+
+                        .exam-section-label-big {
+                            font-size: 22px;
+                            font-weight: 700;
+                            margin-bottom: 4px;
+                        }
+
+                        .exam-info-note {
+                            background: #fffbeb;
+                            border: 1px solid #fde68a;
+                            border-radius: 8px;
+                            padding: 10px 14px;
+                            font-size: 13px;
+                            color: #92400e;
+                            margin-bottom: 14px;
+                        }
+
+                        .exam-inp {
+                            width: 100%;
+                            padding: 12px 16px;
+                            border: 2px solid #e2e8f0;
+                            border-radius: 10px;
+                            font-size: 15px;
+                            outline: none;
+                            transition: border-color .2s;
+                            font-family: inherit;
+                        }
+
+                        .exam-inp:focus {
+                            border-color: #3b82f6;
+                        }
+
+                        .exam-name-err {
+                            color: #ef4444;
+                            font-size: 13px;
+                            margin-top: 6px;
+                        }
+
+                        .exam-btn {
+                            display: inline-block;
+                            padding: 12px 24px;
+                            border: none;
+                            border-radius: 10px;
+                            font-size: 14px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all .18s;
+                            font-family: inherit;
+                        }
+
+                        .exam-btn:hover {
+                            opacity: .88;
+                            transform: translateY(-1px);
+                        }
+
+                        .exam-btn-primary {
+                            background: #3b82f6;
+                            color: #fff;
+                        }
+
+                        .exam-btn-success {
+                            background: #22c55e;
+                            color: #fff;
+                        }
+
+                        .exam-btn-outline {
+                            background: #fff;
+                            color: #3b82f6;
+                            border: 2px solid #3b82f6;
+                        }
+
+                        .exam-btn-full {
+                            width: 100%;
+                            margin-top: 14px;
+                        }
+
+                        /* Timer */
+                        .exam-timer-wrap {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            margin-bottom: 14px;
+                        }
+
+                        .exam-timer-box {
+                            background: #1e293b;
+                            color: #fff;
+                            padding: 8px 16px;
+                            border-radius: 10px;
+                            font-size: 22px;
+                            font-weight: 700;
+                            font-family: monospace;
+                            letter-spacing: 2px;
+                            min-width: 100px;
+                            text-align: center;
+                        }
+
+                        .exam-timer-warn {
+                            background: #b45309;
+                        }
+
+                        .exam-timer-danger {
+                            background: #dc2626;
+                            animation: examPulse .6s ease-in-out infinite alternate;
+                        }
+
+                        @keyframes examPulse {
+                            from {
+                                transform: scale(1);
+                            }
+
+                            to {
+                                transform: scale(1.06);
+                            }
+                        }
+
+                        /* Progress */
+                        .exam-progress-bar {
+                            height: 8px;
+                            background: #e2e8f0;
+                            border-radius: 999px;
+                            overflow: hidden;
+                            margin-top: 6px;
+                        }
+
+                        .exam-progress-fill {
+                            height: 100%;
+                            background: linear-gradient(90deg, #3b82f6, #6366f1);
+                            border-radius: 999px;
+                            transition: width .3s;
+                        }
+
+                        .exam-prog-label {
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 12px;
+                            color: #64748b;
+                        }
+
+                        /* Options */
+                        .exam-opt-label {
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            padding: 13px 16px;
+                            border: 2px solid #e2e8f0;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            transition: all .18s;
+                            font-size: 14px;
+                            font-weight: 500;
+                            margin-bottom: 8px;
+                        }
+
+                        .exam-opt-label:hover {
+                            border-color: #3b82f6;
+                            background: #eff6ff;
+                        }
+
+                        .exam-opt-selected {
+                            border-color: #3b82f6 !important;
+                            background: #eff6ff;
+                            color: #3b82f6;
+                        }
+
+                        .exam-opt-badge {
+                            width: 32px;
+                            height: 32px;
+                            border-radius: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-weight: 700;
+                            font-size: 13px;
+                            flex-shrink: 0;
+                            background: #e2e8f0;
+                            color: #64748b;
+                        }
+
+                        .exam-opt-selected .exam-opt-badge {
+                            background: #3b82f6;
+                            color: #fff;
+                        }
+
+                        .exam-q-nav {
+                            display: flex;
+                            gap: 10px;
+                            margin-top: 20px;
+                        }
+
+                        .exam-opt-err {
+                            color: #ef4444;
+                            font-size: 13px;
+                            margin-top: 8px;
+                        }
+
+                        /* Score */
+                        .exam-score-big {
+                            text-align: center;
+                            padding: 20px 0;
+                        }
+
+                        .exam-score-circle {
+                            width: 120px;
+                            height: 120px;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin: 0 auto 14px;
+                            font-size: 34px;
+                            font-weight: 700;
+                        }
+
+                        .exam-score-pass {
+                            background: #dcfce7;
+                            color: #16a34a;
+                            border: 4px solid #86efac;
+                        }
+
+                        .exam-score-fail {
+                            background: #fee2e2;
+                            color: #dc2626;
+                            border: 4px solid #fca5a5;
+                        }
+
+                        /* Answer table */
+                        .exam-answer-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 13px;
+                            margin-top: 16px;
+                        }
+
+                        .exam-answer-table th,
+                        .exam-answer-table td {
+                            border: 1px solid #e2e8f0;
+                            padding: 9px 12px;
+                            text-align: left;
+                        }
+
+                        .exam-answer-table th {
+                            background: #f8fafc;
+                            font-weight: 600;
+                        }
+
+                        .exam-answer-table tr:nth-child(even) {
+                            background: #f8fafc;
+                        }
+
+                        .exam-correct-row {
+                            background: #f0fdf4;
+                        }
+
+                        .exam-incorrect-row {
+                            background: #fff5f5;
+                        }
+
+                        .exam-pill {
+                            padding: 2px 10px;
+                            border-radius: 999px;
+                            font-size: 11px;
+                            font-weight: 700;
+                        }
+
+                        .exam-pill-correct {
+                            background: #dcfce7;
+                            color: #16a34a;
+                        }
+
+                        .exam-pill-incorrect {
+                            background: #fee2e2;
+                            color: #dc2626;
+                        }
+
+                        /* Admin */
+                        .exam-admin-section-header {
+                            font-weight: 700;
+                            font-size: 13px;
+                            color: #64748b;
+                            text-transform: uppercase;
+                            letter-spacing: .8px;
+                            padding: 12px 0 6px;
+                            border-bottom: 1px solid #e2e8f0;
+                            margin-bottom: 10px;
+                        }
+
+                        .exam-admin-q-card {
+                            background: #f8fafc;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 10px;
+                            padding: 14px 16px;
+                            margin-bottom: 10px;
+                            position: relative;
+                        }
+
+                        .exam-admin-q-text {
+                            font-size: 14px;
+                            font-weight: 600;
+                            margin-bottom: 8px;
+                        }
+
+                        .exam-admin-q-opts {
+                            display: flex;
+                            gap: 8px;
+                            flex-wrap: wrap;
+                            font-size: 12px;
+                            color: #64748b;
+                        }
+
+                        .exam-admin-q-opts .exam-admin-correct {
+                            color: #16a34a;
+                            font-weight: 700;
+                            background: #dcfce7;
+                            padding: 2px 8px;
+                            border-radius: 6px;
+                        }
+
+                        .exam-admin-del-btn {
+                            position: absolute;
+                            top: 10px;
+                            right: 12px;
+                            background: #fee2e2;
+                            border: none;
+                            color: #dc2626;
+                            padding: 4px 10px;
+                            border-radius: 6px;
+                            font-size: 12px;
+                            cursor: pointer;
+                            font-weight: 600;
+                        }
+
+                        .exam-admin-del-btn:hover {
+                            background: #fca5a5;
+                        }
+
+                        .exam-add-q-form {
+                            background: #fff;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 12px;
+                            padding: 20px 22px;
+                            margin-top: 20px;
+                        }
+
+                        .exam-add-q-form h4 {
+                            font-size: 16px;
+                            font-weight: 700;
+                            margin-bottom: 14px;
+                        }
+
+                        .exam-form-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 10px;
+                            margin-bottom: 10px;
+                        }
+
+                        .exam-form-group {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 4px;
+                        }
+
+                        .exam-form-group label {
+                            font-size: 12px;
+                            font-weight: 600;
+                            color: #64748b;
+                        }
+
+                        .exam-form-group input,
+                        .exam-form-group select,
+                        .exam-form-group textarea {
+                            padding: 9px 12px;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 8px;
+                            font-size: 13px;
+                            font-family: inherit;
+                            outline: none;
+                        }
+
+                        .exam-form-group input:focus,
+                        .exam-form-group select:focus,
+                        .exam-form-group textarea:focus {
+                            border-color: #3b82f6;
+                        }
+
+                        .exam-form-group textarea {
+                            resize: vertical;
+                            min-height: 60px;
+                        }
+
+                        /* Results table */
+                        .exam-results-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 13px;
+                        }
+
+                        .exam-results-table th,
+                        .exam-results-table td {
+                            border: 1px solid #e2e8f0;
+                            padding: 9px 12px;
+                            text-align: left;
+                        }
+
+                        .exam-results-table th {
+                            background: #f8fafc;
+                            font-weight: 600;
+                        }
+
+                        .exam-results-table tr:nth-child(even) {
+                            background: #f8fafc;
+                        }
+                    </style>
+
+                    <div class="exam-panel">
+
+                        <!-- â”€â”€ HOME VIEW â”€â”€ -->
+                        <div id="examHomeView" class="exam-view" style="display:block;">
+                            <div class="exam-home-header">
+                                <h2>&#x1F393; MCQ Knowledge Exam</h2>
+                                <p>Test your knowledge on transformer manufacturing sections</p>
+                            </div>
+
+                            <div class="exam-section-grid">
+                                <!-- Winding -->
+                                <div class="exam-section-card" onclick="startExamSection('winding')">
+                                    <div class="exam-section-icon">&#x1F535;</div>
+                                    <div class="exam-section-title" style="color:#7c3aed;">Winding</div>
+                                    <div class="exam-section-desc">Coil winding, insulation, conductor placement</div>
+                                    <div class="exam-section-stat">Questions: <strong id="examStat_q_winding">â€”</strong>
+                                    </div>
+                                    <div class="exam-section-stat" id="examStat_r_winding">â€”</div>
+                                </div>
+                                <!-- Core Building -->
+                                <div class="exam-section-card" onclick="startExamSection('core')">
+                                    <div class="exam-section-icon">&#x1F7E2;</div>
+                                    <div class="exam-section-title" style="color:#0ea5e9;">Core Building</div>
+                                    <div class="exam-section-desc">CRGO laminations, frame assembly, core measurements
+                                    </div>
+                                    <div class="exam-section-stat">Questions: <strong id="examStat_q_core">â€”</strong>
+                                    </div>
+                                    <div class="exam-section-stat" id="examStat_r_core">â€”</div>
+                                </div>
+                                <!-- Tanking -->
+                                <div class="exam-section-card" onclick="startExamSection('tanking')">
+                                    <div class="exam-section-icon">&#x1F7E1;</div>
+                                    <div class="exam-section-title" style="color:#f59e0b;">Tanking</div>
+                                    <div class="exam-section-desc">Tank assembly, oil filling, final inspection</div>
+                                    <div class="exam-section-stat">Questions: <strong id="examStat_q_tanking">â€”</strong>
+                                    </div>
+                                    <div class="exam-section-stat" id="examStat_r_tanking">â€”</div>
+                                </div>
+                            </div>
+
+                            <div class="exam-admin-actions" id="examAdminActions">
+                                <button class="exam-action-btn exam-btn-admin" onclick="showExamAdmin()">&#x2699; Manage
+                                    Question Bank</button>
+                                <button class="exam-action-btn exam-btn-results" onclick="showExamResults()">&#x1F4CA; View All
+                                    Results</button>
+                            </div>
+                        </div>
+
+                        <!-- â”€â”€ TAKE EXAM VIEW â”€â”€ -->
+                        <div id="examTakeView" class="exam-view">
+                            <button class="exam-btn exam-btn-outline" style="margin-bottom:16px;"
+                                onclick="switchExamView('home'); loadExamTab();">â† Back</button>
+
+                            <!-- Name entry card -->
+                            <div class="exam-card" id="examNameCard">
+                                <div class="exam-section-label-big" id="examSectionLabel">Winding</div>
+                                <p style="color:#64748b;margin-bottom:14px;">Enter your name to begin the timed
+                                    examination.</p>
+                                <div class="exam-info-note" id="examInfoNote">â± Loading questionsâ€¦</div>
+                                <input type="text" class="exam-inp" id="examNameInput"
+                                    placeholder="Enter your full name..." maxlength="80">
+                                <div class="exam-name-err" id="examNameError"></div>
+                                <button class="exam-btn exam-btn-primary exam-btn-full" onclick="beginExam()">&#x1F680; Start
+                                    Exam</button>
+                            </div>
+
+                            <!-- Questions area -->
+                            <div id="examQuestionsArea" style="display:none;">
+                                <div class="exam-card" style="margin-bottom:14px;">
+                                    <div class="exam-timer-wrap">
+                                        <div style="font-size:13px;color:#64748b;font-weight:500;">â± Time Remaining
+                                        </div>
+                                        <div class="exam-timer-box" id="examTimerBox">10:00</div>
+                                    </div>
+                                    <div class="exam-prog-label">
+                                        <span id="examQLabel">Question 1 of 10</span>
+                                        <span id="examPctLabel">0%</span>
+                                    </div>
+                                    <div class="exam-progress-bar">
+                                        <div class="exam-progress-fill" id="examProgressFill" style="width:0%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="exam-card">
+                                    <div style="font-size:12px;font-weight:600;color:#64748b;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;"
+                                        id="examQNumber"></div>
+                                    <div style="font-size:17px;font-weight:600;line-height:1.5;margin-bottom:20px;"
+                                        id="examQText"></div>
+                                    <div id="examOptionsDiv"></div>
+                                    <div class="exam-opt-err" id="examOptError" style="display:none;"></div>
+                                    <div class="exam-q-nav" id="examQNav"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- â”€â”€ RESULT VIEW â”€â”€ -->
+                        <div id="examResultView" class="exam-view">
+                            <button class="exam-btn exam-btn-outline" style="margin-bottom:16px;"
+                                onclick="switchExamView('home'); loadExamTab();">&#x1F3E0; Home</button>
+                            <div class="exam-card">
+                                <div class="exam-score-big">
+                                    <div class="exam-score-circle" id="examScoreCircle">â€”</div>
+                                    <strong id="examScoreText" style="font-size:16px;"></strong>
+                                    <div style="color:#64748b;font-size:13px;margin-top:6px;" id="examScoreSub"></div>
+                                </div>
+                                <hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0;">
+                                <h3 style="font-size:15px;margin-bottom:12px;">&#x1F4CB; Answer Key</h3>
+                                <table class="exam-answer-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Question</th>
+                                            <th>Your Answer</th>
+                                            <th>Correct Answer</th>
+                                            <th>Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="examAnswerBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- â”€â”€ ADMIN VIEW â”€â”€ -->
+                        <div id="examAdminView" class="exam-view">
+                            <button class="exam-btn exam-btn-outline" style="margin-bottom:16px;"
+                                onclick="switchExamView('home'); loadExamTab();">â† Back</button>
+                            <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">&#x2699; Question Bank Management
+                            </h3>
+
+                            <div id="adminQList" style="margin-bottom:20px;"></div>
+
+                            <!-- Add Question Form -->
+                            <div class="exam-add-q-form">
+                                <h4>&#x2795; Add New Question</h4>
+                                <div class="exam-form-group" style="margin-bottom:10px;">
+                                    <label>Section</label>
+                                    <select id="newQ_section">
+                                        <option value="">-- Select Section --</option>
+                                        <option value="winding">Winding</option>
+                                        <option value="core">Core Building</option>
+                                        <option value="tanking">Tanking</option>
+                                    </select>
+                                </div>
+                                <div class="exam-form-group" style="margin-bottom:10px;">
+                                    <label>Question Text</label>
+                                    <textarea id="newQ_text" placeholder="Enter question..."></textarea>
+                                </div>
+                                <div class="exam-form-grid">
+                                    <div class="exam-form-group">
+                                        <label>Option A</label>
+                                        <input type="text" id="newQ_A" placeholder="Option A">
+                                    </div>
+                                    <div class="exam-form-group">
+                                        <label>Option B</label>
+                                        <input type="text" id="newQ_B" placeholder="Option B">
+                                    </div>
+                                    <div class="exam-form-group">
+                                        <label>Option C</label>
+                                        <input type="text" id="newQ_C" placeholder="Option C">
+                                    </div>
+                                    <div class="exam-form-group">
+                                        <label>Option D</label>
+                                        <input type="text" id="newQ_D" placeholder="Option D">
+                                    </div>
+                                </div>
+                                <div class="exam-form-group" style="margin-bottom:12px;">
+                                    <label>Correct Answer</label>
+                                    <select id="newQ_correct">
+                                        <option value="">-- Select --</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                </div>
+                                <div id="newQError" style="font-size:13px;margin-bottom:10px;"></div>
+                                <button class="exam-btn exam-btn-success" onclick="submitNewQuestion()">&#x1F4BE; Add
+                                    Question</button>
+                            </div>
+                        </div>
+
+                        <!-- â”€â”€ RESULTS LIST VIEW â”€â”€ -->
+                        <div id="examResultsListView" class="exam-view">
+                            <button class="exam-btn exam-btn-outline" style="margin-bottom:16px;"
+                                onclick="switchExamView('home'); loadExamTab();">â† Back</button>
+                            <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">&#x1F4CA; All Exam Results</h3>
+                            <div id="examResultsList"></div>
+                        </div>
+
+                    </div><!-- /.exam-panel -->
+                </section>
+
+                <!-- USER MANAGEMENT SECTION (Admin Only) -->
+                <section id="usersSection" class="section">
+                    <div style="max-width:1100px; margin:0 auto; padding:24px 0;">
+
+                        <!-- Header -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px;">
+                            <div>
+                                <h2 style="margin:0; font-size:26px; font-weight:800; color:#2c3e50;">&#x1F465; User Management</h2>
+                                <p style="margin:6px 0 0; color:#7f8c8d; font-size:14px;">Create, edit and manage system user accounts and roles.</p>
+                            </div>
+                            <button onclick="openAddUserModal()"
+                                style="background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none;
+                                padding:12px 24px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer;
+                                display:flex; align-items:center; gap:8px; box-shadow:0 4px 15px rgba(102,126,234,0.4);">
+                                &#x2795; Add User
+                            </button>
+                        </div>
+
+                        <!-- Users Table -->
+                        <div style="background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); overflow:hidden; border:1px solid #e8ecf0;">
+                            <div id="usersTableContainer">
+                                <div style="text-align:center; padding:48px; color:#999;">
+                                    <div style="font-size:36px; margin-bottom:12px;">&#x1F465;</div>
+                                    <p>Loading users...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT MODULES -->
+    <!-- Core -->
+    <script defer src="/js/core/api.js"></script>
+    <script defer src="/js/core/auth.js"></script>
+    <script defer src="/js/core/item-status.js"></script>
+
+    <!-- Features -->
+    <script defer src="/js/features/transformer.js"></script>
+
+    <script defer src="/js/features/stage-progression.js"></script>
+
+    <!-- Premium Dashboard (replaces legacy dashboard.js) -->
+    <script defer src="/js/features/dashboard-premium.js"></script>
+
+    <!-- Analytics Dashboard -->
+    <script defer src="/js/features/analytics.js"></script>
+
+    <!-- UI Enhancements -->
+    <script defer src="/js/features/login-modern.js"></script>
+
+
+    <!-- Digital Twin -->
+
+    <script defer src="/js/features/engineering-report.js"></script> <!-- Phase 4 -->
+
+
+    <!-- Additional Features -->
+    <script defer src="/js/ui/export.js"></script>
+
+
+
+    <!-- Sidebar (toggle + badges, merged) -->
+    <script defer src="/js/ui/sidebar.js"></script>
+
+    <!-- UI Enhancement Scripts -->
+
+    <!-- WO Timeline -->
+
+
+    <!-- Week 1: Status Badge System (row badges, stage-tab badges, Submit button rename) -->
+    <script defer src="/js/features/status-badges.js"></script>
+
+    <!-- Priority 1: Print-Style Sign-Off Cell Generator (dependency for ui.js checklist rendering) -->
+    <script defer src="/js/features/print-style-signoff.js"></script>
+
+    <!-- Checklist UI Engine (from transformer deep: getStageData, loadStageContent, questions management) -->
+    <script defer src="/js/features/ui.js"></script>
+
+    <!-- Checklist Logic (WO selection, save, load data, lock/unlock) -->
+    <script defer src="/js/features/checklist.js"></script>
+
+    <!-- MCQ Exam System -->
+    <script defer src="/js/features/exam.js"></script>
+
+    <!-- User Management (Admin only) -->
+    <script defer src="/js/features/users.js"></script>
+
+    <!-- Calculator Engine + UI (IEC 60076 Calculator Section) -->
+    <!-- Calculator Core -->
+    <script defer src="/js/calculation-engine/core/constants.js"></script>
+    <script defer src="/js/calculation-engine/core/errors.js"></script>
+    <script defer src="/js/calculation-engine/core/utils.js"></script>
+    <script defer src="/js/calculation-engine/core/validator.js"></script>
+    <script defer src="/js/calculation-engine/core/warnings.js"></script>
+
+    <!-- Calculator Modules -->
+    <script defer src="/js/calculation-engine/modules/01-currents.js"></script>
+    <script defer src="/js/calculation-engine/modules/02-core-design.js"></script>
+    <script defer src="/js/calculation-engine/modules/03-winding-design.js"></script>
+    <script defer src="/js/calculation-engine/modules/04-conductors.js"></script>
+    <script defer src="/js/calculation-engine/modules/05-losses.js"></script>
+    <script defer src="/js/calculation-engine/modules/06-dimensions.js"></script>
+    <script defer src="/js/calculation-engine/modules/07-temperature.js"></script>
+    <script defer src="/js/calculation-engine/modules/08-impedance.js"></script>
+    <script defer src="/js/calculation-engine/modules/09-short-circuit.js"></script>
+    <script defer src="/js/calculation-engine/modules/10-advanced.js"></script>
+    <script defer src="/js/calculation-engine/modules/11-tap-extremes.js"></script>
+    <script defer src="/js/calculation-engine/modules/validation.js"></script>
+
+    <!-- Calculator App -->
+    <script defer src="/js/calculation-engine/orchestrator.js"></script>
+    <script defer src="/js/calculation-engine/index.js"></script>
+    <script defer src="/js/features/calculator/ui.js"></script>
+    <script defer src="/js/features/calculator/charts.js"></script>
+    <!-- Main Application -->
+    <script defer src="/js/core/session.js"></script>
+    <script defer src="/js/main.js"></script>
+    <!-- UI Helpers (drag-drop, file preview, doc tabs, audit panel, home clock) -->
+    <script defer src="/js/ui/ui-helpers.js"></script>
+
+    <!-- ===== SESSION TIMEOUT WARNING MODAL ===== -->
+    <div id="sessionWarningModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
+        z-index:99999; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:16px; padding:36px 40px; max-width:420px; width:90%;
+            text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="font-size:48px; margin-bottom:12px;">&#x23F1;</div>
+            <h2 style="margin:0 0 8px; color:#2c3e50; font-size:20px;">Session Expiring Soon</h2>
+            <p style="color:#666; margin:0 0 20px; font-size:14px;">
+                You will be logged out in <strong id="sessionCountdown" style="color:#e74c3c;">60</strong> seconds
+                due to inactivity.
+            </p>
+            <div style="display:flex; gap:12px; justify-content:center;">
+                <button onclick="extendSession()"
+                    style="background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none;
+                    padding:12px 28px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">
+                    &#x2714; Stay Logged In
+                </button>
+                <button onclick="sessionLogout()"
+                    style="background:#f8f9fa; color:#666; border:1px solid #ddd;
+                    padding:12px 24px; border-radius:8px; font-size:14px; cursor:pointer;">
+                    Log Out
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

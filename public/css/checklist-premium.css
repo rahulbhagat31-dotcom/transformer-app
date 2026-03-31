@@ -1,0 +1,407 @@
+/* ============================================
+   ✅ MANUFACTURING CHECKLIST — Premium UI
+   Hero  ·  Stage Nav  ·  WO Selector Card
+============================================ */
+
+/* ── Section reset ── */
+#manufacturingChecklist {
+    padding: 0;
+    background: #f1f4f9;
+    min-height: 100vh;
+}
+
+#manufacturingChecklist>.card {
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+/* ════════════════════════════════════════
+   HERO BANNER
+════════════════════════════════════════ */
+.clk-hero {
+    background: linear-gradient(135deg, #14532d 0%, #166534 45%, #16a34a 100%);
+    padding: 26px 36px 22px;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 8px 40px rgba(22, 163, 74, 0.32);
+    animation: clkHeroIn 0.5s ease both;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.clk-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 85% 50%, rgba(134, 239, 172, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+@keyframes clkHeroIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.clk-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.clk-hero-icon {
+    font-size: 40px;
+    filter: drop-shadow(0 0 14px rgba(134, 239, 172, 0.7));
+    animation: clkFloat 3s ease-in-out infinite;
+}
+
+@keyframes clkFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+.clk-hero-title {
+    color: #fff;
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+}
+
+.clk-hero-sub {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 13px;
+    margin: 0;
+}
+
+.clk-hero-right {
+    display: flex;
+    gap: 10px;
+}
+
+.clk-hero-stat {
+    background: rgba(255, 255, 255, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(6px);
+    border-radius: 12px;
+    padding: 10px 18px;
+    text-align: center;
+    color: #fff;
+    min-width: 70px;
+}
+
+.clk-hero-stat .hs-num {
+    font-size: 22px;
+    font-weight: 800;
+    display: block;
+}
+
+.clk-hero-stat .hs-lbl {
+    font-size: 10px;
+    opacity: 0.75;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* ════════════════════════════════════════
+   WO SELECTOR CARD (premium)
+════════════════════════════════════════ */
+.clk-wo-card {
+    margin: 20px 24px 0 !important;
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07) !important;
+    background: #fff !important;
+    padding: 20px 22px !important;
+    animation: clkHeroIn 0.5s ease 0.1s both;
+}
+
+.clk-wo-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 14px;
+}
+
+/* ════════════════════════════════════════
+   STAGE NAVIGATION BAR (premium pills)
+════════════════════════════════════════ */
+.stage-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 16px 24px 0;
+    animation: clkHeroIn 0.5s ease 0.15s both;
+}
+
+.stage-btn {
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stage-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #16a34a, #059669);
+    opacity: 0;
+    transition: opacity 0.22s;
+    border-radius: 50px;
+}
+
+.stage-btn:hover {
+    border-color: #16a34a;
+    color: #16a34a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.2);
+}
+
+.stage-btn.active {
+    background: linear-gradient(135deg, #16a34a, #059669);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(22, 163, 74, 0.45);
+    transform: translateY(-2px);
+}
+
+/* ════════════════════════════════════════
+   STAGE PROGRESS CARD (enhanced)
+════════════════════════════════════════ */
+.stage-progress-card {
+    margin: 16px 24px 0 !important;
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07) !important;
+    background: #fff !important;
+    overflow: hidden;
+    animation: clkHeroIn 0.5s ease 0.2s both;
+}
+
+/* Stage tiles */
+.clk-stage-status {
+    display: flex;
+    gap: 0;
+}
+
+.clk-stage-tile {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    border-right: 1px solid #f1f5f9;
+    transition: background 0.3s, color 0.3s;
+    position: relative;
+    cursor: default;
+}
+
+.clk-stage-tile:last-child {
+    border-right: none;
+}
+
+.clk-stage-tile.tile-completed {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+}
+
+.clk-stage-tile.tile-in-progress {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    animation: tileGlow 2s ease-in-out infinite;
+}
+
+@keyframes tileGlow {
+
+    0%,
+    100% {
+        filter: brightness(1);
+    }
+
+    50% {
+        filter: brightness(1.08);
+    }
+}
+
+.clk-stage-tile.tile-pending {
+    background: #f8fafc;
+    color: #94a3b8;
+}
+
+.clk-stage-tile.tile-locked {
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    color: #5b21b6;
+}
+
+.clk-stage-icon {
+    font-size: 18px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.clk-stage-name {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.clk-stage-pct {
+    font-size: 15px;
+    font-weight: 800;
+    margin-top: 2px;
+    display: block;
+}
+
+/* SPC divider */
+.spc-divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 0 16px;
+}
+
+/* Progress bar enhanced */
+.clk-progress-bar {
+    padding: 14px 18px 10px;
+}
+
+.clk-progress-track {
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 50px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.clk-progress-fill {
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg, #16a34a, #4ade80);
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 10px rgba(22, 163, 74, 0.4);
+}
+
+.clk-progress-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.clk-progress-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.clk-stat-done {
+    color: #16a34a;
+    font-weight: 800;
+}
+
+.clk-stat-pending {
+    color: #d97706;
+    font-weight: 800;
+}
+
+.clk-stat-total {
+    color: #3b82f6;
+    font-weight: 800;
+}
+
+/* Tier stats */
+.clk-tier-stats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.clk-tier-chip {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* ════════════════════════════════════════
+   CHECKLIST TOOLBAR
+════════════════════════════════════════ */
+.clk-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #fff;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    margin: 16px 24px 0;
+}
+
+.clk-toolbar-left,
+.clk-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clk-label-hint {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+}
+
+/* ════════════════════════════════════════
+   MAIN CONTENT AREA
+════════════════════════════════════════ */
+#checklistMainContent {
+    margin: 0 24px 24px;
+    border-radius: 0 0 16px 16px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+}

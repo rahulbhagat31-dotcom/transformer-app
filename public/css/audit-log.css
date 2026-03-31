@@ -1,0 +1,614 @@
+/* ============================================
+   📜 AUDIT LOG — Premium Timeline UI
+   Color-coded action badges · Timeline cards
+============================================ */
+
+/* ── Section ── */
+#auditLog {
+    padding: 0;
+    background: #f1f4f9;
+    min-height: 100vh;
+}
+
+/* ════════════════════════════════════════
+   HERO HEADER
+════════════════════════════════════════ */
+.al-hero {
+    background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 45%, #6d28d9 100%);
+    padding: 28px 36px 22px;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 8px 40px rgba(109, 40, 217, 0.32);
+    animation: alHeroIn 0.5s ease both;
+    position: relative;
+    overflow: hidden;
+}
+
+.al-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 85% 40%, rgba(167, 139, 250, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+@keyframes alHeroIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.al-hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.al-hero-title-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.al-hero-icon {
+    font-size: 36px;
+    filter: drop-shadow(0 0 14px rgba(167, 139, 250, 0.8));
+    animation: alFloat 3s ease-in-out infinite;
+}
+
+@keyframes alFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+.al-hero-title {
+    color: #fff;
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+}
+
+.al-hero-sub {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    margin: 0;
+}
+
+.al-export-btn {
+    background: rgba(255, 255, 255, 0.13);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 22px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.al-export-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.04);
+}
+
+/* ── Filter bar ── */
+.al-filter-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.al-select {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+    min-width: 150px;
+}
+
+.al-select option {
+    background: #3730a3;
+    color: #fff;
+}
+
+.al-select:focus {
+    border-color: rgba(167, 139, 250, 0.8);
+}
+
+.al-search-wrap {
+    flex: 1;
+    min-width: 170px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.al-search-icon {
+    position: absolute;
+    left: 13px;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.al-search-input {
+    width: 100%;
+    padding: 10px 14px 10px 36px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s;
+}
+
+.al-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.al-search-input:focus {
+    border-color: rgba(167, 139, 250, 0.8);
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.al-date-input {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    color-scheme: dark;
+}
+
+.al-date-input:focus {
+    border-color: rgba(167, 139, 250, 0.8);
+}
+
+.al-search-btn {
+    padding: 10px 22px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 12px rgba(109, 40, 217, 0.4);
+}
+
+.al-search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(109, 40, 217, 0.5);
+}
+
+.al-clear-btn {
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.al-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.4);
+    color: #fff;
+}
+
+/* ── Legend chips ── */
+.al-legend {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.al-legend-chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    opacity: 0.85;
+    letter-spacing: 0.3px;
+}
+
+.al-create {
+    background: rgba(16, 185, 129, 0.2);
+    color: #6ee7b7;
+}
+
+.al-update {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fcd34d;
+}
+
+.al-delete {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+.al-login {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+.al-stage {
+    background: rgba(20, 184, 166, 0.2);
+    color: #5eead4;
+}
+
+.al-lock {
+    background: rgba(139, 92, 246, 0.2);
+    color: #c4b5fd;
+}
+
+.al-export {
+    background: rgba(156, 163, 175, 0.2);
+    color: #d1d5db;
+}
+
+/* ════════════════════════════════════════
+   BODY / TIMELINE CONTAINER
+════════════════════════════════════════ */
+.al-body {
+    padding: 24px 28px 40px;
+}
+
+/* Timeline wrap */
+.al-timeline {
+    position: relative;
+    padding-left: 36px;
+}
+
+.al-timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #6d28d9, #3b82f6 50%, #e2e8f0);
+    border-radius: 3px;
+    box-shadow: 0 0 12px rgba(109, 40, 217, 0.3);
+}
+
+/* Day group header */
+.al-day-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 28px 0 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #94a3b8;
+}
+
+.al-day-header::before,
+.al-day-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+}
+
+.al-day-header::before {
+    background: linear-gradient(to right, transparent, #e2e8f0);
+}
+
+.al-day-header::after {
+    background: linear-gradient(to left, transparent, #e2e8f0);
+}
+
+/* ── Individual log entry ── */
+.al-entry {
+    position: relative;
+    margin-bottom: 14px;
+    animation: alEntryIn 0.35s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+@keyframes alEntryIn {
+    from {
+        opacity: 0;
+        transform: translateX(-12px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Glowing dot */
+.al-entry::before {
+    content: '';
+    position: absolute;
+    left: -27px;
+    top: 16px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2.5px solid #fff;
+    background: var(--al-dot, #6d28d9);
+    box-shadow: 0 0 0 3px var(--al-dot, #6d28d9),
+        0 0 12px var(--al-dot, #6d28d9);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.al-entry:hover::before {
+    transform: scale(1.4);
+    box-shadow: 0 0 0 4px var(--al-dot, #6d28d9),
+        0 0 20px var(--al-dot, #6d28d9);
+}
+
+/* Card */
+.al-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 18px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+    border-left: 4px solid var(--al-dot, #6d28d9);
+    transition: box-shadow 0.25s, transform 0.2s;
+    cursor: default;
+}
+
+.al-card:hover {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    transform: translateX(3px);
+}
+
+/* Card top row */
+.al-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.al-action-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    flex-shrink: 0;
+}
+
+/* Action badge colors */
+.al-badge-create {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.al-badge-update {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.al-badge-delete {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.al-badge-login {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.al-badge-logout {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.al-badge-stage {
+    background: #ccfbf1;
+    color: #0f5132;
+}
+
+.al-badge-lock {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+.al-badge-unlock {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.al-badge-export {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.al-badge-default {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.al-card-resource {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1e293b;
+    flex: 1;
+}
+
+.al-card-time {
+    font-size: 11px;
+    color: #94a3b8;
+    background: #f8fafc;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Meta row */
+.al-card-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.al-meta-chip {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.al-meta-chip.user {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.al-meta-chip.entity {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* Detail block */
+.al-card-detail {
+    margin-top: 8px;
+    font-size: 11.5px;
+    color: #64748b;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 6px 10px;
+    word-break: break-word;
+    font-family: ui-monospace, monospace;
+}
+
+/* Dot color mappings */
+.al-entry.act-create {
+    --al-dot: #10b981;
+}
+
+.al-entry.act-update {
+    --al-dot: #f59e0b;
+}
+
+.al-entry.act-delete {
+    --al-dot: #ef4444;
+}
+
+.al-entry.act-login {
+    --al-dot: #3b82f6;
+}
+
+.al-entry.act-logout {
+    --al-dot: #94a3b8;
+}
+
+.al-entry.act-stage {
+    --al-dot: #14b8a6;
+}
+
+.al-entry.act-lock {
+    --al-dot: #8b5cf6;
+}
+
+.al-entry.act-unlock {
+    --al-dot: #f97316;
+}
+
+.al-entry.act-export {
+    --al-dot: #6366f1;
+}
+
+.al-entry.act-default {
+    --al-dot: #94a3b8;
+}
+
+/* ── Empty / loading ── */
+.al-empty {
+    text-align: center;
+    padding: 70px 20px;
+    color: #94a3b8;
+}
+
+.al-empty-icon {
+    font-size: 54px;
+    display: block;
+    margin-bottom: 14px;
+    animation: alPulse 2.5s ease-in-out infinite;
+    opacity: 0.45;
+}
+
+@keyframes alPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+}
+
+.al-empty h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px;
+}
+
+.al-empty p {
+    font-size: 14px;
+    margin: 0;
+}
+
+.al-count-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.al-count-bar span {
+    background: #f1f5f9;
+    padding: 4px 12px;
+    border-radius: 20px;
+}

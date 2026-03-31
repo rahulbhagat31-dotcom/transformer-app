@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCQ Exam – Transformer Manufacturing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --navy: #0f172a;
+            --blue: #3b82f6;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --muted: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 16px;
+            color: var(--text);
+        }
+
+        .exam-wrapper {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* ── Header ── */
+        .exam-header {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 28px 32px;
+            text-align: center;
+            margin-bottom: 24px;
+            color: white;
+        }
+
+        .exam-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .exam-header p {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 14px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-winding {
+            background: #7c3aed22;
+            color: #a78bfa;
+            border: 1px solid #7c3aed44;
+        }
+
+        .badge-core {
+            background: #0ea5e922;
+            color: #38bdf8;
+            border: 1px solid #0ea5e944;
+        }
+
+        .badge-tanking {
+            background: #f59e0b22;
+            color: #fbbf24;
+            border: 1px solid #f59e0b44;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 28px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        /* ── Name Entry ── */
+        #nameCard h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        #nameCard p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .inp {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .inp:focus {
+            border-color: var(--blue);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 13px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity .18s, transform .12s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: none;
+        }
+
+        .btn-primary {
+            background: var(--blue);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--green);
+            color: white;
+        }
+
+        .btn-full {
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        /* ── Progress bar ── */
+        .progress-wrap {
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--blue), #6366f1);
+            border-radius: 999px;
+            transition: width .3s;
+        }
+
+        /* ── Question card ── */
+        .q-number {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            margin-bottom: 10px;
+        }
+
+        .q-text {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 22px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .opt-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .18s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .opt-label:hover {
+            border-color: var(--blue);
+            background: #eff6ff;
+        }
+
+        .opt-label input[type=radio] {
+            display: none;
+        }
+
+        .opt-label.selected {
+            border-color: var(--blue);
+            background: #eff6ff;
+            color: var(--blue);
+        }
+
+        .opt-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            flex-shrink: 0;
+            background: var(--border);
+            color: var(--muted);
+        }
+
+        .opt-label.selected .opt-badge {
+            background: var(--blue);
+            color: white;
+        }
+
+        /* ── Nav buttons ── */
+        .q-nav {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--blue);
+            border: 2px solid var(--blue);
+        }
+
+        /* ── Results ── */
+        #resultsCard {
+            display: none;
+        }
+
+        .score-big {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .score-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .score-pass {
+            background: #dcfce7;
+            color: #16a34a;
+            border: 4px solid #86efac;
+        }
+
+        .score-fail {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 4px solid #fca5a5;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .answer-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+
+        .answer-table th,
+        .answer-table td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        .answer-table th {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .correct-row {
+            background: #f0fdf4;
+        }
+
+        .incorrect-row {
+            background: #fff5f5;
+        }
+
+        .pill {
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .pill-correct {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .pill-incorrect {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* ── Spinner / error ── */
+        .spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .spinner::after {
+            content: '';
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-box {
+            color: var(--red);
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        /* ── Timer ── */
+        .timer-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .timer-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e293b;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            font-family: monospace;
+            letter-spacing: 2px;
+            min-width: 110px;
+            justify-content: center;
+        }
+
+        .timer-box.warn {
+            background: #b45309;
+        }
+
+        .timer-box.danger {
+            background: #dc2626;
+            animation: pulse .6s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.06);
+            }
+        }
+
+        @media (max-width: 520px) {
+            .card {
+                padding: 20px 18px;
+            }
+
+            .exam-header {
+                padding: 22px 18px;
+            }
+
+            .q-text {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="exam-wrapper">
+
+        <!-- Header -->
+        <div class="exam-header">
+            <h1>⚡ Transformer Manufacturing</h1>
+            <p>Section Knowledge Test</p>
+            <span id="sectionBadge" class="section-badge">Loading...</span>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingDiv" class="spinner"></div>
+        <div id="errorDiv" class="error-box" style="display:none;"></div>
+
+        <!-- Step 1: Name entry -->
+        <div class="card" id="nameCard" style="display:none;">
+            <h2>👤 Enter Your Name</h2>
+            <p>Your name will be recorded along with your exam result.</p>
+            <div id="examInfoNote"
+                style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:#92400e;">
+                ⏱️ <strong>3 questions · 5 minute time limit.</strong> The exam auto-submits when time runs out.
+            </div>
+            <input type="text" class="inp" id="operatorName" placeholder="Enter your full name..." maxlength="80">
+            <div id="nameError" style="color:var(--red); font-size:13px; margin-top:8px; display:none;"></div>
+            <button class="btn btn-primary btn-full" onclick="startExam()">🚀 Start Exam</button>
+        </div>
+
+        <!-- Step 2: Questions -->
+        <div id="examCard" style="display:none;">
+            <div class="card" style="margin-bottom:16px;">
+                <!-- Timer -->
+                <div class="timer-wrap">
+                    <div style="font-size:13px; color:var(--muted); font-weight:500;">⏱ Time Remaining</div>
+                    <div class="timer-box" id="timerBox">5:00</div>
+                </div>
+                <div class="progress-wrap">
+                    <div class="progress-label">
+                        <span id="qLabel">Question 1 of 3</span>
+                        <span id="pctLabel">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="questionBox">
+                <div class="q-number" id="qNumber"></div>
+                <div class="q-text" id="qText"></div>
+                <div class="options" id="optionsDiv"></div>
+                <div id="optError" style="color:var(--red); font-size:13px; margin-top:10px; display:none;"></div>
+                <div class="q-nav" id="qNav"></div>
+            </div>
+        </div>
+
+        <!-- Step 3: Results -->
+        <div class="card" id="resultsCard">
+            <div class="score-big">
+                <div class="score-circle" id="scoreCircle"></div>
+                <div><strong id="scoreText"></strong></div>
+                <div class="score-label" id="scoreSub"></div>
+            </div>
+            <hr style="border:none; border-top:1px solid var(--border); margin:20px 0;">
+            <h3 style="font-size:16px; margin-bottom:4px;">📋 Answer Key</h3>
+            <p style="color:var(--muted); font-size:13px; margin-bottom:16px;">See which answers were correct and
+                incorrect.</p>
+            <table class="answer-table" id="answerTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Question</th>
+                        <th>Your Answer</th>
+                        <th>Correct Answer</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody id="answerBody"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        const SECTION_LABELS = { winding: 'Winding', core: 'Core Building', tanking: 'Tanking' };
+        const section = location.pathname.split('/').pop().toLowerCase();
+        const urlParams = new URLSearchParams(location.search);
+        const requestedCount = parseInt(urlParams.get('count'), 10) || 3; // default 3
+
+        let questions = [];
+        let answers = {};  // { questionId: chosen }
+        let currentIdx = 0;
+        let operatorName = '';
+
+        // ── Init ─────────────────────────────────────────────────────────────────
+        (async function init() {
+            const badge = document.getElementById('sectionBadge');
+            badge.textContent = SECTION_LABELS[section] || section;
+            badge.className = `section-badge badge-${section}`;
+            document.title = `${SECTION_LABELS[section] || section} Exam – Transformer`;
+
+            try {
+                const r = await fetch(`/questions/exam/${section}?count=${requestedCount}`);
+                const d = await r.json();
+                if (!d.success) throw new Error(d.error || 'Failed to load exam');
+
+                questions = d.data;
+                // ← Shuffle order on the client side too, so every person sees questions in a different sequence
+                questions = questions.slice().sort(() => Math.random() - 0.5);
+                // Update info note with actual count returned by server
+                const noteEl = document.getElementById('examInfoNote');
+                if (noteEl) noteEl.innerHTML = `⏱️ <strong>${questions.length} question${questions.length !== 1 ? 's' : ''} · 5 minute time limit.</strong> The exam auto-submits when time runs out.`;
+                document.getElementById('loadingDiv').style.display = 'none';
+
+                if (questions.length === 0) {
+                    showError('No questions available for this section yet. Please contact your administrator.');
+                    return;
+                }
+
+                document.getElementById('nameCard').style.display = 'block';
+            } catch (e) {
+                showError('Could not load exam: ' + e.message);
+            }
+        })();
+
+        function showError(msg) {
+            document.getElementById('loadingDiv').style.display = 'none';
+            const el = document.getElementById('errorDiv');
+            el.textContent = '❌ ' + msg;
+            el.style.display = 'block';
+        }
+
+        // ── Timer ────────────────────────────────────────────────────────────────
+        const EXAM_MINUTES = 5;
+        let timerInterval = null;
+        let secondsLeft = EXAM_MINUTES * 60;
+
+        function startTimer() {
+            secondsLeft = EXAM_MINUTES * 60;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                secondsLeft--;
+                updateTimerDisplay();
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmit();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(secondsLeft / 60);
+            const s = secondsLeft % 60;
+            const box = document.getElementById('timerBox');
+            box.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+            box.className = 'timer-box';
+            if (secondsLeft <= 30) box.classList.add('danger');
+            else if (secondsLeft <= 60) box.classList.add('warn');
+        }
+
+        async function autoSubmit() {
+            // Auto-submit with whatever answers are selected (unanswered = null)
+            const payload = {
+                section,
+                operatorName,
+                answers: questions.map(q => ({ questionId: q.id, chosen: answers[q.id] || null }))
+            };
+            try {
+                const r = await fetch('/questions/exam/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const d = await r.json();
+                if (!d.success) throw new Error(d.error || 'Submission failed');
+                showResults(d.data, true); // true = auto-submitted
+            } catch (e) {
+                alert('⏰ Time is up! Auto-submission failed: ' + e.message);
+            }
+        }
+
+        // ── Start exam ────────────────────────────────────────────────────────────
+        function startExam() {
+            const name = document.getElementById('operatorName').value.trim();
+            const errEl = document.getElementById('nameError');
+            if (!name) {
+                errEl.textContent = 'Please enter your name.';
+                errEl.style.display = 'block';
+                return;
+            }
+            errEl.style.display = 'none';
+            operatorName = name;
+            document.getElementById('nameCard').style.display = 'none';
+            document.getElementById('examCard').style.display = 'block';
+            startTimer();
+            renderQuestion(0);
+        }
+
+        // ── Render a question ─────────────────────────────────────────────────────
+        function renderQuestion(idx) {
+            currentIdx = idx;
+            const q = questions[idx];
+            const total = questions.length;
+            const pct = Math.round(((idx) / total) * 100);
+
+            document.getElementById('qLabel').textContent = `Question ${idx + 1} of ${total}`;
+            document.getElementById('pctLabel').textContent = `${pct}%`;
+            document.getElementById('progressFill').style.width = `${pct}%`;
+            document.getElementById('qNumber').textContent = `Q${idx + 1} of ${total}`;
+            document.getElementById('qText').textContent = q.text;
+            document.getElementById('optError').style.display = 'none';
+
+            // Options
+            const chosen = answers[q.id];
+            let optHtml = '';
+            for (const [key, val] of Object.entries(q.options)) {
+                const sel = chosen === key ? 'selected' : '';
+                optHtml += `
+                <label class="opt-label ${sel}" onclick="selectOption('${q.id}','${key}',this)">
+                    <input type="radio" name="opt" value="${key}" ${chosen === key ? 'checked' : ''}>
+                    <span class="opt-badge">${key}</span>
+                    <span>${val}</span>
+                </label>`;
+            }
+            document.getElementById('optionsDiv').innerHTML = optHtml;
+
+            // Navigation buttons
+            let nav = '';
+            if (idx > 0)
+                nav += `<button class="btn btn-outline" onclick="renderQuestion(${idx - 1})">◀ Previous</button>`;
+            if (idx < total - 1)
+                nav += `<button class="btn btn-primary" onclick="goNext()">Next ▶</button>`;
+            else
+                nav += `<button class="btn btn-success" onclick="submitExam()">✅ Submit Exam</button>`;
+            document.getElementById('qNav').innerHTML = nav;
+        }
+
+        function selectOption(qId, key, labelEl) {
+            answers[qId] = key;
+            document.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
+            labelEl.classList.add('selected');
+            document.getElementById('optError').style.display = 'none';
+        }
+
+        function goNext() {
+            const q = questions[currentIdx];
+            if (!answers[q.id]) {
+                const errEl = document.getElementById('optError');
+                errEl.textContent = '⚠ Please select an answer before proceeding.';
+                errEl.style.display = 'block';
+                return;
+            }
+            renderQuestion(currentIdx + 1);
+        }
+
+        // ── Submit exam ───────────────────────────────────────────────────────────
+        async function submitExam() {
+            // Check last question answered
+            const q = questions[currentIdx];
+            if (!answers[q.id]) {
+                const errEl = document.getElementById('optError');
+                errEl.textContent = '⚠ Please select an answer before submitting.';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            // Check unanswered questions
+            const unanswered = questions.filter(q => !answers[q.id]);
+            if (unanswered.length > 0) {
+                if (!confirm(`You have ${unanswered.length} unanswered question(s). Submit anyway?`)) return;
+            }
+
+            clearInterval(timerInterval); // stop timer on manual submit
+
+            const payload = {
+                section,
+                operatorName,
+                answers: questions.map(q => ({ questionId: q.id, chosen: answers[q.id] || null }))
+            };
+
+            try {
+                const r = await fetch('/questions/exam/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const d = await r.json();
+                if (!d.success) throw new Error(d.error || 'Submission failed');
+                showResults(d.data, false);
+            } catch (e) {
+                alert('❌ Submission failed: ' + e.message);
+            }
+        }
+
+        // ── Show results ──────────────────────────────────────────────────────────
+        function showResults(result, autoSubmitted = false) {
+            document.getElementById('examCard').style.display = 'none';
+            document.getElementById('resultsCard').style.display = 'block';
+
+            const { score, total, percentage, operatorName: name, answerKey } = result;
+            const pass = percentage >= 60;
+
+            const circle = document.getElementById('scoreCircle');
+            circle.textContent = `${percentage}%`;
+            circle.className = `score-circle ${pass ? 'score-pass' : 'score-fail'}`;
+
+            const autoMsg = autoSubmitted ? ' (⏰ Time ran out — auto-submitted)' : '';
+            document.getElementById('scoreText').textContent = pass
+                ? `🎉 Passed! Well done, ${name}!${autoMsg}`
+                : `Keep trying, ${name}!${autoMsg}`;
+            document.getElementById('scoreSub').textContent =
+                `You scored ${score} out of ${total} (${percentage}%) – ${pass ? 'PASS' : 'FAIL'}`;
+
+            // Answer table
+            let tbody = '';
+            answerKey.forEach((a, i) => {
+                const opts = a.options;
+                tbody += `
+            <tr class="${a.correct ? 'correct-row' : 'incorrect-row'}">
+                <td>${i + 1}</td>
+                <td>${a.questionText}</td>
+                <td>${a.chosen ? `${a.chosen}: ${opts[a.chosen] || '—'}` : '<em>Not answered</em>'}</td>
+                <td>${a.correctOption}: ${opts[a.correctOption]}</td>
+                <td><span class="pill ${a.correct ? 'pill-correct' : 'pill-incorrect'}">${a.correct ? '✓ Correct' : '✗ Wrong'}</span></td>
+            </tr>`;
+            });
+            document.getElementById('answerBody').innerHTML = tbody;
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+
+</html>

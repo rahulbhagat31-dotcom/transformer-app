@@ -1,0 +1,388 @@
+/* ===================================================
+   TOAST NOTIFICATION SYSTEM
+   Usage: window.Toast.success('msg') | .error() | .info() | .warning()
+=================================================== */
+
+/* Container — bottom-right stack */
+#toastContainer {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column-reverse;
+    /* newest on top of stack */
+    gap: 10px;
+    pointer-events: none;
+    max-width: 380px;
+    width: calc(100vw - 56px);
+}
+
+/* Individual Toast */
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    pointer-events: all;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    min-width: 280px;
+    backdrop-filter: blur(8px);
+
+    /* Enter animation */
+    animation: toastSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.toast.toast-hiding {
+    animation: toastSlideOut 0.28s ease-in forwards;
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(110%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+        max-height: 120px;
+        margin-bottom: 0;
+    }
+
+    to {
+        transform: translateX(110%);
+        opacity: 0;
+        max-height: 0;
+        margin-bottom: -10px;
+    }
+}
+
+/* Progress bar — auto-dismissal timer */
+.toast::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.4);
+    width: 100%;
+    transform-origin: left;
+    animation: toastProgress var(--toast-duration, 4s) linear forwards;
+}
+
+@keyframes toastProgress {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
+}
+
+/* Icon column */
+.toast-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Text column */
+.toast-body {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+}
+
+.toast-message {
+    opacity: 0.92;
+}
+
+/* Close button */
+.toast-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.6;
+    padding: 0;
+    line-height: 1;
+    color: inherit;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+}
+
+.toast-close:hover {
+    opacity: 1;
+}
+
+/* ── Variants ─────────────────────────────────────── */
+
+.toast-success {
+    background: linear-gradient(135deg, #1a6b3c 0%, #27ae60 100%);
+    color: white;
+    border-left: 4px solid #2ecc71;
+}
+
+.toast-error {
+    background: linear-gradient(135deg, #7f1d1d 0%, #c0392b 100%);
+    color: white;
+    border-left: 4px solid #e74c3c;
+}
+
+.toast-warning {
+    background: linear-gradient(135deg, #7a4f03 0%, #d68910 100%);
+    color: white;
+    border-left: 4px solid #f39c12;
+}
+
+.toast-info {
+    background: linear-gradient(135deg, #154360 0%, #2471a3 100%);
+    color: white;
+    border-left: 4px solid #3498db;
+}
+
+
+/* ===================================================
+   CONFIRMATION MODAL SYSTEM
+   Usage: window.Modal.confirm({...}).then(ok => ...)
+          window.Modal.alert({...})
+          window.Modal.prompt({...}).then(val => ...)
+=================================================== */
+
+/* Backdrop */
+#modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 18, 0.72);
+    backdrop-filter: blur(4px);
+    z-index: 99990;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    animation: backdropFadeIn 0.2s ease;
+}
+
+#modalBackdrop.modal-visible {
+    display: flex;
+}
+
+@keyframes backdropFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Dialog box */
+.modal-dialog {
+    background: #1e2330;
+    border-radius: 14px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    width: 420px;
+    max-width: calc(100vw - 40px);
+    overflow: hidden;
+    padding: 0;
+    animation: modalScaleIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+@keyframes modalScaleIn {
+    from {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Header stripe by intent */
+.modal-header {
+    padding: 22px 24px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.modal-header-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.modal-header-text h3 {
+    margin: 0 0 2px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #e8eaf0;
+}
+
+.modal-header-text p {
+    margin: 0;
+    font-size: 13px;
+    color: #9098b1;
+}
+
+/* Body */
+.modal-body {
+    padding: 18px 24px 4px;
+    color: #c8cde0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.modal-body textarea,
+.modal-body input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    background: #282e40;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: #e8eaf0;
+    font-size: 14px;
+    font-family: inherit;
+    margin-top: 10px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.modal-body textarea:focus,
+.modal-body input[type="text"]:focus {
+    border-color: #4a9eff;
+}
+
+/* Footer */
+.modal-footer {
+    padding: 16px 24px 22px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Modal Buttons */
+.modal-btn {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-family: inherit;
+    min-width: 90px;
+}
+
+.modal-btn-cancel {
+    background: rgba(255, 255, 255, 0.07);
+    color: #9098b1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #e8eaf0;
+}
+
+.modal-btn-confirm {
+    background: #27ae60;
+    color: white;
+}
+
+.modal-btn-confirm:hover {
+    background: #2ecc71;
+    transform: translateY(-1px);
+}
+
+.modal-btn-confirm:active {
+    transform: translateY(0);
+}
+
+.modal-btn-danger {
+    background: #c0392b;
+    color: white;
+}
+
+.modal-btn-danger:hover {
+    background: #e74c3c;
+    transform: translateY(-1px);
+}
+
+.modal-btn-danger:active {
+    transform: translateY(0);
+}
+
+.modal-btn-primary {
+    background: #2471a3;
+    color: white;
+}
+
+.modal-btn-primary:hover {
+    background: #3498db;
+    transform: translateY(-1px);
+}
+
+/* Intent-based header accent line */
+.modal-intent-success .modal-header {
+    border-top: 3px solid #27ae60;
+}
+
+.modal-intent-danger .modal-header {
+    border-top: 3px solid #e74c3c;
+}
+
+.modal-intent-warning .modal-header {
+    border-top: 3px solid #f39c12;
+}
+
+.modal-intent-info .modal-header {
+    border-top: 3px solid #3498db;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    #toastContainer {
+        right: 12px;
+        bottom: 12px;
+        max-width: calc(100vw - 24px);
+    }
+
+    .modal-dialog {
+        width: calc(100vw - 24px);
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .modal-btn {
+        width: 100%;
+    }
+}

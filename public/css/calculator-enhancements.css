@@ -1,0 +1,336 @@
+/**
+ * ================================================
+ * CALCULATOR ENHANCEMENTS - TOOLTIPS & VALIDATION
+ * Added: Tooltips, Validation States, Range Badges
+ * ================================================
+ */
+
+/* ========== TOOLTIP SYSTEM ========== */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    background: var(--info);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    transition: var(--transition-fast);
+}
+
+.tooltip-icon:hover {
+    background: var(--primary);
+    transform: scale(1.1);
+}
+
+.tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--dark);
+    color: white;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+    white-space: nowrap;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-base);
+    pointer-events: none;
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--dark);
+}
+
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Multi-line tooltips */
+.tooltip-text.multiline {
+    white-space: normal;
+    max-width: 300px;
+    text-align: left;
+}
+
+/* ========== VALIDATION STATES ========== */
+.modern-input.valid,
+.modern-select.valid {
+    border-color: var(--success);
+    background: rgba(39, 174, 96, 0.05);
+}
+
+.modern-input.invalid,
+.modern-select.invalid {
+    border-color: var(--danger);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+.modern-input.warning,
+.modern-select.warning {
+    border-color: var(--warning);
+    background: rgba(243, 156, 18, 0.05);
+}
+
+/* Validation Icons */
+.form-group {
+    position: relative;
+}
+
+.validation-icon {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    font-size: 18px;
+    pointer-events: none;
+    opacity: 0;
+    transition: var(--transition-fast);
+}
+
+.validation-icon.show {
+    opacity: 1;
+}
+
+.validation-icon.success {
+    color: var(--success);
+}
+
+.validation-icon.error {
+    color: var(--danger);
+}
+
+.validation-icon.warn {
+    color: var(--warning);
+}
+
+/* Validation Messages */
+.validation-message {
+    font-size: var(--font-size-xs);
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    display: none;
+}
+
+.validation-message.show {
+    display: block;
+}
+
+.validation-message.success {
+    color: var(--success);
+    background: rgba(39, 174, 96, 0.1);
+}
+
+.validation-message.error {
+    color: var(--danger);
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.validation-message.warning {
+    color: var(--warning);
+    background: rgba(243, 156, 18, 0.1);
+}
+
+/* ========== RANGE BADGES ========== */
+.range-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    margin-left: 8px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.range-badge.success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.range-badge.warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* ========== PRESET TEMPLATES ========== */
+.template-selector {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    color: white;
+    box-shadow: var(--shadow-lg);
+}
+
+.template-selector h4 {
+    margin: 0 0 12px 0;
+    font-size: var(--font-size-lg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.template-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.template-btn {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-weight: 600;
+    text-align: left;
+}
+
+.template-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.template-btn .template-title {
+    display: block;
+    font-size: var(--font-size-md);
+    margin-bottom: 4px;
+}
+
+.template-btn .template-specs {
+    display: block;
+    font-size: var(--font-size-xs);
+    opacity: 0.9;
+}
+
+/* ========== INPUT ICONS ========== */
+.input-with-icon {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--gray);
+    pointer-events: none;
+}
+
+.input-with-icon .modern-input {
+    padding-left: 40px;
+}
+
+/* ========== UNIT INDICATORS ========== */
+.input-unit {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--font-size-sm);
+    color: var(--gray);
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.input-with-unit .modern-input {
+    padding-right: 60px;
+}
+
+/* ========== LOADING STATES ========== */
+.input-loading {
+    position: relative;
+}
+
+.input-loading::after {
+    content: "";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--gray-light);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+/* ========== ENHANCED LABELS ========== */
+label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 8px;
+    font-size: var(--font-size-sm);
+}
+
+label .required {
+    color: var(--danger);
+    margin-left: 4px;
+}
+
+/* ========== HELP TEXT ========== */
+.help-text {
+    font-size: var(--font-size-xs);
+    color: var(--gray);
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.help-text.important {
+    color: var(--info);
+    font-weight: 600;
+}
+
+/* ========== RESPONSIVE TOOLTIPS ========== */
+@media (max-width: 768px) {
+    .tooltip-text {
+        position: fixed;
+        left: 50%;
+        bottom: auto;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90vw;
+        white-space: normal;
+    }
+
+    .tooltip-text::after {
+        display: none;
+    }
+}

@@ -1,0 +1,588 @@
+/* ===================================================
+   DESIGN TOKENS + UTILITY CLASSES
+   Single source of truth for all theme variables.
+   Primary: Light theme | Fallback: Dark theme variables
+   
+   Naming conventions:
+     --clr-*        → semantic colors
+     --surface-*    → background surfaces (light theme)
+     --bg-*         → backgrounds (dark theme)
+     --sp-*         → spacing utilities
+     --radius-*     → border radius
+     --shadow-*     → shadow effects
+     --font-*       → typography
+     --transition-* → animation timing
+     .clk-*         → checklist-specific
+     .ui-*          → general UI utility
+=================================================== */
+
+/* ─────────────────────────────────────────────────
+   PRIMARY DESIGN TOKENS (Light Theme)
+───────────────────────────────────────────────── */
+:root {
+    /* ============ LAYOUT ============ */
+    --sidebar-width: 260px;
+
+    /* ============ SEMANTIC COLORS ============ */
+    --clr-success: #27ae60;
+    --clr-success-light: rgba(39, 174, 96, 0.12);
+    --clr-danger: #e74c3c;
+    --clr-danger-light: rgba(231, 76, 60, 0.12);
+    --clr-danger-bg: #f8d7da;
+    --clr-danger-border: #f5c6cb;
+    --clr-warning: #e67e22;
+    --clr-warning-light: #fff3cd;
+    --clr-info: #3498db;
+    --clr-info-light: #e3f2fd;
+    --clr-purple: #8e44ad;
+    --clr-purple-light: rgba(142, 68, 173, 0.12);
+
+    /* ============ LIGHT THEME — SURFACES & TEXT ============ */
+    --surface-0: #ffffff;
+    --surface-1: #f8f9fa;
+    --surface-2: #f0f0f0;
+    --light-bg: #f4f7f6;
+    --border-subtle: #dee2e6;
+    --border-default: #ccc;
+    --text-default: #333;
+    --text-muted: #666;
+    --text-secondary: #721c24;
+
+    /* ============ COLORS (named for semantic use) ============ */
+    --navy: #2c3e50;
+    --blue: #3498db;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --orange: #e67e22;
+
+    /* ============ DARK THEME — BACKGROUNDS (fallback) ============ */
+    --bg-primary: #1a1d23;
+    --bg-secondary: #252930;
+    --bg-tertiary: #2d3139;
+    --bg-hover: #353a45;
+
+    /* ============ DARK THEME — TEXT (fallback) ============ */
+    --text-primary: #e4e6eb;
+    --text-primary-dark: #b0b3b8;
+    --text-tertiary: #8a8d91;
+    --text-inverse: #1a1d23;
+
+    /* ============ DARK THEME — ACCENTS (fallback) ============ */
+    --accent-blue: #4a9eff;
+    --accent-blue-dark: #3a7ed8;
+    --accent-green: #00d084;
+    --accent-green-dark: #00b06f;
+    --accent-orange: #ff9500;
+    --accent-orange-dark: #e68600;
+    --accent-red: #ff3b30;
+    --accent-red-dark: #e62b20;
+    --accent-purple: #9b59b6;
+
+    /* ============ STAGE-SPECIFIC COLORS ============ */
+    --stage-design: #9b59b6;
+    --stage-winding: #3498db;
+    --stage-core: #1abc9c;
+    --stage-vpd: #16a085;
+    --stage-tanking: #f39c12;
+    --stage-testing: #e67e22;
+    --stage-dispatch: #27ae60;
+    --stage-complete: #2ecc71;
+
+    /* ============ BORDER COLORS ============ */
+    --border-primary: #3a3f4b;
+    --border-secondary: #2d3139;
+    --border-accent: #4a9eff;
+
+    /* ============ SPACING SCALE ============ */
+    --sp-xs: 4px;
+    --sp-sm: 8px;
+    --sp-md: 15px;
+    --sp-lg: 20px;
+    --sp-xl: 30px;
+
+    /* Alternate spacing scale (for components) */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+
+    /* ============ BORDER RADIUS ============ */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-pill: 20px;
+    --radius-full: 9999px;
+
+    /* ============ SHADOW EFFECTS ============ */
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.18);
+    --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.6);
+
+    /* Light theme shadows (override for dark theme context) */
+    --shadow-sm-dark: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md-dark: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg-dark: 0 8px 16px rgba(0, 0, 0, 0.5);
+    --shadow-xl-dark: 0 12px 24px rgba(0, 0, 0, 0.6);
+
+    /* ============ TYPOGRAPHY ============ */
+    --font-base: 'Inter', 'Segoe UI', Arial, sans-serif;
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'Courier New', 'Consolas', monospace;
+    
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+    --font-size-2xl: 32px;
+    --font-size-3xl: 40px;
+
+    /* ============ TRANSITIONS & ANIMATIONS ============ */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.25s ease;
+    --transition-slow: 0.4s ease;
+
+    /* Alternate transition timing (matching premium dashboard) */
+    --transition-fast-premium: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base-premium: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow-premium: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ============ COMPATIBILITY ALIASES ============
+       These lock in the "generic" names so they are
+       officially owned by the global token system.
+       calculator-modern.css uses --calc-* prefixed copies
+       to remain independent; these aliases exist so that
+       if any file ever uses the unprefixed form it resolves
+       to the correct brand value rather than being undefined.
+       ================================================ */
+    --primary:          var(--blue);          /* #3498db */
+    --primary-dark:     #2980b9;
+    --primary-light:    #5dade2;
+    --secondary:        var(--accent-purple); /* #9b59b6 */
+    --dark:             var(--navy);          /* #2c3e50 */
+    --dark-2:           #34495e;
+    --gray:             #7f8c8d;
+    --gray-light:       #bdc3c7;
+    --gray-lighter:     #ecf0f1;
+    --white:            #ffffff;
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* ─────────────────────────────────────────────────
+   CHECKLIST — WO Selector card
+───────────────────────────────────────────────── */
+.clk-wo-card {
+    background: var(--clr-info-light);
+    border-left: 4px solid var(--clr-info);
+    margin-bottom: var(--sp-lg);
+}
+
+.clk-wo-card h3 {
+    color: var(--navy);
+}
+
+/* WO detail grid */
+.clk-wo-details {
+    display: none;
+    margin-top: var(--sp-md);
+    padding: var(--sp-md);
+    background: var(--surface-0);
+    border-radius: var(--radius-sm);
+}
+
+.clk-wo-details.visible {
+    display: block;
+}
+
+.clk-wo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .clk-wo-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ─────────────────────────────────────────────────
+   CHECKLIST — Stage status container
+───────────────────────────────────────────────── */
+.clk-stage-status {
+    display: none;
+    margin-top: var(--sp-lg);
+    padding: var(--sp-md);
+    background: var(--surface-1);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--clr-info);
+}
+
+.clk-stage-status h4 {
+    margin-top: 0;
+}
+
+/* ─────────────────────────────────────────────────
+   CHECKLIST — Progress bar
+───────────────────────────────────────────────── */
+.clk-progress-bar {
+    margin: var(--sp-lg) 0;
+    display: none;
+}
+
+.clk-progress-track {
+    background: var(--surface-2);
+    border-radius: 10px;
+    height: 35px;
+    position: relative;
+    overflow: hidden;
+}
+
+.clk-progress-fill {
+    background: linear-gradient(90deg, var(--clr-danger), #c0392b);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+.clk-progress-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
+}
+
+.clk-progress-stats {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-around;
+    font-size: 13px;
+    flex-wrap: wrap;
+    gap: var(--sp-sm);
+}
+
+.clk-stat-done {
+    color: var(--clr-success);
+    font-weight: 600;
+}
+
+.clk-stat-pending {
+    color: var(--clr-warning);
+    font-weight: 600;
+}
+
+.clk-stat-total {
+    color: var(--clr-info);
+    font-weight: 600;
+}
+
+.clk-tier-stats {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 13px;
+    padding: var(--sp-sm);
+    background: var(--surface-1);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+}
+
+/* ─────────────────────────────────────────────────
+   CHECKLIST — Toolbar (PDF export + bulk sign-off)
+───────────────────────────────────────────────── */
+.clk-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.clk-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clk-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clk-label-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────────
+   CHECKLIST — Stage control buttons bar
+───────────────────────────────────────────────── */
+.clk-stage-controls {
+    margin: var(--sp-md) 0;
+    padding: var(--sp-md);
+    background: var(--clr-warning-light);
+    border-radius: var(--radius-md);
+    display: none;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ─────────────────────────────────────────────────
+   CHECKLIST — Stage locked message
+───────────────────────────────────────────────── */
+.clk-stage-locked {
+    margin: var(--sp-md) 0;
+    padding: var(--sp-md);
+    background: var(--clr-danger-bg);
+    border: 1px solid var(--clr-danger-border);
+    border-radius: var(--radius-md);
+    display: none;
+    text-align: center;
+}
+
+.clk-stage-locked p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-weight: bold;
+}
+
+.clk-stage-locked p+p {
+    margin-top: 5px;
+    font-size: 13px;
+    font-weight: normal;
+}
+
+/* ─────────────────────────────────────────────────
+   CHECKLIST — No WO selected empty state
+───────────────────────────────────────────────── */
+.clk-empty-state {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────────
+   MODAL DIALOGS — Row unlock / lock
+   (replaces the big inline-style divs)
+───────────────────────────────────────────────── */
+.legacy-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.legacy-modal-backdrop.open {
+    display: flex;
+}
+
+/* Guarantee the unlock modal is NEVER shown unless .open class is explicitly added */
+#rowUnlockModal:not(.open) {
+    display: none !important;
+}
+
+
+.legacy-modal-box {
+    background: var(--surface-0);
+    padding: var(--sp-xl);
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow-lg);
+}
+
+.legacy-modal-box h3 {
+    margin-top: 0;
+}
+
+.legacy-modal-field {
+    margin: var(--sp-lg) 0;
+}
+
+.legacy-modal-info {
+    margin: 0;
+    padding: 10px;
+    background: var(--clr-info-light);
+    border-left: 4px solid var(--clr-info);
+    color: var(--navy);
+    font-size: 13px;
+}
+
+.legacy-modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: var(--sp-xl);
+}
+
+/* ─────────────────────────────────────────────────
+   BUTTON UTILITY CLASSES
+   (replaces inline btn-login + style overrides)
+───────────────────────────────────────────────── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-success {
+    background: var(--clr-success);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--clr-danger);
+    color: white;
+}
+
+.btn-info {
+    background: var(--clr-info);
+    color: white;
+}
+
+.btn-navy {
+    background: var(--navy);
+    color: white;
+}
+
+.btn-muted {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-warning {
+    background: var(--clr-warning);
+    color: white;
+}
+
+.btn-purple {
+    background: var(--clr-purple);
+    color: white;
+}
+
+/* ─────────────────────────────────────────────────
+   BULK SIGN-OFF RESULTS PANEL
+───────────────────────────────────────────────── */
+.bulk-signoff-result {
+    margin-top: var(--sp-md);
+    padding: var(--sp-sm) var(--sp-md);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    display: none;
+}
+
+.bulk-signoff-result.success {
+    background: var(--clr-success-light);
+    color: var(--clr-success);
+    border-left: 3px solid var(--clr-success);
+    display: block;
+}
+
+.bulk-signoff-result.error {
+    background: #f8d7da;
+    color: #721c24;
+    border-left: 3px solid var(--clr-danger);
+    display: block;
+}
+
+/* ─────────────────────────────────────────────────
+   DOCUMENTS SECTION — Tab buttons
+   Used by switchDocTab() in ui-helpers.js
+───────────────────────────────────────────────── */
+.doc-tab {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #95a5a6;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+    font-family: var(--font-base);
+}
+
+.doc-tab:hover {
+    color: var(--navy);
+}
+
+.doc-tab-active {
+    color: var(--clr-info);
+    border-bottom-color: var(--clr-info);
+    font-weight: 700;
+}
+
+/* ─────────────────────────────────────────────────
+   LAYOUT UTILITIES
+   (replaces common inline style patterns in index.html)
+───────────────────────────────────────────────── */
+
+/* Top-bar right-side user group flex container */
+.top-bar-user-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Collapsible audit panel header bar */
+.audit-panel-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.audit-panel-title {
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.audit-panel-chevron {
+    font-size: 13px;
+    transition: transform 0.3s;
+}
+
+/* Customer-notice wrapper — hidden by default, shown via JS */
+.notice-wrap {
+    display: none;
+    margin: 0 24px 24px;
+}

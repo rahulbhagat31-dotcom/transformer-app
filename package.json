@@ -1,0 +1,44 @@
+{
+  "name": "transformer-manufacturing-system",
+  "version": "1.0.0",
+  "description": "Engineering Project Management System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "npm run test:accuracy",
+    "test:accuracy": "node tests/unit/accuracy-restoration.test.js",
+    "test:engine": "node tests/unit/engine-core.test.js",
+    "test:all": "npm run test:accuracy && npm run test:engine",
+    "test:validation": "node tests/unit/run-validation.js",
+    "backup": "node scripts/manual-backup.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^12.6.2",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "exceljs": "^4.4.0",
+    "express": "^4.22.1",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
+    "fs-extra": "^11.3.3",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "node-cache": "^5.1.2",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.13",
+    "pdfkit": "^0.17.2",
+    "socket.io": "^4.8.3",
+    "uuid": "^13.0.0",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.2"
+  }
+}

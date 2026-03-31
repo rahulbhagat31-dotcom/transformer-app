@@ -1,0 +1,427 @@
+/* ================================================
+   MERGE — LANGUAGE, LAYOUT, ACTIVITY LINE
+   Unified card + activity line styles
+   ================================================ */
+
+/* ── STAGE PROGRESS CARD ─────────────────────── */
+/* Wraps stageStatusContainer + progressBar as one  */
+.stage-progress-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 16px 8px;
+    margin: 12px 0 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Sub-divider between stage tiles and progress bar */
+.spc-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #dde3ec, transparent);
+    margin: 12px 0 10px;
+}
+
+/* Remove the old separate headings — card is now self-explanatory */
+.stage-progress-card .clk-stage-status h4,
+.stage-progress-card .clk-progress-bar h4 {
+    display: none;
+}
+
+/* Tighten progress bar when inside card */
+.stage-progress-card .clk-progress-bar {
+    padding: 0;
+}
+
+/* ── AUDIT ACTIVITY LINE ─────────────────────── */
+/* Usage: <div class="audit-activity-line">        */
+/*   <span class="aal-user">Rahul</span>           */
+/*   <span class="aal-role">Engineer</span>        */
+/*   <span class="aal-dot">·</span>                */
+/*   <span class="aal-shift">Morning</span>        */
+/*   <span class="aal-dot">·</span>                */
+/*   <span class="aal-time">06 Jan 10:30</span>   */
+/*   <span class="aal-arrow">→</span>              */
+/*   <span class="aal-action">Submitted</span>     */
+/* </div>                                          */
+.audit-activity-line {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    color: #64748b;
+    flex-wrap: wrap;
+    padding: 4px 0 2px;
+    border-top: 1px solid #f0f4f8;
+    margin-top: 4px;
+}
+
+.aal-user {
+    font-weight: 600;
+    color: #334155;
+}
+
+.aal-role {
+    color: #7c8db5;
+    font-style: italic;
+}
+
+.aal-dot {
+    color: #cbd5e1;
+    margin: 0 1px;
+}
+
+.aal-shift {
+    color: #64748b;
+}
+
+.aal-time {
+    color: #94a3b8;
+    font-size: 10px;
+}
+
+.aal-arrow {
+    color: #94a3b8;
+    margin: 0 2px;
+}
+
+.aal-action {
+    font-weight: 600;
+    color: #0f766e;
+}
+
+.aal-action.aal-rejected {
+    color: #e11d48;
+}
+
+.aal-action.aal-reopened {
+    color: #d97706;
+}
+
+.aal-action.aal-submitted {
+    color: #0f766e;
+}
+
+.aal-action.aal-approved {
+    color: #15803d;
+}
+
+/* ── PRESET REASON CHIPS (lock / unlock modals) ── */
+.reason-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: 1.5px solid #b0bec5;
+    border-radius: 20px;
+    background: #f5f7fa;
+    color: #455a64;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+    user-select: none;
+}
+
+.reason-chip:hover {
+    background: #e8f4fd;
+    border-color: #2980b9;
+    color: #1a5276;
+    transform: translateY(-1px);
+}
+
+.reason-chip--active {
+    background: #2980b9;
+    border-color: #2980b9;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(41, 128, 185, 0.3);
+}
+
+.reason-chip--active:hover {
+    background: #2471a3;
+    color: #fff;
+}
+
+/* ── 1. ROW SAVE — green highlight fade-out ──── */
+@keyframes rowSavedFlash {
+    0% {
+        background-color: #d5f5e3;
+        box-shadow: 0 0 0 2px #27ae60 inset;
+    }
+
+    60% {
+        background-color: #eafaf0;
+        box-shadow: none;
+    }
+
+    100% {
+        background-color: transparent;
+        box-shadow: none;
+    }
+}
+
+.row-saved-flash {
+    animation: rowSavedFlash 1.4s ease-out forwards;
+}
+
+/* ── 2. ROW LOCK — submit-for-review pulse ───── */
+@keyframes rowLockedPulse {
+    0% {
+        background-color: #d6eaf8;
+        box-shadow: 0 0 0 2px #2980b9 inset;
+    }
+
+    50% {
+        background-color: #ebf5fb;
+        transform: scaleY(1.01);
+    }
+
+    100% {
+        background-color: transparent;
+        box-shadow: none;
+        transform: scaleY(1);
+    }
+}
+
+.row-locked-flash {
+    animation: rowLockedPulse 1.2s ease-out forwards;
+}
+
+/* ── 3. ROW UNLOCK — blue highlight fade-out ─── */
+@keyframes rowUnlockedFlash {
+    0% {
+        background-color: #fef9e7;
+        box-shadow: 0 0 0 2px #f39c12 inset;
+    }
+
+    100% {
+        background-color: transparent;
+        box-shadow: none;
+    }
+}
+
+.row-unlocked-flash {
+    animation: rowUnlockedFlash 1.2s ease-out forwards;
+}
+
+/* ── 4. STATUS BADGE — slide-in transition ────── */
+@keyframes badgeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes badgePop {
+    0% {
+        transform: scale(1);
+    }
+
+    40% {
+        transform: scale(1.18);
+    }
+
+    70% {
+        transform: scale(0.95);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.status-updating {
+    opacity: 0.3;
+    transform: translateY(4px);
+    transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+.status-updated {
+    animation: badgePop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* New badge (first render) */
+.item-status-badge {
+    animation: badgeSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ── 5. STAGE TAB BADGE — slide in ─────────────── */
+@keyframes stageTabBadgeAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.7) translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.stage-tab-badge {
+    animation: stageTabBadgeAppear 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── 6. STAGE CONTENT — slide-in on tab change ── */
+@keyframes stageContentSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.stage-content-slide {
+    animation: stageContentSlideIn 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── 7. PANEL TRANSITIONS (lock / approved / rejected panels) */
+@keyframes panelFadeSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 300px;
+    }
+}
+
+.clk-stage-locked,
+#stageApprovedMessage,
+#stageRejectedMessage,
+#stageAwaitingQAMessage {
+    animation: panelFadeSlideDown 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── 8. MODAL UNLOCK — warning pulse ─────────── */
+@keyframes warningPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+        border-color: #e74c3c;
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(231, 76, 60, 0.18);
+        border-color: #c0392b;
+    }
+}
+
+.legacy-modal-box {
+    animation: none;
+    /* base */
+}
+
+.modal-warning-pulse .legacy-modal-box {
+    animation: warningPulse 1.4s ease-in-out 3;
+}
+
+/* ── 9. BUTTON MICRO-FEEDBACK ─────────────────── */
+@keyframes btnClickBounce {
+    0% {
+        transform: scale(1);
+    }
+
+    30% {
+        transform: scale(0.92);
+    }
+
+    70% {
+        transform: scale(1.06);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.btn-click-bounce {
+    animation: btnClickBounce 0.26s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ── 10. SUBMIT STAGE BUTTON glow ─────────────── */
+@keyframes submitGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.5);
+    }
+
+    60% {
+        box-shadow: 0 0 0 10px rgba(39, 174, 96, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(39, 174, 96, 0);
+    }
+}
+
+.btn-submit-glow {
+    animation: submitGlow 0.7s ease-out forwards;
+}
+
+/* ── 11. REJECT MODAL — danger shake ─────────── */
+@keyframes dangerShake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-6px);
+    }
+
+    40% {
+        transform: translateX(6px);
+    }
+
+    60% {
+        transform: translateX(-4px);
+    }
+
+    80% {
+        transform: translateX(4px);
+    }
+}
+
+.modal-danger-shake .legacy-modal-box {
+    animation: dangerShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ── 12. STAGE COMPLETION — celebration flash ─── */
+@keyframes stageCompleteCelebrate {
+    0% {
+        background: transparent;
+    }
+
+    15% {
+        background: rgba(39, 174, 96, 0.15);
+    }
+
+    50% {
+        background: rgba(39, 174, 96, 0.06);
+    }
+
+    100% {
+        background: transparent;
+    }
+}
+
+.stage-complete-celebrate {
+    animation: stageCompleteCelebrate 1.6s ease-out forwards;
+}

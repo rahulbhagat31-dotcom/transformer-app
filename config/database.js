@@ -37,9 +37,10 @@ if (fs.existsSync(schemaPath)) {
     // ALTER TABLE runs inside try/catch so adding an already-existing
     // column is silently ignored (idempotent migration).
     const statements = schema
+        .replace(/--.*/g, '')
         .split(';')
         .map(s => s.trim())
-        .filter(s => s.length > 0 && !s.startsWith('--'));
+        .filter(s => s.length > 0);
 
     for (const stmt of statements) {
         try {

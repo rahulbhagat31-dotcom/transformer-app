@@ -723,8 +723,8 @@ function loadStageContent(stage) {
                                         <input type="text" id="timing_dt_${rowId}" ${disabledAttr} placeholder="DD/MM/YYYY HH:MM" style="width:100%;border:none;padding:3px 4px;font-size:10px;background:transparent;box-sizing:border-box;">
                                     </td>
                                     <td style="padding:0; width:40%;">
-                                        <div style="font-size:9px; text-align:center; padding:2px; border-bottom:1px solid #ddd; color:#555;">Temp........Ãƒâ€šÃ‚&deg;C</div>
-                                        <input type="text" id="timing_temp_${rowId}" ${disabledAttr} placeholder="Ãƒâ€šÃ‚&deg;C" style="width:100%;border:none;padding:3px 4px;font-size:10px;background:transparent;box-sizing:border-box;">
+                                        <div style="font-size:9px; text-align:center; padding:2px; border-bottom:1px solid #ddd; color:#555;">Temp........°C</div>
+                                        <input type="text" id="timing_temp_${rowId}" ${disabledAttr} placeholder="°C" style="width:100%;border:none;padding:3px 4px;font-size:10px;background:transparent;box-sizing:border-box;">
                                     </td>
                                 </tr>
                             </table>

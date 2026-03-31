@@ -47,6 +47,9 @@ const io = socketIO(server, {
     }
 });
 
+// Trust proxies (essential for accurate rate limiting on Render and other PaaS)
+app.set('trust proxy', 1);
+
 // =====================
 // MIDDLEWARE
 // =====================

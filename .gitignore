@@ -22,8 +22,9 @@ error.log
 
 # ──────────────────────────────────────────────
 # SQLite database files (runtime data)
+# NOTE: temporarily including .db so existing data shows on Render
 # ──────────────────────────────────────────────
-data/*.db
+# data/*.db   <-- temporarily committed for demo data
 data/*.db-shm
 data/*.db-wal
 

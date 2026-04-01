@@ -28,6 +28,11 @@ router.get('/customers', controller.getCustomers);
 router.get('/', controller.getTransformers);
 
 /**
+ * GET /transformers/:id
+ */
+router.get('/:id', controller.getTransformer);
+
+/**
  * POST /transformers
  */
 router.post('/', [

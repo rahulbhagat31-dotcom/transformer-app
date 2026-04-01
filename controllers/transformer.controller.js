@@ -19,6 +19,28 @@ exports.getTransformers = (req, res) => {
     }
 };
 
+exports.getTransformer = (req, res) => {
+    try {
+        const id = req.params.id;
+        const transformer = transformerService.findByWO(id);
+
+        if (!transformer) {
+            return res.status(404).json(errorResponse('Transformer not found'));
+        }
+
+        // Check customer access
+        if (req.user?.customerId && req.user.role !== 'admin') {
+            if (transformer.customerId !== req.user.customerId) {
+                return res.status(403).json(errorResponse('Access denied.'));
+            }
+        }
+
+        res.json(successResponse(transformer, 'Transformer loaded'));
+    } catch (error) {
+        res.status(500).json(errorResponse(error));
+    }
+};
+
 exports.createTransformer = (req, res) => {
     try {
         const transformerData = {

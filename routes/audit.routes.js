@@ -22,13 +22,15 @@ router.get('/', checkPermission('quality'), (req, res) => {
 
 /**
  * GET /audit/logs
- * Retrieve audit logs with optional filters and pagination
+ * Retrieve audit logs with optional filters and pagination.
+ * Supports ?wo= (used by Digital Twin) as alias for ?entityId=
  */
 router.get('/logs', checkPermission('quality'), (req, res) => {
     try {
         const {
             entity,
             entityId,
+            wo,          // Digital Twin passes ?wo=WO-XXXX — treat as entityId
             userId,
             limit = 100,
             skip = 0
@@ -44,8 +46,9 @@ router.get('/logs', checkPermission('quality'), (req, res) => {
         if (entity) {
             filters.entityType = entity;
         }
-        if (entityId) {
-            filters.entityId = entityId;
+        // Support both ?entityId= and ?wo= (Digital Twin uses ?wo=)
+        if (entityId || wo) {
+            filters.entityId = entityId || wo;
         }
         if (userId) {
             filters.userId = userId;

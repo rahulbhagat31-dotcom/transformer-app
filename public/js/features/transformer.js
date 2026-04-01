@@ -134,7 +134,7 @@ function renderRegistryPage() {
                         &#x1F4CA; History
                     </button>
                     <button class="tm-action-btn tm-btn-twin"
-                        onclick="window.open('/digital-twin.html?wo=${encodeURIComponent(t.wo)}', '_blank')">
+                        onclick="openDigitalTwin('${t.wo}')">
                         &#x1F52D; Twin
                     </button>
                     ${visibilityBtn}
@@ -161,18 +161,13 @@ window.toggleCustomerVisibility = async function (wo, currentlyVisible) {
     }
 
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-        const res = await fetch(`/api/transformers/${encodeURIComponent(wo)}/customer-visibility`, {
+        const res = await apiRequest(`/api/transformers/${encodeURIComponent(wo)}/customer-visibility`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
             body: JSON.stringify({ visible: newVisible })
         });
 
-        const result = await res.json();
-        if (!res.ok || !result.success) {
+        const result = res; // apiRequest already parses JSON
+        if (!result.success) {
             throw new Error(result.error || 'Update failed');
         }
 
@@ -490,7 +485,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Export functions to window
 window.doSearch = doSearch;
 window.addTransformer = addTransformer;
 window.updateTransformerDropdowns = updateTransformerDropdowns;
@@ -501,3 +495,17 @@ window.loadBOMList = loadBOMList;
 window.loadDocumentList = loadDocumentList;
 window.getStageName = getStageName;
 window.renderRegistryPage = renderRegistryPage;
+
+/* ===============================
+   OPEN DIGITAL TWIN (SPA navigation)
+   Sets the WO and switches to digitalTwin section
+================================ */
+window.openDigitalTwin = function (wo) {
+    if (typeof showDigitalTwin === 'function') {
+        showDigitalTwin(wo);
+    } else {
+        // If showDigitalTwin isn't ready, set WO and navigate manually
+        window._pendingDigitalTwinWO = wo;
+        if (typeof showSection === 'function') showSection('digitalTwin');
+    }
+};

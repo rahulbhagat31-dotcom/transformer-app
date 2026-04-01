@@ -22,10 +22,9 @@ function getNextStage(currentStage) {
  */
 async function moveToNextStage(transformerId, notes = '') {
     try {
-        // Get transformer details from search results
-        const response = await apiCall('/transformers');
-        const transformers = response.data || response;
-        const transformer = transformers.find(t => t.id === transformerId);
+        // Get specific transformer details
+        const response = await apiCall(`/transformers/${transformerId}`);
+        const transformer = response.data || response;
 
         if (!transformer) {
             Toast.error('Transformer not found');
@@ -133,9 +132,8 @@ function closeStageModal() {
  */
 async function viewStageHistory(transformerId) {
     try {
-        const response = await apiCall('/transformers');
-        const transformers = response.data || response;
-        const transformer = transformers.find(t => t.id === transformerId);
+        const response = await apiCall(`/transformers/${transformerId}`);
+        const transformer = response.data || response;
 
         if (!transformer) {
             Toast.error('Transformer not found');

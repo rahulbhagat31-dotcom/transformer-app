@@ -18,9 +18,9 @@ function getNextStage(currentStage) {
 }
 
 /**
- * Move transformer to next stage
+ * Move transformer to a specific stage
  */
-async function moveToNextStage(transformerId, notes = '') {
+async function moveToStage(transformerId, targetStage, notes = '') {
     try {
         // Get specific transformer details
         const response = await apiCall(`/transformers/${transformerId}`);
@@ -31,29 +31,10 @@ async function moveToNextStage(transformerId, notes = '') {
             return;
         }
 
-        const currentStage = transformer.currentStage || 'design';
-        const nextStage = getNextStage(currentStage);
-
-        if (!nextStage) {
-            Toast.info('Transformer is already at the final stage (Completed)', { title: 'Final Stage' });
-            return;
-        }
-
-        // Confirm stage change
-        const stageName = getStageName(nextStage);
-        const confirmed = await Modal.confirm({
-            title: 'Move to Next Stage',
-            message: `Move W.O. ${transformer.wo} to ${stageName}?`,
-            icon: '🔄',
-            intent: 'info',
-            confirmText: 'Move Stage'
-        });
-
-        if (!confirmed) return;
-
         // Call API to update stage
+        const stageName = getStageName(targetStage);
         const result = await apiCall(`/transformers/${transformerId}/stage`, 'POST', {
-            newStage: nextStage,
+            newStage: targetStage,
             notes: notes
         });
 
@@ -67,35 +48,37 @@ async function moveToNextStage(transformerId, notes = '') {
             if (typeof loadDashboard === 'function') loadDashboard();
         }
     } catch (error) {
-        console.error('❌ Error moving to next stage:', error);
+        console.error('❌ Error updating stage:', error);
         Toast.error('Failed to update stage: ' + error.message);
     }
 }
 
 /**
- * Show stage progression modal
+ * Build HTML for stage progression modal
  */
-function showStageProgressionModal(transformerId, currentWO) {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.id = 'stageProgressionModal';
-    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
-
-    modal.innerHTML = `
+function buildStageModalHtml(transformerId, currentWO, optionsHtml) {
+    return `
         <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%;">
-            <h3 style="margin-top: 0; color: #2c3e50;">🔄 Move to Next Stage</h3>
+            <h3 style="margin-top: 0; color: #2c3e50;">🔄 Change Stage</h3>
             <p style="color: #7f8c8d; margin-bottom: 20px;">W.O. Number: <strong>${currentWO}</strong></p>
             
             <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #2c3e50;">
-                Notes (Optional):
+                Target Stage:
             </label>
-            <textarea id="stageNotes" class="ui-input" rows="4" 
-                placeholder="Enter any notes about this stage completion..."></textarea>
+            <select id="targetStageSelect" class="ui-input" style="width: 100%; margin-bottom: 15px; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
+                ${optionsHtml}
+            </select>
+
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #2c3e50;">
+                Reason / Notes (Optional):
+            </label>
+            <textarea id="stageNotes" class="ui-input" rows="4" style="width: 100%;"
+                placeholder="Enter reason for stage change or standard completion notes..."></textarea>
             
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button onclick="confirmStageChange('${transformerId}')" 
                     style="flex: 1; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                    ✅ Confirm
+                    ✅ Confirm Change
                 </button>
                 <button onclick="closeStageModal()" 
                     style="flex: 1; padding: 12px; background: #95a5a6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
@@ -104,8 +87,48 @@ function showStageProgressionModal(transformerId, currentWO) {
             </div>
         </div>
     `;
+}
 
-    document.body.appendChild(modal);
+/**
+ * Show stage progression modal
+ */
+async function showStageProgressionModal(transformerId, currentWO) {
+    try {
+        const response = await apiCall(`/transformers/${transformerId}`);
+        const transformer = response.data || response;
+
+        if (!transformer) {
+            Toast.error('Transformer not found');
+            return;
+        }
+
+        const currentStage = transformer.currentStage || transformer.stage || 'design';
+        let defaultNext = getNextStage(currentStage) || currentStage;
+
+        const stageOrder = ['design', 'winding', 'vpd', 'coreCoil', 'tanking', 'tankFilling', 'testing', 'completed'];
+        
+        let optionsHtml = '';
+        stageOrder.forEach(stage => {
+            const isCurrent = stage === currentStage;
+            const isNext = stage === defaultNext;
+            const stageLabel = getStageName(stage);
+            const selectionAttr = isNext ? 'selected' : '';
+            const hint = isCurrent ? ' (Current)' : '';
+            optionsHtml += `<option value="${stage}" ${selectionAttr}>${stageLabel}${hint}</option>`;
+        });
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = 'stageProgressionModal';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+
+        modal.innerHTML = buildStageModalHtml(transformerId, currentWO, optionsHtml);
+
+        document.body.appendChild(modal);
+    } catch (error) {
+        console.error('Error fetching transformer for stage progression:', error);
+        Toast.error('Failed to prepare stage modal: ' + error.message);
+    }
 }
 
 /**
@@ -113,8 +136,11 @@ function showStageProgressionModal(transformerId, currentWO) {
  */
 async function confirmStageChange(transformerId) {
     const notes = document.getElementById('stageNotes')?.value || '';
+    const targetStage = document.getElementById('targetStageSelect')?.value || '';
     closeStageModal();
-    await moveToNextStage(transformerId, notes);
+    if (targetStage) {
+        await moveToStage(transformerId, targetStage, notes);
+    }
 }
 
 /**
@@ -220,11 +246,11 @@ function closeHistoryModal() {
     }
 }
 
-// Export functions to window
-window.moveToNextStage = moveToNextStage;
+// Export for use in other modules
+window.getNextStage = getNextStage;
+window.moveToStage = moveToStage;
 window.showStageProgressionModal = showStageProgressionModal;
 window.confirmStageChange = confirmStageChange;
 window.closeStageModal = closeStageModal;
 window.viewStageHistory = viewStageHistory;
 window.closeHistoryModal = closeHistoryModal;
-window.getNextStage = getNextStage;

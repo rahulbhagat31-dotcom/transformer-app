@@ -127,7 +127,7 @@ function renderRegistryPage() {
                     </div>
                     <button class="tm-action-btn tm-btn-stage"
                         onclick="showStageProgressionModal('${t.id || t.wo}', '${t.wo}')">
-                        &#x1F504; Next Stage
+                        &#x1F504; Set Stage
                     </button>
                     <button class="tm-action-btn tm-btn-history"
                         onclick="viewStageHistory('${t.id || t.wo}')">

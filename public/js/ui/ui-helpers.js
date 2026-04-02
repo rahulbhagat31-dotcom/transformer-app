@@ -100,7 +100,7 @@ function toggleAuditPanel() {
     const fetchFn = typeof apiCall === 'function'
         ? () => apiCall('/audit')
         : () => fetch('/api/audit', {
-            headers: { Authorization: 'Bearer ' + localStorage.getItem('authToken') }
+            credentials: 'include'
         }).then(r => r.ok ? r.json() : Promise.reject(r.status));
     fetchFn()
         .then(data => {

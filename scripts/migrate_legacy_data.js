@@ -20,16 +20,18 @@ function migrateLegacyData() {
         try {
             const transformers = JSON.parse(fs.readFileSync(transformersPath, 'utf8'));
             console.log(`\n🏭 Found ${transformers.length} transformers in legacy JSON.`);
-            
+
             const insertTransformer = db.prepare(`
                 INSERT OR IGNORE INTO transformers (wo, customerId, customer, rating, hv, lv, stage, currentStage)
                 VALUES (@wo, @customerId, @customer, @rating, @hv, @lv, @stage, @currentStage)
             `);
-            
+
             let tCount = 0;
             const insertTransformersTx = db.transaction((ts) => {
                 for (const t of ts) {
-                    if(!t.wo) continue; // Skip bad records
+                    if(!t.wo) {
+                        continue;
+                    } // Skip bad records
                     const result = insertTransformer.run({
                         wo: t.wo,
                         customerId: t.customerId || 'UNKNOWN',
@@ -40,10 +42,12 @@ function migrateLegacyData() {
                         stage: t.stage || 'design',
                         currentStage: t.currentStage || t.stage || 'design'
                     });
-                    if (result.changes > 0) tCount++;
+                    if (result.changes > 0) {
+                        tCount++;
+                    }
                 }
             });
-            
+
             insertTransformersTx(transformers);
             console.log(`✅ Successfully inserted/migrated ${tCount} missing transformers into SQLite.`);
         } catch (err) {
@@ -57,7 +61,7 @@ function migrateLegacyData() {
         try {
             const questions = JSON.parse(fs.readFileSync(questionsPath, 'utf8'));
             console.log(`\n📚 Found ${questions.length} questions in legacy JSON.`);
-            
+
             const insertQuestion = db.prepare(`
                 INSERT OR IGNORE INTO exam_questions (id, section, text, optionA, optionB, optionC, optionD, correctOption, createdBy)
                 VALUES (@id, @section, @text, @optionA, @optionB, @optionC, @optionD, @correctOption, @createdBy)
@@ -77,7 +81,9 @@ function migrateLegacyData() {
                         correctOption: q.correctOption,
                         createdBy: q.createdBy || 'system'
                     });
-                    if (result.changes > 0) qCount++;
+                    if (result.changes > 0) {
+                        qCount++;
+                    }
                 }
             });
 
@@ -94,11 +100,13 @@ function migrateLegacyData() {
         try {
             const checklistRows = JSON.parse(fs.readFileSync(checklistsPath, 'utf8'));
             console.log(`\n📋 Found ${checklistRows.length} checklist row items in legacy JSON.`);
-            
+
             // Group the flat row items into bundled (wo, stage) objects
             const grouped = {};
             for (const row of checklistRows) {
-                if (!row.wo || !row.stage) continue;
+                if (!row.wo || !row.stage) {
+                    continue;
+                }
                 const key = `${row.wo}|${row.stage}`;
                 if (!grouped[key]) {
                     grouped[key] = {
@@ -111,8 +119,10 @@ function migrateLegacyData() {
                     };
                 }
                 // Determine if parent should be locked/approved based on extreme values across rows
-                if (row.locked) grouped[key].locked = true;
-                
+                if (row.locked) {
+                    grouped[key].locked = true;
+                }
+
                 // Keep the row intact inside the items array so the new UI can parse it
                 grouped[key].items.push(row);
             }
@@ -142,7 +152,9 @@ function migrateLegacyData() {
                         supervisorApprovedAt: c.supervisorApprovedAt || null,
                         lastUpdated: c.lastUpdated || new Date().toISOString()
                     });
-                    if (result.changes > 0) cCount++;
+                    if (result.changes > 0) {
+                        cCount++;
+                    }
                 }
             });
 

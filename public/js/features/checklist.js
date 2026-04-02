@@ -103,126 +103,141 @@ function updateStageUI() {
     updateStageControlButtons();
 }
 
+function hideAllStagePanels() {
+    ['stageControlButtons', 'stageLockMessage', 'stageApprovedMessage', 
+     'stageRejectedMessage', 'stageAwaitingQAMessage'].forEach(id => {
+        const div = document.getElementById(id);
+        if (div) div.style.display = 'none';
+    });
+}
+
+function renderApprovedState(stageInfo, isAdmin) {
+    const approvedMessageDiv = document.getElementById('stageApprovedMessage');
+    if (approvedMessageDiv) {
+        approvedMessageDiv.style.display = 'block';
+        const subMsg = document.getElementById('stageApprovedSubMsg');
+        if (subMsg) {
+            const approvedBy = stageInfo.approvedBy || 'QA';
+            const approvedAt = stageInfo.approvedAt
+                ? new Date(stageInfo.approvedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : '';
+            subMsg.textContent = `Approved by ${approvedBy}${approvedAt ? ' on ' + approvedAt : ''}.`;
+        }
+        const adminBtn = document.getElementById('adminUnlockBtnApproved');
+        if (adminBtn) adminBtn.style.display = isAdmin ? 'inline-block' : 'none';
+    }
+}
+
+function renderAwaitingQAState(stageInfo, isAdmin, isQA) {
+    const awaitingQADiv = document.getElementById('stageAwaitingQAMessage');
+    const lockMessageDiv = document.getElementById('stageLockMessage');
+    if (awaitingQADiv) {
+        awaitingQADiv.style.display = 'block';
+        const subMsg = document.getElementById('stageAwaitingSubMsg');
+        if (subMsg && stageInfo.submittedBy) {
+            const submittedAt = stageInfo.submittedAt
+                ? new Date(stageInfo.submittedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : '';
+            subMsg.textContent = `Submitted by ${stageInfo.submittedBy}${submittedAt ? ' on ' + submittedAt : ''}. QA is reviewing — awaiting response.`;
+        }
+        // QA/admin: show Approve + Reject
+        if (isQA || isAdmin) {
+            if (lockMessageDiv) {
+                lockMessageDiv.style.display = 'block';
+                awaitingQADiv.style.display = 'none'; // QA sees lock panel with action buttons
+                const approveBtn = document.getElementById('approveStageBtn');
+                if (approveBtn) approveBtn.style.display = 'inline-block';
+                const rejectBtn = document.getElementById('rejectStageBtn');
+                if (rejectBtn) rejectBtn.style.display = 'inline-block';
+            }
+        } else {
+            const reopenBtn = document.getElementById('adminUnlockBtnAwaiting');
+            if (reopenBtn) reopenBtn.style.display = isAdmin ? 'inline-block' : 'none';
+        }
+    }
+}
+
+function renderLockedCompletedState(isAdmin, isQA) {
+    const lockMessageDiv = document.getElementById('stageLockMessage');
+    if (lockMessageDiv) {
+        lockMessageDiv.style.display = 'block';
+        const approveBtn = document.getElementById('approveStageBtn');
+        if (approveBtn) approveBtn.style.display = (isQA || isAdmin) ? 'inline-block' : 'none';
+        const rejectBtn = document.getElementById('rejectStageBtn');
+        if (rejectBtn) rejectBtn.style.display = (isQA || isAdmin) ? 'inline-block' : 'none';
+        const reopenBtn = document.getElementById('adminUnlockBtnLocked');
+        if (reopenBtn) reopenBtn.style.display = isAdmin ? 'inline-block' : 'none';
+    }
+}
+
+function renderInProgressState(stageInfo, isAdmin, isProduction, isLocked, status) {
+    const controlDiv = document.getElementById('stageControlButtons');
+    const rejectedMessageDiv = document.getElementById('stageRejectedMessage');
+    
+    // Show rejection notice if stage was previously rejected
+    if (stageInfo.rejectionReason) {
+        if (rejectedMessageDiv) {
+            rejectedMessageDiv.style.display = 'block';
+            const rejBy = document.getElementById('stageRejectedByMsg');
+            if (rejBy) {
+                const rejectedBy = stageInfo.rejectedBy || 'QA';
+                const rejectedAt = stageInfo.rejectedAt
+                    ? new Date(stageInfo.rejectedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : '';
+                rejBy.textContent = `Returned by ${rejectedBy}${rejectedAt ? ' on ' + rejectedAt : ''}:`;
+            }
+            const reasonEl = document.getElementById('stageRejectionReasonText');
+            if (reasonEl) reasonEl.textContent = stageInfo.rejectionReason;
+        }
+    }
+
+    const isEditable = !isLocked && status === 'in-progress';
+    if (isEditable || isAdmin) {
+        if (controlDiv) {
+            controlDiv.style.display = 'block';
+            const submitBtn = controlDiv.querySelector('button[onclick*="markStageComplete"]');
+            if (submitBtn) submitBtn.style.display = isEditable ? 'inline-block' : 'none';
+            // Ready for QA button: show for production role when editable
+            const readyBtn = document.getElementById('readyForQABtn');
+            if (readyBtn) readyBtn.style.display = (isEditable && isProduction) ? 'inline-block' : 'none';
+            const adminBtn = document.getElementById('adminUnlockBtn');
+            if (adminBtn) adminBtn.style.display = (isAdmin && !isEditable) ? 'inline-block' : 'none';
+            const hasVisible = controlDiv.querySelectorAll('button');
+            const anyVisible = Array.from(hasVisible).some(b => b.style.display !== 'none');
+            if (!anyVisible) controlDiv.style.display = 'none';
+        }
+    }
+}
+
 /**
  * Show/hide stage control buttons based on stage status and user role
  */
 function updateStageControlButtons() {
     if (!currentStageStatus || !currentStage) return;
 
-    const controlDiv = document.getElementById('stageControlButtons');
-    const lockMessageDiv = document.getElementById('stageLockMessage');
-    const approvedMessageDiv = document.getElementById('stageApprovedMessage');
-    const rejectedMessageDiv = document.getElementById('stageRejectedMessage');
-    const awaitingQADiv = document.getElementById('stageAwaitingQAMessage');
+    hideAllStagePanels();
+
     const mainStage = currentStage.startsWith('winding') ? 'winding' : currentStage;
     const stageInfo = currentStageStatus[mainStage];
+    
+    if (!stageInfo) return;
+
     const userRole = window.currentUserRole;
     const isAdmin = userRole === 'admin';
     const isQA = userRole === 'quality';
     const isProduction = userRole === 'engineer' || userRole === 'production';
 
-    // Hide all panels initially
-    if (controlDiv) controlDiv.style.display = 'none';
-    if (lockMessageDiv) lockMessageDiv.style.display = 'none';
-    if (approvedMessageDiv) approvedMessageDiv.style.display = 'none';
-    if (rejectedMessageDiv) rejectedMessageDiv.style.display = 'none';
-    if (awaitingQADiv) awaitingQADiv.style.display = 'none';
-
-    if (!stageInfo) return;
-
     const status = stageInfo.status;
     const isLocked = !!stageInfo.locked;
 
     if (status === 'approved') {
-        // ── APPROVED ─────────────────────────────────────────────────
-        if (approvedMessageDiv) {
-            approvedMessageDiv.style.display = 'block';
-            const subMsg = document.getElementById('stageApprovedSubMsg');
-            if (subMsg) {
-                const approvedBy = stageInfo.approvedBy || 'QA';
-                const approvedAt = stageInfo.approvedAt
-                    ? new Date(stageInfo.approvedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                    : '';
-                subMsg.textContent = `Approved by ${approvedBy}${approvedAt ? ' on ' + approvedAt : ''}.`;
-            }
-            const adminBtn = document.getElementById('adminUnlockBtnApproved');
-            if (adminBtn) adminBtn.style.display = isAdmin ? 'inline-block' : 'none';
-        }
-
+        renderApprovedState(stageInfo, isAdmin);
     } else if (status === 'awaiting_qa') {
-        // ── AWAITING QA ───────────────────────────────────────────
-        if (awaitingQADiv) {
-            awaitingQADiv.style.display = 'block';
-            const subMsg = document.getElementById('stageAwaitingSubMsg');
-            if (subMsg && stageInfo.submittedBy) {
-                const submittedAt = stageInfo.submittedAt
-                    ? new Date(stageInfo.submittedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                    : '';
-                subMsg.textContent = `Submitted by ${stageInfo.submittedBy}${submittedAt ? ' on ' + submittedAt : ''}. QA is reviewing — awaiting response.`;
-            }
-            // QA/admin: show Approve + Reject
-            if (isQA || isAdmin) {
-                if (lockMessageDiv) {
-                    lockMessageDiv.style.display = 'block';
-                    awaitingQADiv.style.display = 'none'; // QA sees lock panel with action buttons
-                    const approveBtn = document.getElementById('approveStageBtn');
-                    if (approveBtn) approveBtn.style.display = 'inline-block';
-                    const rejectBtn = document.getElementById('rejectStageBtn');
-                    if (rejectBtn) rejectBtn.style.display = 'inline-block';
-                }
-            } else {
-                const reopenBtn = document.getElementById('adminUnlockBtnAwaiting');
-                if (reopenBtn) reopenBtn.style.display = isAdmin ? 'inline-block' : 'none';
-            }
-        }
-
+        renderAwaitingQAState(stageInfo, isAdmin, isQA);
     } else if (isLocked && status === 'completed') {
-        // ── SUBMITTED (stage complete) — waiting for QA ─────────────────────
-        if (lockMessageDiv) {
-            lockMessageDiv.style.display = 'block';
-            const approveBtn = document.getElementById('approveStageBtn');
-            if (approveBtn) approveBtn.style.display = (isQA || isAdmin) ? 'inline-block' : 'none';
-            const rejectBtn = document.getElementById('rejectStageBtn');
-            if (rejectBtn) rejectBtn.style.display = (isQA || isAdmin) ? 'inline-block' : 'none';
-            const reopenBtn = document.getElementById('adminUnlockBtnLocked');
-            if (reopenBtn) reopenBtn.style.display = isAdmin ? 'inline-block' : 'none';
-        }
-
+        renderLockedCompletedState(isAdmin, isQA);
     } else {
-        // ── IN-PROGRESS / EDITABLE ─────────────────────────────────────
-        // Show rejection notice if stage was previously rejected
-        if (stageInfo.rejectionReason) {
-            if (rejectedMessageDiv) {
-                rejectedMessageDiv.style.display = 'block';
-                const rejBy = document.getElementById('stageRejectedByMsg');
-                if (rejBy) {
-                    const rejectedBy = stageInfo.rejectedBy || 'QA';
-                    const rejectedAt = stageInfo.rejectedAt
-                        ? new Date(stageInfo.rejectedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                        : '';
-                    rejBy.textContent = `Returned by ${rejectedBy}${rejectedAt ? ' on ' + rejectedAt : ''}:`;
-                }
-                const reasonEl = document.getElementById('stageRejectionReasonText');
-                if (reasonEl) reasonEl.textContent = stageInfo.rejectionReason;
-            }
-        }
-
-        const isEditable = !isLocked && status === 'in-progress';
-        if (isEditable || isAdmin) {
-            if (controlDiv) {
-                controlDiv.style.display = 'block';
-                const submitBtn = controlDiv.querySelector('button[onclick*="markStageComplete"]');
-                if (submitBtn) submitBtn.style.display = isEditable ? 'inline-block' : 'none';
-                // Ready for QA button: show for production role when editable
-                const readyBtn = document.getElementById('readyForQABtn');
-                if (readyBtn) readyBtn.style.display = (isEditable && isProduction) ? 'inline-block' : 'none';
-                const adminBtn = document.getElementById('adminUnlockBtn');
-                if (adminBtn) adminBtn.style.display = (isAdmin && !isEditable) ? 'inline-block' : 'none';
-                const hasVisible = controlDiv.querySelectorAll('button');
-                const anyVisible = Array.from(hasVisible).some(b => b.style.display !== 'none');
-                if (!anyVisible) controlDiv.style.display = 'none';
-            }
-        }
+        renderInProgressState(stageInfo, isAdmin, isProduction, isLocked, status);
     }
 
     if (typeof updateStageTabBadge === 'function') {
@@ -712,13 +727,11 @@ async function saveNewChecklistItem(stage, itemNumber, rowId) {
     console.log('📤 Sending checklist data:', JSON.stringify(checklistData, null, 2));
 
     try {
-        // Use JWT Bearer token (current project auth system)
-        const token = localStorage.getItem('authToken');
         const response = await fetch(`${API_BASE}/checklist/save`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(checklistData)
         });

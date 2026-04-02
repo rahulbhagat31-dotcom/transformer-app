@@ -408,10 +408,14 @@ class ChecklistService {
         const mapB = {};
 
         for (const item of itemsA) {
-            if (item.rowId) mapA[item.rowId] = item;
+            if (item.rowId) {
+                mapA[item.rowId] = item;
+            }
         }
         for (const item of itemsB) {
-            if (item.rowId) mapB[item.rowId] = item;
+            if (item.rowId) {
+                mapB[item.rowId] = item;
+            }
         }
 
         const added = itemsB.filter(b => !mapA[b.rowId]);

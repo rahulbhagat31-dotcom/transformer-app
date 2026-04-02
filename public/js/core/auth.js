@@ -10,6 +10,14 @@ window.currentUserId = '';
 window.currentCustomerId = '';
 window.currentCustomerName = '';
 
+// Centralized role display configuration
+const ROLE_DISPLAY_NAMES = {
+    admin: '👑 Admin',
+    quality: '🔬 Quality Engineer',
+    production: '🏭 Production Engineer',
+    customer: '💼 Customer'
+};
+
 /* ===============================
    LOGIN HANDLER
 ================================ */
@@ -18,19 +26,22 @@ async function handleLogin(userId, password) {
         const response = await fetch(`${API_BASE}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // Required to receive & send HttpOnly cookie
             body: JSON.stringify({ userId, password })
         });
 
         const result = await response.json();
 
-        // Server returns {success: true, data: {token, user: {...}}}
+        // Server returns {success: true, data: {user: {...}}}
         if (response.ok && result.success && result.data) {
-            const { token, user } = result.data;
+            const { user } = result.data;
 
-            // Store JWT token in localStorage (both keys for compatibility)
-            localStorage.setItem('authToken', token);
-            localStorage.setItem('token', token);
+            // Cookie (HttpOnly) is set automatically by server — never touches localStorage
+            // Store user profile only (non-sensitive, needed for role/name display)
             localStorage.setItem('user', JSON.stringify(user));
+
+            // Keep rememberedUserId for login-form pre-fill (not a secret)
+            localStorage.setItem('rememberedUserId', user.userId);
 
             // Set global user state
             window.currentUserRole = user.role;
@@ -40,7 +51,7 @@ async function handleLogin(userId, password) {
             window.currentCustomerName = user.customerName || 'Unknown';
 
             console.log(`✅ Login successful: ${user.name} (${user.role})`);
-            console.log('🔑 Token stored in localStorage');
+            console.log('🍪 Session cookie set by server (HttpOnly — XSS-safe)');
             return { success: true, user };
         } else {
             throw new Error(result.error || result.message || 'Invalid credentials');
@@ -66,60 +77,51 @@ function hasPermission(requiredRole) {
 
 function applyRoleRestrictions() {
     const role = window.currentUserRole;
-    const isAdmin      = role === 'admin';
-    const isQuality    = role === 'quality';
-    const isProduction = role === 'production';
-    const isCustomer   = role === 'customer';
-    const isInternal   = isAdmin || isQuality || isProduction; // not customer
+    const permissions = {
+        isAdmin: role === 'admin',
+        isQuality: role === 'quality',
+        isProduction: role === 'production',
+        isCustomer: role === 'customer'
+    };
 
-    // ─── Helper ───────────────────────────────────────────
-    function show(id) { const el = document.getElementById(id); if (el) el.style.display = ''; }
-    function hide(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+    updateRoleBadge(role);
+    updateSidebarNavigation(permissions);
+    updateTransformerMasterUI(permissions);
+    updateDocumentsUI(permissions);
+    updateManufacturingChecklist(permissions);
+    updateDesignCalculations(permissions);
+    updateDashboardUI(permissions);
 
-    // ─── 1. Role Badge ─────────────────────────────────────
+    console.log(`🔒 RBAC applied for role: ${role}`);
+}
+
+function updateRoleBadge(role) {
     const roleBadge = document.getElementById('roleBadge');
     if (roleBadge) {
         roleBadge.className = `role-badge role-${role}`;
-        const roleNames = {
-            admin:      '&#x1F451; Admin',
-            quality:    '&#x1F52C; Quality Engineer',
-            production: '&#x1F3ED; Production Engineer',
-            customer:   '&#x1F4BC; Customer'
-        };
-        roleBadge.innerHTML = roleNames[role] || role;
+        roleBadge.innerHTML = ROLE_DISPLAY_NAMES[role] || role;
     }
 
-    // ─── 2. Sidebar Navigation ─────────────────────────────
-    // Dashboard — everyone sees it
+    const customerLabel = document.getElementById('customerLabel');
+    if (customerLabel && window.currentCustomerName && role === 'customer') {
+        customerLabel.innerHTML = '🏢 ' + window.currentCustomerName;
+        customerLabel.style.display = 'block';
+    }
+}
+
+function updateSidebarNavigation({ isAdmin, isCustomer }) {
+    const show = (id) => { const el = document.getElementById(id); if (el) el.style.display = ''; };
+    const hide = (id) => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+
     show('nav-dashboard');
-
-    // Transformer Master — everyone sees it (customers: view-only enforced below)
     show('nav-transformer');
-
-    // Documents — everyone sees it (upload hidden for customer/production below)
     show('nav-documents');
-
-    // Manufacturing Checklist — everyone
     show('nav-checklist');
-
-    // IEC Calculator — admin, quality, production YES | customer NO
-    if (isCustomer) {
-        hide('nav-calculator');
-    } else {
-        show('nav-calculator');
-    }
-
-    // Digital Twin — everyone
     show('nav-digital-twin');
 
-    // Questions Bank — admin ONLY
-    if (isAdmin) {
-        show('questionsNav');
-    } else {
-        hide('questionsNav');
-    }
+    isCustomer ? hide('nav-calculator') : show('nav-calculator');
+    isAdmin ? show('questionsNav') : hide('questionsNav');
 
-    // MCQ Exam — admin, quality, production YES | customer NO
     if (isCustomer) {
         hide('nav-exam');
         hide('examSubmenu');
@@ -127,105 +129,82 @@ function applyRoleRestrictions() {
         show('nav-exam');
     }
 
-    // Analytics (inside dashboard tab) — admin, quality YES | production, customer NO
-    const analyticsNav = document.getElementById('nav-analytics');
-    if (analyticsNav) {
-        (isAdmin || isQuality) ? show('nav-analytics') : hide('nav-analytics');
-    }
+    isAdmin ? show('nav-users') : hide('nav-users');
+}
 
-    // Audit Log (inside dashboard tab) — admin, quality YES | production, customer NO
-    const auditNav = document.getElementById('nav-audit');
-    if (auditNav) {
-        (isAdmin || isQuality) ? show('nav-audit') : hide('nav-audit');
-    }
-
-    // ─── 3. Transformer Master — Add/Edit/Delete ───────────
-    // Only admin & quality can add/delete
+function updateTransformerMasterUI({ isAdmin, isQuality }) {
     const canEdit = isAdmin || isQuality;
     const addCard = document.getElementById('addTransformerCard');
     if (addCard) addCard.style.display = canEdit ? '' : 'none';
 
-    // Edit/Delete buttons in table — hide for production & customer
     document.querySelectorAll('.btn-edit-transformer, .btn-delete-transformer').forEach(btn => {
         btn.style.display = canEdit ? '' : 'none';
     });
+}
 
-    // ─── 4. BOM & Documents Upload ─────────────────────────
-    // Admin & quality can upload; production & customer view only
-    const bomUploadSection  = document.getElementById('bomUploadSection');
-    const docUploadSection  = document.getElementById('docUploadSection');
-    if (bomUploadSection)  bomUploadSection.style.display  = canEdit ? '' : 'none';
-    if (docUploadSection)  docUploadSection.style.display  = canEdit ? '' : 'none';
+function updateDocumentsUI({ isAdmin, isQuality }) {
+    const canEdit = isAdmin || isQuality;
+    const bomUploadSection = document.getElementById('bomUploadSection');
+    const docUploadSection = document.getElementById('docUploadSection');
+    if (bomUploadSection) bomUploadSection.style.display = canEdit ? '' : 'none';
+    if (docUploadSection) docUploadSection.style.display = canEdit ? '' : 'none';
+}
 
-    // ─── 5. Manufacturing Checklist ─────────────────────────
-    // Customer: read-only notice shown, inputs disabled
+function updateManufacturingChecklist({ isAdmin, isQuality, isCustomer }) {
+    const canEdit = isAdmin || isQuality;
+
     if (isCustomer) {
         const editNotice = document.getElementById('checklistEditNotice');
         if (editNotice) editNotice.style.display = 'block';
-        // Disable all checklist inputs
         document.querySelectorAll('#stageContent input, #stageContent select, #stageContent textarea').forEach(el => {
             el.disabled = true;
         });
     }
 
-    // Bulk sign-off button: only admin & quality
     const bulkBtn = document.getElementById('bulkSignOffBtn');
     if (bulkBtn) bulkBtn.style.display = canEdit ? '' : 'none';
 
-    // Stage lock/unlock controls: admin & quality only
     document.querySelectorAll('.btn-lock-stage, .btn-unlock-stage').forEach(btn => {
         btn.style.display = canEdit ? '' : 'none';
     });
+}
 
-    // ─── 6. Design Calculations ─────────────────────────────
-    // Customer: sees simplified summary view only
-    const customerCalcView  = document.getElementById('customerCalcView');
-    const engineerCalcView  = document.getElementById('engineerCalcView');
+function updateDesignCalculations({ isCustomer }) {
+    const customerCalcView = document.getElementById('customerCalcView');
+    const engineerCalcView = document.getElementById('engineerCalcView');
     if (isCustomer) {
-        if (customerCalcView)  customerCalcView.style.display  = 'block';
-        if (engineerCalcView)  engineerCalcView.style.display  = 'none';
+        if (customerCalcView) customerCalcView.style.display = 'block';
+        if (engineerCalcView) engineerCalcView.style.display = 'none';
         if (typeof loadCustomerCalculations === 'function') loadCustomerCalculations();
     } else {
-        if (customerCalcView)  customerCalcView.style.display  = 'none';
-        if (engineerCalcView)  engineerCalcView.style.display  = 'block';
+        if (customerCalcView) customerCalcView.style.display = 'none';
+        if (engineerCalcView) engineerCalcView.style.display = 'block';
     }
+}
 
-    // ─── 7. Analytics Dashboard Tabs ───────────────────────
-    // Hide analytics section entirely for production & customer
-    const analyticsSection = document.getElementById('analyticsSection') ||
-                             document.querySelector('[data-section="analytics"]');
+function updateDashboardUI({ isAdmin, isQuality, isProduction, isCustomer }) {
+    const analyticsSection = document.getElementById('analyticsSection') || document.querySelector('[data-section="analytics"]');
     if (analyticsSection && (isProduction || isCustomer)) {
         analyticsSection.style.display = 'none';
     }
 
-    // ─── 8. Audit Log ─────────────────────────────────────
-    // Hide audit section for production & customer
-    const auditSection = document.getElementById('auditSection') ||
-                         document.querySelector('[data-section="audit"]');
+    const auditSection = document.getElementById('auditSection') || document.querySelector('[data-section="audit"]');
     if (auditSection && (isProduction || isCustomer)) {
         auditSection.style.display = 'none';
     }
 
-    // ─── 9. Customer Notice on Home ────────────────────────
     const customerNotice = document.getElementById('customerNotice');
     if (customerNotice) customerNotice.style.display = isCustomer ? 'block' : 'none';
 
-    // ─── 10. Customer label in header ──────────────────────
-    const customerLabel = document.getElementById('customerLabel');
-    if (customerLabel && window.currentCustomerName && isCustomer) {
-        customerLabel.innerHTML = '&#x1F3E2; ' + window.currentCustomerName;
-        customerLabel.style.display = 'block';
+    const analyticsNav = document.getElementById('nav-analytics');
+    if (analyticsNav) {
+        (isAdmin || isQuality) ? analyticsNav.style.display = '' : analyticsNav.style.display = 'none';
     }
 
-    // ─── 11. User Management nav ──────────────────────────
-    // Admin only
-    if (isAdmin) {
-        show('nav-users');
-    } else {
-        hide('nav-users');
+    const auditNav = document.getElementById('nav-audit');
+    if (auditNav) {
+        (isAdmin || isQuality) ? auditNav.style.display = '' : auditNav.style.display = 'none';
     }
-
-    console.log(`&#x1F512; RBAC applied for role: ${role}`);
 }
 
 

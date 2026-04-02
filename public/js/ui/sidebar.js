@@ -165,18 +165,38 @@
     async function fetchStageCounts(wo) {
         const role = window.currentUserRole || '';
         const results = [];
+
+        // Use the new batch endpoint — one request instead of 5
+        let batchSummary = null;
+        try {
+            const batchCall = typeof apiCall === 'function'
+                ? () => apiCall(`/checklist/summary/${encodeURIComponent(wo)}`)
+                : () => fetch(`/api/checklist/summary/${encodeURIComponent(wo)}`, { credentials: 'include' }).then(r => r.json());
+            const batchData = await batchCall();
+            batchSummary = batchData.data || null;
+        } catch (e) {
+            console.warn('SidebarBadges: batch summary failed, falling back to per-stage', e);
+        }
+
         await Promise.all(STAGES.map(async (stage) => {
             try {
-                const call = typeof apiCall === 'function'
-                    ? () => apiCall(`/checklist/${stage}/${encodeURIComponent(wo)}/summary`)
-                    : () => fetch(`/api/checklist/${stage}/${encodeURIComponent(wo)}/summary`,
-                        { headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` } })
-                        .then(r => r.json());
-                const summary = await call();
-                const { techDone = 0, supervisorDone = 0, qaDone = 0 } = summary || {};
+                let techDone = 0, supervisorDone = 0, qaDone = 0;
+
+                if (batchSummary && batchSummary[stage]) {
+                    ({ techDone, supervisorDone, qaDone } = batchSummary[stage]);
+                } else {
+                    // Fallback: individual request per stage
+                    const call = typeof apiCall === 'function'
+                        ? () => apiCall(`/checklist/${stage}/${encodeURIComponent(wo)}/summary`)
+                        : () => fetch(`/api/checklist/${stage}/${encodeURIComponent(wo)}/summary`, { credentials: 'include' }).then(r => r.json());
+                    const summary = await call();
+                    ({ techDone = 0, supervisorDone = 0, qaDone = 0 } = summary || {});
+                }
+
                 const supPending = Math.max(0, techDone - supervisorDone);
                 const qaPending  = Math.max(0, supervisorDone - qaDone);
                 results.push({ stage, supPending, qaPending });
+
                 if (role === 'admin') {
                     const stageTotal = supPending + qaPending;
                     const type = (supPending > 0 && qaPending > 0) ? 'both' : (qaPending > 0) ? 'qa' : 'supervisor';

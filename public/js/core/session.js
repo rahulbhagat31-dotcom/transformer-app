@@ -57,14 +57,20 @@
     }
 
     /* ── Force logout ── */
-    function doLogout() {
+    async function doLogout() {
         sessionActive = false;
         clearTimeout(logoutTimer);
         clearTimeout(warningTimer);
         clearInterval(countdownInterval);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('token');
+
+        // Clear the HttpOnly cookie server-side (browser JS cannot do this directly)
+        try {
+            await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+        } catch (_) { /* ignore network errors during logout */ }
+
+        // Remove only non-sensitive user profile data from localStorage
         localStorage.removeItem('user');
+
         // Show login page
         const mainApp   = document.getElementById('mainApp');
         const loginPage = document.getElementById('loginPage');

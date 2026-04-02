@@ -583,4 +583,41 @@ router.post('/compare', (req, res) => {
     }
 });
 
+
+/**
+ * GET /checklist/summary/:wo
+ * Batch endpoint: returns techDone / supervisorDone / qaDone counts
+ * for EVERY stage of a WO in a single request.
+ * Replaces 5 individual /checklist/:stage/:wo/summary calls from the sidebar badge engine.
+ */
+router.get('/summary/:wo', (req, res) => {
+    try {
+        const { wo } = req.params;
+        const STAGES = ['winding', 'vpd', 'coreCoil', 'tanking', 'tankFilling'];
+        const summary = {};
+        for (const stage of STAGES) {
+            let items = [];
+            if (stage === 'winding') {
+                for (let i = 1; i <= 5; i++) {
+                    items = items.concat(getItems(wo, `winding`+i));
+                }
+            } else {
+                items = getItems(wo, stage);
+            }
+            // Customer isolation: restrict counts to their assigned customerId
+            if (req.user && req.user.role === 'customer' && req.user.customerId) {
+                items = items.filter(i => i.customerId === req.user.customerId);
+            }
+            summary[stage] = {
+                techDone:       items.filter(i => i.technician).length,
+                supervisorDone: items.filter(i => i.shopSupervisor).length,
+                qaDone:         items.filter(i => i.qaSupervisor).length
+            };
+        }
+        res.json({ success: true, data: summary });
+    } catch (error) {
+        console.error('Error fetching checklist batch summary:', error);
+        res.status(500).json(errorResponse(error));
+    }
+});
 module.exports = router;

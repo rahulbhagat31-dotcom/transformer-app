@@ -38,12 +38,9 @@ const digitalTwinState = {
 };
 
 const DigitalTwinAPI = {
-    getToken() { return localStorage.getItem('authToken'); },
     async fetchWithAuth(url, options = {}) {
         const headers = { ...options.headers };
-        const token = this.getToken();
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-        const res = await fetch(url, { ...options, headers });
+        const res = await fetch(url, { ...options, credentials: 'include', headers });
         if (!res.ok) throw new Error(`API Error: ${res.status}`);
         return res.json();
     },
@@ -150,7 +147,7 @@ async function initDigitalTwin(wo) {
 /**
  * Load transformer data
  * Priority:
- * 1. LocalStorage 'transformer_db' (Real-time Engineering Handover)
+ * 1. Local Database 'transformer_db' (Real-time Engineering Handover)
  * 2. API /api/transformers (Backend Mock)
  */
 async function loadTransformerData(wo) {
@@ -410,16 +407,15 @@ function renderDTHeader() {
         const color = stageColors[transformer.stage] || '#4a9eff';
         header.style.borderTopColor = color;
     }
-    
+
     // Phase 3: Export Checklist Excel logic securely
     window.handleExcelExport = async function (stage, wo) {
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch(`/export/checklist/${stage}/${wo}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const res = await fetch(`/export/checklist/${stage}/${encodeURIComponent(wo)}`, {
+                credentials: 'include'
             });
             if (!res.ok) throw new Error('Export failed to generate');
-            
+
             const blob = await res.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1129,16 +1125,16 @@ console.log('🔧 Digital Twin script loaded');
 async function populateDTWODropdown() {
     const select = document.getElementById('dtWOSelect');
     if (!select) return;
-    
+
     // Check cache flag to avoid redundant network fetch
     if (digitalTwinState.dropdownPopulated) return;
 
     try {
         const data = await DigitalTwinAPI.fetchWithAuth('/transformers');
-        
+
         // Populate dropdown (only runs when cache is empty, controlled by dropdownPopulated flag above)
         select.innerHTML = '<option value="">— Select W.O. Number —</option>';
-        
+
         const rawTransformers = data.data || data;
         const transformers = Array.isArray(rawTransformers) ? rawTransformers : (rawTransformers ? [rawTransformers] : []);
 
@@ -1156,7 +1152,7 @@ async function populateDTWODropdown() {
             opt.textContent = `${t.woNumber || t.wo || t._id}${t.customerName ? ' — ' + t.customerName : ''}`;
             select.appendChild(opt);
         });
-        
+
         // Mark as populated so we don't fetch again unnecessarily
         digitalTwinState.dropdownPopulated = true;
     } catch (e) {

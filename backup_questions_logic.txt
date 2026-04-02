@@ -1,0 +1,251 @@
+function switchQTab(tab) {
+    ['bank', 'add', 'sections', 'links', 'results'].forEach(t => {
+        const p = document.getElementById(`qpanel-${t}`);
+        if (p) p.style.display = (t === tab) ? 'block' : 'none';
+    });
+    if (tab === 'bank') loadQuestions();
+    if (tab === 'add') loadSectionsIntoDropdown();
+    if (tab === 'sections') renderSectionsPanel();
+    if (tab === 'links') renderExamLinks();
+    if (tab === 'results') loadExamResults();
+}
+
+// ── Section filter ────────────────────────────────────────────────────────────
+function filterQSection(section) {
+    _currentQFilter = section;
+    renderQuestionList();
+}
+
+// ── Load sections into dropdown & filter bar ─────────────────────────────────
+async function loadSectionsIntoDropdown() {
+    try {
+        const r = await fetch('/questions/sections');
+        const d = await r.json();
+        const sections = d.data || [];
+        const sel = document.getElementById('qSection');
+        if (sel) {
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">-- Select Section --</option>' +
+                sections.map(s => `<option value="${s.key}">${s.icon || ''} ${s.label}</option>`).join('');
+            if (cur) sel.value = cur;
+        }
+        renderSectionFilterBtns(sections);
+    } catch (e) { /* ignore */ }
+}
+
+// ── Render section filter buttons (Question Bank tab) ─────────────────────────
+function renderSectionFilterBtns(sections) {
+    const c = document.getElementById('qSectionFilterBtns');
+    if (!c) return;
+    c.innerHTML =
+        `<button class="btn-login" style="width:auto;padding:6px 16px;font-size:12px;" onclick="filterQSection('all')">All</button>` +
+        sections.map(s =>
+            `<button class="btn-login" style="width:auto;padding:6px 16px;font-size:12px;background:${s.color || '#64748b'};" onclick="filterQSection('${s.key}')">${s.icon || ''} ${s.label}</button>`
+        ).join('');
+}
+
+// ── Sections management panel ─────────────────────────────────────────────────
+async function renderSectionsPanel() {
+    const container = document.getElementById('sectionsMgmtContainer');
+    if (!container) return;
+    container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Loading...</p>';
+    let sections = [];
+    try {
+        const r = await fetch('/questions/sections');
+        sections = (await r.json()).data || [];
+    } catch (e) {
+        container.innerHTML = '<p style="color:red;">Failed to load sections.</p>';
+        return;
+    }
+    const ICONS = ['📋', '🔧', '🏗', '🛢', '⚙️', '🔩', '🔌', '📐', '🏭', '🧪', '📦', '💡'];
+    const COLORS = [
+        { hex: '#7c3aed', name: 'Purple' }, { hex: '#0ea5e9', name: 'Blue' },
+        { hex: '#f59e0b', name: 'Amber' }, { hex: '#ef4444', name: 'Red' },
+        { hex: '#10b981', name: 'Green' }, { hex: '#f97316', name: 'Orange' },
+        { hex: '#6366f1', name: 'Indigo' }, { hex: '#64748b', name: 'Slate' }
+    ];
+    container.innerHTML = `
+    <div style="max-width:640px;margin:0 auto;">
+        <div style="margin-bottom:24px;">
+            <h3 style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:6px;">🗂 Manage Exam Sections</h3>
+            <p style="color:#64748b;font-size:13px;">Add or remove sections. Questions stay in the bank if a section is deleted.</p>
+        </div>
+        <div style="margin-bottom:24px;">
+            <div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;">Current Sections (${sections.length})</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+            ${sections.map(s => `
+                <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 18px;
+                    display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div style="width:38px;height:38px;border-radius:10px;background:${s.color}20;border:2px solid ${s.color};
+                            display:flex;align-items:center;justify-content:center;font-size:18px;">${s.icon || '📋'}</div>
+                        <div>
+                            <div style="font-weight:700;font-size:14px;color:#1e293b;">${s.label}</div>
+                            <div style="font-size:11px;color:#94a3b8;font-family:monospace;">key: ${s.key}</div>
+                        </div>
+                    </div>
+                    <button onclick="deleteSection('${s.key}','${s.label}')"
+                        style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:7px 14px;
+                            cursor:pointer;color:#dc2626;font-size:12px;font-weight:600;">🗑 Delete</button>
+                </div>`).join('') || '<p style="color:#94a3b8;font-size:13px;">No sections yet.</p>'}
+            </div>
+        </div>
+        <div style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:14px;padding:22px;">
+            <div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px;">➕ Add New Section</div>
+            <div style="display:grid;gap:14px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div>
+                        <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px;">Label *</label>
+                        <input type="text" id="newSectLabel" placeholder="e.g. VPD, SPA, Core Coil"
+                            style="width:100%;padding:10px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px;">Key (auto-generated)</label>
+                        <input type="text" id="newSectKey" placeholder="vpd, spa"
+                            style="width:100%;padding:10px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;font-family:monospace;background:#f1f5f9;">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div>
+                        <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:8px;">Icon</label>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                            ${ICONS.map(ic => `<button onclick="document.getElementById('newSectIcon').value='${ic}';this.parentElement.querySelectorAll('button').forEach(b=>b.style.outline='none');this.style.outline='2px solid #3b82f6';"
+                                style="width:36px;height:36px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:18px;background:#fff;cursor:pointer;">${ic}</button>`).join('')}
+                            <input type="hidden" id="newSectIcon" value="📋">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:8px;">Color</label>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                            ${COLORS.map(c => `<button onclick="document.getElementById('newSectColor').value='${c.hex}';this.parentElement.querySelectorAll('button').forEach(b=>b.style.outline='none');this.style.outline='2px solid #1e293b';"
+                                title="${c.name}" style="width:32px;height:32px;border-radius:50%;background:${c.hex};border:2px solid rgba(0,0,0,0.1);cursor:pointer;"></button>`).join('')}
+                            <input type="hidden" id="newSectColor" value="#64748b">
+                        </div>
+                    </div>
+                </div>
+                <button onclick="addSection()"
+                    style="padding:13px;background:linear-gradient(135deg,#0f766e,#0ea5e9);color:white;
+                        border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">➕ Add Section</button>
+            </div>
+        </div>
+    </div>`;
+    const lEl = document.getElementById('newSectLabel');
+    if (lEl) lEl.addEventListener('input', () => {
+        const kEl = document.getElementById('newSectKey');
+        if (kEl) kEl.value = lEl.value.toLowerCase().trim().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    });
+}
+
+// ── Add section ───────────────────────────────────────────────────────────────
+async function addSection() {
+    const label = document.getElementById('newSectLabel')?.value?.trim();
+    const key = document.getElementById('newSectKey')?.value?.trim();
+    const icon = document.getElementById('newSectIcon')?.value || '📋';
+    const color = document.getElementById('newSectColor')?.value || '#64748b';
+    if (!label) { alert('⚠ Enter a section label.'); return; }
+    if (!key) { alert('⚠ Key could not be generated. Type the label first.'); return; }
+    try {
+        const r = await apiCall('/questions/sections', 'POST', { key, label, icon, color });
+        if (r.success) {
+            await renderSectionsPanel();
+            await loadSectionsIntoDropdown();
+        } else alert('❌ ' + (r.error || 'Failed'));
+    } catch (e) { alert('❌ ' + e.message); }
+}
+
+// ── Delete section ────────────────────────────────────────────────────────────
+async function deleteSection(key, label) {
+    if (!confirm(`🗑 Delete section "${label}"?\n\nQuestions stay in the bank but won't appear in exams.`)) return;
+    try {
+        const r = await apiCall(`/questions/sections/${key}`, 'DELETE');
+        if (r.success) {
+            await renderSectionsPanel();
+            await loadSectionsIntoDropdown();
+        } else alert('❌ ' + (r.error || 'Failed'));
+    } catch (e) { alert('❌ ' + e.message); }
+}
+
+
+// ── Load all questions from server ────────────────────────────────────────────
+async function loadQuestions() {
+    const container = document.getElementById('questionsList');
+    if (!container) return;
+    loadSectionsIntoDropdown(); // refresh section dropdown and filter buttons
+    container.innerHTML = '<p style="color:#999; padding:20px; text-align:center;">Loading...</p>';
+    try {
+        const result = await apiCall('/questions');
+        _allQuestions = result.data || [];
+        renderQuestionList();
+    } catch (error) {
+        container.innerHTML = `<p style="color:#e74c3c;">❌ Failed to load questions: ${error.message}</p>`;
+    }
+}
+
+// ── Render filtered question list ─────────────────────────────────────────────
+function renderQuestionList() {
+    const container = document.getElementById('questionsList');
+    if (!container) return;
+
+    const filtered = _currentQFilter === 'all'
+        ? _allQuestions
+        : _allQuestions.filter(q => q.section === _currentQFilter);
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="color:#999; text-align:center; padding:30px;">No questions in this section yet.</p>';
+        return;
+    }
+
+    const SECTION_COLOR = { winding: '#7c3aed', core: '#0ea5e9', tanking: '#f59e0b' };
+    const SECTION_LABEL = { winding: 'Winding', core: 'Core Building', tanking: 'Tanking' };
+
+    let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <thead><tr>
+            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left; width:40px;">#</th>
+            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left;">Question</th>
+            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center; width:110px;">Section</th>
+            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left;">Options (A/B/C/D)</th>
+            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center; width:80px;">Answer</th>
+            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center; width:80px;">Edit</th>
+            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center; width:80px;">Delete</th>
+        </tr></thead><tbody>`;
+
+    filtered.forEach((q, i) => {
+        const color = SECTION_COLOR[q.section] || '#333';
+        const label = SECTION_LABEL[q.section] || q.section;
+        const opts = q.options || {};
+        html += `<tr>
+            <td style="border:1px solid #ddd; padding:10px; text-align:center; color:#666;">${i + 1}</td>
+            <td style="border:1px solid #ddd; padding:10px;">${q.text}</td>
+            <td style="border:1px solid #ddd; padding:10px; text-align:center;">
+                <span style="background:${color}22; color:${color}; border:1px solid ${color}44; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:600;">${label}</span>
+            </td>
+            <td style="border:1px solid #ddd; padding:10px; font-size:12px; color:#444;">
+                <b>A:</b> ${opts.A || '—'}<br>
+                <b>B:</b> ${opts.B || '—'}<br>
+                <b>C:</b> ${opts.C || '—'}<br>
+                <b>D:</b> ${opts.D || '—'}
+            </td>
+            <td style="border:1px solid #ddd; padding:10px; text-align:center;">
+                <span style="background:#dcfce7; color:#16a34a; border:1px solid #86efac; padding:4px 12px; border-radius:99px; font-weight:700; font-size:13px;">${q.correctOption}</span>
+            </td>
+            <td style="border:1px solid #ddd; padding:10px; text-align:center;">
+                <button class="btn-login" style="width:auto;padding:4px 10px;font-size:11px;background:#3498db;" onclick="openEditQuestionModal('${q.id}')">✏️</button>
+            </td>
+            <td style="border:1px solid #ddd; padding:10px; text-align:center;">
+                <button class="btn-login" style="width:auto;padding:4px 10px;font-size:11px;background:#e74c3c;" onclick="deleteQuestion('${q.id}')">🗑</button>
+            </td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+// ── Add MCQ question ──────────────────────────────────────────────────────────
+async function addQuestion() {
+    const section = document.getElementById('qSection')?.value;
+    const text = document.getElementById('qText')?.value?.trim();
+    const optionA = document.getElementById('qOptA')?.value?.trim();
+    const optionB = document.getElementById('qOptB')?.value?.trim();
+    const optionC = document.getElementById('qOptC')?.value?.trim();
+    const optionD = document.getElementById('qOptD')?.value?.trim();
+    const correct

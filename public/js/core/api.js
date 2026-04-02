@@ -9,19 +9,13 @@ const API_BASE = window.__API_BASE__ || window.location.origin;
 
 // Generic API call wrapper with error handling
 async function apiCall(endpoint, method = 'GET', body = null) {
-    const token = localStorage.getItem('authToken');
-
     const options = {
         method,
+        credentials: 'include', // Send HttpOnly auth cookie automatically
         headers: {
             'Content-Type': 'application/json'
         }
     };
-
-    // Add Authorization header if token exists
-    if (token) {
-        options.headers['Authorization'] = `Bearer ${token}`;
-    }
 
     if (body) {
         options.body = JSON.stringify(body);
@@ -32,10 +26,15 @@ async function apiCall(endpoint, method = 'GET', body = null) {
         const normalizedEndpoint = endpoint.startsWith('/api/') ? endpoint.slice(4) : endpoint;
         const response = await fetch(`${API_BASE}${normalizedEndpoint}`, options);
 
-        // Handle 401 Unauthorized - token expired or invalid
+        // Handle 401 Unauthorized - token expired or cookie missing
         if (response.status === 401) {
-            console.warn('🔒 Unauthorized - clearing session');
-            localStorage.removeItem('authToken');
+            console.warn('🔐 Unauthorized - clearing session');
+            // Clear cookie server-side
+            try {
+                await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+            } catch (err) {
+                console.warn('Silent failure on server-side logout', err);
+            }
             localStorage.removeItem('user');
             localStorage.removeItem('rememberedUserId');
             // Show session expired message if not already on login page
@@ -76,15 +75,12 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 
 // File upload helper
 async function uploadFile(endpoint, formData) {
-    const token = localStorage.getItem('authToken');
-
     try {
         const response = await fetch(`${API_BASE}${endpoint}`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
+            credentials: 'include', // Send HttpOnly auth cookie
             body: formData
+            // Note: no Content-Type header — browser sets multipart/form-data with boundary automatically
         });
 
         const data = await response.json();
@@ -111,21 +107,7 @@ async function getAuditLogs(entity, entityId, startDate, endDate, userId) {
     if (endDate) params.append('endDate', endDate);
     if (userId) params.append('userId', userId);
 
-    const token = localStorage.getItem('authToken');
-
-    const response = await fetch(`${API_BASE}/audit?${params.toString()}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        }
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to fetch audit logs');
-    }
-
-    return response.json();
+    return apiCall(`/audit?${params.toString()}`);
 }
 
 // Export to window
@@ -139,109 +121,35 @@ window.getAuditLogs = getAuditLogs;
  * Get stage status for a work order
  */
 async function getStageStatus(wo) {
-    const token = localStorage.getItem('authToken');
-
-    const response = await fetch(`${API_BASE}/stage/${wo}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        }
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to fetch stage status');
-    }
-
-    return response.json();
+    return apiCall(`/stage/${encodeURIComponent(wo)}`);
 }
 
 /**
  * Check if user can access a stage
  */
 async function checkStageAccess(wo, stage) {
-    const token = localStorage.getItem('authToken');
-
-    const response = await fetch(`${API_BASE}/stage/${wo}/check-access`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ stage })
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to check stage access');
-    }
-
-    return response.json();
+    return apiCall(`/stage/${encodeURIComponent(wo)}/check-access`, 'POST', { stage });
 }
 
 /**
  * Update stage progress percentage
  */
 async function updateStageProgress(wo, stage, percentage) {
-    const token = localStorage.getItem('authToken');
-
-    const response = await fetch(`${API_BASE}/stage/${wo}/update-progress`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ stage, percentage })
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to update stage progress');
-    }
-
-    return response.json();
+    return apiCall(`/stage/${encodeURIComponent(wo)}/update-progress`, 'POST', { stage, percentage });
 }
 
 /**
  * Mark stage as complete
  */
 async function completeStage(wo, stage) {
-    const token = localStorage.getItem('authToken');
-
-    const response = await fetch(`${API_BASE}/stage/${wo}/complete`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ stage })
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to complete stage');
-    }
-
-    return response.json();
+    return apiCall(`/stage/${encodeURIComponent(wo)}/complete`, 'POST', { stage });
 }
 
 /**
  * Unlock a stage (admin only)
  */
 async function unlockStage(wo, stage, reason) {
-    const token = localStorage.getItem('authToken');
-
-    const response = await fetch(`${API_BASE}/stage/${wo}/unlock`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ stage, reason })
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to unlock stage');
-    }
-
-    return response.json();
+    return apiCall(`/stage/${encodeURIComponent(wo)}/unlock`, 'POST', { stage, reason });
 }
 
 /**

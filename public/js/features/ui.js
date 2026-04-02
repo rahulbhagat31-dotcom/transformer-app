@@ -3613,7 +3613,7 @@ let _allQuestions = [];
 let _currentQFilter = 'all';
 
 // ── Tab switcher ──────────────────────────────────────────────────────────────
-function switchQTab(tab) {
+function _legacy_switchQTab(tab) {
     ['bank', 'add', 'links', 'results'].forEach(t => {
         const p = document.getElementById(`qpanel-${t}`);
         if (p) p.style.display = (t === tab) ? 'block' : 'none';
@@ -3630,7 +3630,7 @@ function filterQSection(section) {
 }
 
 // ── Load all questions from server ────────────────────────────────────────────
-async function loadQuestions() {
+async function _legacy_loadQuestions() {
     const container = document.getElementById('questionsList');
     if (!container) return;
     container.innerHTML = '<p style="color:#999; padding:20px; text-align:center;">Loading...</p>';
@@ -4011,10 +4011,10 @@ function closeAnswerKey() {
     if (modal) modal.style.display = 'none';
 }
 
-window.loadQuestions = loadQuestions;
+
 window.addQuestion = addQuestion;
 window.deleteQuestion = deleteQuestion;
-window.switchQTab = switchQTab;
+
 window.filterQSection = filterQSection;
 window.renderExamLinks = renderExamLinks;
 window.loadExamResults = loadExamResults;

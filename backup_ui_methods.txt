@@ -1,0 +1,8 @@
+function switchQTab(tab) {
+async function loadQuestions() {
+async function addQuestion() {
+async function deleteQuestion(id) {
+function closeEditQuestionModal() {
+async function submitEditQuestion() {
+async function loadExamResults() {
+function closeAnswerKey() {

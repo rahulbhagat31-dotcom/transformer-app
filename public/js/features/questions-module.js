@@ -18,16 +18,23 @@ function buildSectionMeta(sections) {
     });
 }
 
-function switchQTab(tab) {
+async function switchQTab(tab) {
     ['bank', 'add', 'sections', 'links', 'results'].forEach(t => {
         const p = document.getElementById(`qpanel-${t}`);
         if (p) p.style.display = (t === tab) ? 'block' : 'none';
     });
-    if (tab === 'bank') loadQuestions();
-    if (tab === 'add') loadSectionsIntoDropdown();
-    if (tab === 'sections') renderSectionsPanel();
-    if (tab === 'links') renderExamLinks();
-    if (tab === 'results') loadExamResults();
+
+    if (tab === 'bank') {
+        await loadQuestions();
+    } else if (tab === 'add') {
+        await loadSectionsIntoDropdown();
+    } else if (tab === 'sections') {
+        renderSectionsPanel();
+    } else if (tab === 'links') {
+        renderExamLinks();
+    } else if (tab === 'results') {
+        loadExamResults();
+    }
 }
 
 // ── Section filter ────────────────────────────────────────────────────────────
@@ -52,7 +59,11 @@ async function loadSectionsIntoDropdown() {
             if (cur) sel.value = cur;
         }
         renderSectionFilterBtns(sections);
-    } catch (e) { /* ignore */ }
+        return true;
+    } catch (e) { 
+        console.error('Failed to load sections into dropdown', e);
+        throw e;
+    }
 }
 
 // ── Render section filter buttons (Question Bank tab) ─────────────────────────
@@ -60,7 +71,7 @@ function renderSectionFilterBtns(sections) {
     const c = document.getElementById('qSectionFilterBtns');
     if (!c) return;
     c.innerHTML =
-        `<button class="btn-login q-filter-btn" onclick="filterQSection('all')">All</button>` +
+        '<button class="btn-login q-filter-btn" onclick="filterQSection(\'all\')">All</button>' +
         sections.map(s =>
             `<button class="btn-login q-filter-btn" style="background:${s.color || '#64748b'};" onclick="filterQSection('${s.key}')">${s.icon || ''} ${s.label}</button>`
         ).join('');
@@ -162,13 +173,16 @@ async function renderSectionsPanel() {
 
 // ── Add section ───────────────────────────────────────────────────────────────
 async function addSection() {
-    const label = document.getElementById('newSectLabel')?.value?.trim();
+    const labelEl = document.getElementById('newSectLabel');
+    if (!labelEl) return;
+    const label = labelEl.value?.trim();
     const key = document.getElementById('newSectKey')?.value?.trim();
     const icon = document.getElementById('newSectIcon')?.value || '📋';
     const color = document.getElementById('newSectColor')?.value || '#64748b';
     if (!label) { alert('⚠ Enter a section label.'); return; }
     if (!key) { alert('⚠ Key could not be generated. Type the label first.'); return; }
     try {
+        if (typeof apiCall !== 'function') throw new Error('apiCall is not defined in this context');
         const r = await apiCall('/questions/sections', 'POST', { key, label, icon, color });
         if (r.success) {
             await renderSectionsPanel();
@@ -193,7 +207,7 @@ async function deleteSection(key, label) {
 async function loadQuestions() {
     const container = document.getElementById('questionsList');
     if (!container) return;
-    loadSectionsIntoDropdown();
+    await loadSectionsIntoDropdown();
     container.innerHTML = '<p style="color:#999; padding:20px; text-align:center;">Loading...</p>';
     try {
         const result = await apiCall('/questions');
@@ -263,8 +277,12 @@ function renderQuestionList() {
 
 // ── Add MCQ question ──────────────────────────────────────────────────────────
 async function addQuestion() {
-    const section = document.getElementById('qSection')?.value;
-    const text = document.getElementById('qText')?.value?.trim();
+    const sectionEl = document.getElementById('qSection');
+    const textEl = document.getElementById('qText');
+    if (!sectionEl || !textEl) return;
+    
+    const section = sectionEl.value;
+    const text = textEl.value?.trim();
     const optionA = document.getElementById('qOptA')?.value?.trim();
     const optionB = document.getElementById('qOptB')?.value?.trim();
     const optionC = document.getElementById('qOptC')?.value?.trim();
@@ -277,6 +295,7 @@ async function addQuestion() {
     if (!correctOption) return alert('Please select the correct option.');
 
     try {
+        if (typeof apiCall !== 'function') throw new Error('apiCall is not defined in this context');
         await apiCall('/questions', 'POST', { text, section, optionA, optionB, optionC, optionD, correctOption });
 
         // Clear form
@@ -383,10 +402,10 @@ async function renderExamLinks() {
         <div style="background:#fff; border:1.5px solid #e2e8f0; border-radius:16px; padding:28px; box-shadow:0 4px 24px rgba(0,0,0,0.07); display:flex; flex-direction:column; gap:20px;">
             <div>
                 <label style="font-size:12px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.6px; display:block; margin-bottom:8px;">📚 Section</label>
-                ${sections.length === 0 ? `<p style="color:#ef4444; font-size:13px;">No sections found. Please add sections in the Sections tab first.</p>` :
-            `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px;" id="sectionBtns">
+                ${sections.length === 0 ? '<p style="color:#ef4444; font-size:13px;">No sections found. Please add sections in the Sections tab first.</p>' :
+        `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px;" id="sectionBtns">
                     ${sections.map(s => {
-                return `<button id="sectBtn-${s.key}" onclick="selectExamSection('${s.key}','${s.color || '#64748b'}')"
+        return `<button id="sectBtn-${s.key}" onclick="selectExamSection('${s.key}','${s.color || '#64748b'}')"
                             style="padding:12px 6px; border:2px solid #e2e8f0; border-radius:10px; background:#f8fafc;
                                    font-size:13px; font-weight:600; cursor:pointer; transition:all .18s;
                                    display:flex; flex-direction:column; align-items:center; gap:4px; color:#64748b;">
@@ -394,7 +413,7 @@ async function renderExamLinks() {
                             <span>${s.label}</span>
                             <span style="font-size:10px; color:#94a3b8;">${qCount[s.key] || 0} Qs</span>
                         </button>`;
-            }).join('')}
+    }).join('')}
                 </div>`}
                 <input type="hidden" id="elSection" value="">
             </div>
@@ -696,3 +715,11 @@ window.updateExamCount = updateExamCount;
 window.openEditQuestionModal = openEditQuestionModal;
 window.closeEditQuestionModal = closeEditQuestionModal;
 window.submitEditQuestion = submitEditQuestion;
+
+// Pre-load section metadata so SECTION_COLOR / SECTION_LABEL are populated
+// before the user visits the Links or Results tabs.
+document.addEventListener('DOMContentLoaded', () => {
+    loadSectionsIntoDropdown().catch(() => {
+        // Silently ignore on pages without the questions panel
+    });
+});

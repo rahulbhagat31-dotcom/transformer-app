@@ -50,9 +50,8 @@
         if (!sel) return;
 
         try {
-            const token = localStorage.getItem('authToken');
-            const res = await fetch('/transformers', {
-                headers: { Authorization: `Bearer ${token}` }
+        const res = await fetch('/transformers', {
+                credentials: 'include'
             });
             const data = await res.json();
             const transformers = data.data || data || [];
@@ -133,18 +132,16 @@
     //   FETCH HELPERS
     // ─────────────────────────────────────────────────
     async function fetchStageStatus(wo) {
-        const token = localStorage.getItem('authToken');
         const r = await fetch(`/stage/${encodeURIComponent(wo)}`, {
-            headers: { Authorization: `Bearer ${token}` }
+            credentials: 'include'
         });
         const d = await r.json();
         return d.data || d || {};
     }
 
     async function fetchAuditEvents(wo) {
-        const token = localStorage.getItem('authToken');
         const url = `/audit/logs?entityId=${encodeURIComponent(wo)}&limit=500`;
-        const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        const r = await fetch(url, { credentials: 'include' });
 
         // 403 = user doesn't have quality permission — return empty gracefully
         if (r.status === 403) {

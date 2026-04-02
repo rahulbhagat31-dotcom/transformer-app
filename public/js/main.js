@@ -183,8 +183,8 @@ window.showTab = async function (tabId) {
 };
 
 function updateActiveNavItem(tabId) {
-    const actualTab = tabId === 'home' ? 'dashboardSection' : 
-                      (tabId === 'designDocuments' || tabId === 'bomUpload') ? 'documentsSection' : tabId;
+    const actualTab = tabId === 'home' ? 'dashboardSection' :
+        (tabId === 'designDocuments' || tabId === 'bomUpload') ? 'documentsSection' : tabId;
 
     const navItems = document.querySelectorAll('.sidebar .nav-item, .sidebar .nav-subitem');
     navItems.forEach(el => {

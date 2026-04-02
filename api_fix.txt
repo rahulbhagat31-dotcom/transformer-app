@@ -1,0 +1,14 @@
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\core\api.js:124 return apiCall(`/stage/${wo}`);
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\core\api.js:131 return apiCall(`/stage/${wo}/check-access`, 'POST', { stage });
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\core\api.js:138 return apiCall(`/stage/${wo}/update-progress`, 'POST', { stage, percentage });
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\core\api.js:145 return apiCall(`/stage/${wo}/complete`, 'POST', { stage });
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\core\api.js:152 return apiCall(`/stage/${wo}/unlock`, 'POST', { stage, reason });
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\core\websocket-client.js:268 const response = await apiCall(`/checklist/${currentStage}/${currentWO}`);
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\features\checklist.js:320 const response = await apiCall(`/stage/${wo}/approve`, 'POST', { stage: mainStage });
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\features\checklist.js:386 const response = await apiCall(`/stage/${wo}/reject`, 'POST', { stage: mainStage, reason });
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\features\checklist.js:421 const response = await apiCall(`/stage/${wo}/ready-for-qa`, 'POST', { stage: mainStage });
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\features\digital-twin.js:414 const res = await fetch(`/export/checklist/${stage}/${wo}`, {
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\features\stage-progression.js:26 const response = await apiCall(`/transformers/${transformerId}`);
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\features\stage-progression.js:36 const result = await apiCall(`/transformers/${transformerId}/stage`, 'POST', {
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\features\stage-progression.js:97 const response = await apiCall(`/transformers/${transformerId}`);
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\features\stage-progression.js:161 const response = await apiCall(`/transformers/${transformerId}`);

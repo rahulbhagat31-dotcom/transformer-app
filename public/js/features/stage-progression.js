@@ -23,7 +23,7 @@ function getNextStage(currentStage) {
 async function moveToStage(transformerId, targetStage, notes = '') {
     try {
         // Get specific transformer details
-        const response = await apiCall(`/transformers/${transformerId}`);
+        const response = await apiCall(`/transformers/${encodeURIComponent(transformerId)}`);
         const transformer = response.data || response;
 
         if (!transformer) {
@@ -33,7 +33,7 @@ async function moveToStage(transformerId, targetStage, notes = '') {
 
         // Call API to update stage
         const stageName = getStageName(targetStage);
-        const result = await apiCall(`/transformers/${transformerId}/stage`, 'POST', {
+        const result = await apiCall(`/transformers/${encodeURIComponent(transformerId)}/stage`, 'POST', {
             newStage: targetStage,
             notes: notes
         });
@@ -94,7 +94,7 @@ function buildStageModalHtml(transformerId, currentWO, optionsHtml) {
  */
 async function showStageProgressionModal(transformerId, currentWO) {
     try {
-        const response = await apiCall(`/transformers/${transformerId}`);
+        const response = await apiCall(`/transformers/${encodeURIComponent(transformerId)}`);
         const transformer = response.data || response;
 
         if (!transformer) {
@@ -106,7 +106,7 @@ async function showStageProgressionModal(transformerId, currentWO) {
         let defaultNext = getNextStage(currentStage) || currentStage;
 
         const stageOrder = ['design', 'winding', 'vpd', 'coreCoil', 'tanking', 'tankFilling', 'testing', 'completed'];
-        
+
         let optionsHtml = '';
         stageOrder.forEach(stage => {
             const isCurrent = stage === currentStage;
@@ -158,7 +158,7 @@ function closeStageModal() {
  */
 async function viewStageHistory(transformerId) {
     try {
-        const response = await apiCall(`/transformers/${transformerId}`);
+        const response = await apiCall(`/transformers/${encodeURIComponent(transformerId)}`);
         const transformer = response.data || response;
 
         if (!transformer) {

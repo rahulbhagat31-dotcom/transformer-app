@@ -12,6 +12,13 @@
 (function () {
     'use strict';
 
+    // Guard: sidebar.js already registers window.SidebarBadges with identical logic.
+    // If it ran first, skip this legacy file entirely to prevent duplicate polling.
+    if (window.SidebarBadges) {
+        console.log('ℹ️ sidebar-badges.js: SidebarBadges already registered by sidebar.js — skipping duplicate init.');
+        return;
+    }
+
     const STAGES = ['winding', 'vpd', 'coreCoil', 'tanking', 'tankFilling'];
     const POLL_INTERVAL_MS = 45_000; // 45 s — gentle on the server
     let _pollTimer = null;
@@ -80,31 +87,41 @@
         const role = window.currentUserRole || '';
         const results = [];
 
+        // Prefer the batch endpoint — 1 request instead of 5
+        let batchSummary = null;
+        try {
+            const batchCall = typeof apiCall === 'function'
+                ? () => apiCall(`/checklist/summary/${encodeURIComponent(wo)}`)
+                : () => fetch(`/api/checklist/summary/${encodeURIComponent(wo)}`, { credentials: 'include' }).then(r => r.json());
+            const batchData = await batchCall();
+            batchSummary = batchData.data || null;
+        } catch (e) {
+            console.warn('SidebarBadges: batch summary failed, falling back to per-stage', e);
+        }
+
         await Promise.all(STAGES.map(async (stage) => {
             try {
-                // Reuse the global apiCall if available, else fetch directly
-                const call = typeof apiCall === 'function'
-                    ? () => apiCall(`/checklist/${stage}/${encodeURIComponent(wo)}/summary`)
-                    : () => fetch(`/api/checklist/${stage}/${encodeURIComponent(wo)}/summary`,
-                        { headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` } })
-                        .then(r => r.json());
+                let techDone = 0, supervisorDone = 0, qaDone = 0;
 
-                const summary = await call();
-                const { techDone = 0, supervisorDone = 0, qaDone = 0 } = summary || {};
+                if (batchSummary && batchSummary[stage]) {
+                    ({ techDone, supervisorDone, qaDone } = batchSummary[stage]);
+                } else {
+                    const call = typeof apiCall === 'function'
+                        ? () => apiCall(`/checklist/${stage}/${encodeURIComponent(wo)}/summary`)
+                        : () => fetch(`/api/checklist/${stage}/${encodeURIComponent(wo)}/summary`,
+                            { credentials: 'include' }).then(r => r.json());
+                    const summary = await call();
+                    ({ techDone = 0, supervisorDone = 0, qaDone = 0 } = summary || {});
+                }
 
-                // Pending supervisor = tech done but not supervisor signed
                 const supPending = Math.max(0, techDone - supervisorDone);
-                // Pending QA = supervisor done but not QA signed
-                const qaPending = Math.max(0, supervisorDone - qaDone);
-
+                const qaPending  = Math.max(0, supervisorDone - qaDone);
                 results.push({ stage, supPending, qaPending });
 
-                // Per-stage badge: show what's relevant to the current user role
                 if (role === 'admin') {
                     const stageTotal = supPending + qaPending;
                     const type = (supPending > 0 && qaPending > 0) ? 'both'
-                        : (qaPending > 0) ? 'qa'
-                            : 'supervisor';
+                        : (qaPending > 0) ? 'qa' : 'supervisor';
                     renderBadge(`nav-badge-${stage}`, stageTotal, type);
                 } else if (role === 'supervisor' || role === 'production') {
                     renderBadge(`nav-badge-${stage}`, supPending, 'supervisor');
@@ -117,7 +134,6 @@
                 results.push({ stage, supPending: 0, qaPending: 0 });
             }
         }));
-
         return results;
     }
 

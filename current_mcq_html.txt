@@ -1,0 +1,135 @@
+                <section id="questions" class="section">
+                    <div class="card">
+                        <h2>&#x2753; MCQ Question Bank</h2>
+                        <p style="color:#666; margin-bottom:20px;">Manage multiple-choice questions and operator exam
+                            links by section.</p>
+
+                        <!-- Inner Tab Nav -->
+                        <div style="display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap;">
+                            <button id="qtab-bank" class="btn-login" style="width:auto;padding:8px 18px;font-size:13px;"
+                                onclick="switchQTab('bank')">&#x1F4DA; Question Bank</button>
+                            <button id="qtab-add" class="btn-login"
+                                style="width:auto;padding:8px 18px;font-size:13px;background:#27ae60;"
+                                onclick="switchQTab('add')">&#x2795; Add Question</button>
+                            <button id="qtab-links" class="btn-login"
+                                style="width:auto;padding:8px 18px;font-size:13px;background:#8e44ad;"
+                                onclick="switchQTab('links')">&#x1F517; Exam Links</button>
+                            <button id="qtab-results" class="btn-login"
+                                style="width:auto;padding:8px 18px;font-size:13px;background:#e67e22;"
+                                onclick="switchQTab('results')">&#x1F4CA; Results</button>
+                        </div>
+
+                        <!-- â”€â”€ TAB: Question Bank â”€â”€ -->
+                        <div id="qpanel-bank">
+                            <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+                                <button class="btn-login" style="width:auto;padding:6px 16px;font-size:12px;"
+                                    onclick="filterQSection('all')">All</button>
+                                <button class="btn-login"
+                                    style="width:auto;padding:6px 16px;font-size:12px;background:#7c3aed;"
+                                    onclick="filterQSection('winding')">Winding</button>
+                                <button class="btn-login"
+                                    style="width:auto;padding:6px 16px;font-size:12px;background:#0ea5e9;"
+                                    onclick="filterQSection('core')">Core Building</button>
+                                <button class="btn-login"
+                                    style="width:auto;padding:6px 16px;font-size:12px;background:#f59e0b;"
+                                    onclick="filterQSection('tanking')">Tanking</button>
+                            </div>
+                            <div id="questionsList"></div>
+                        </div>
+
+                        <!-- â”€â”€ TAB: Add Question â”€â”€ -->
+                        <div id="qpanel-add" style="display:none;">
+                            <div style="display:grid; gap:14px;">
+                                <div>
+                                    <label
+                                        style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Section
+                                        *</label>
+                                    <select id="qSection" class="ui-input" style="max-width:320px;">
+                                        <option value="">-- Select Section --</option>
+                                        <option value="winding">Winding</option>
+                                        <option value="core">Core Building</option>
+                                        <option value="tanking">Tanking</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Question
+                                        Text *</label>
+                                    <textarea id="qText" class="ui-input" rows="3" placeholder="Enter the question..."
+                                        style="resize:vertical;"></textarea>
+                                </div>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                                    <div>
+                                        <label
+                                            style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Option
+                                            A *</label>
+                                        <input type="text" id="qOptA" class="ui-input" placeholder="Option A">
+                                    </div>
+                                    <div>
+                                        <label
+                                            style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Option
+                                            B *</label>
+                                        <input type="text" id="qOptB" class="ui-input" placeholder="Option B">
+                                    </div>
+                                    <div>
+                                        <label
+                                            style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Option
+                                            C *</label>
+                                        <input type="text" id="qOptC" class="ui-input" placeholder="Option C">
+                                    </div>
+                                    <div>
+                                        <label
+                                            style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Option
+                                            D *</label>
+                                        <input type="text" id="qOptD" class="ui-input" placeholder="Option D">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        style="font-weight:600; font-size:13px; display:block; margin-bottom:6px;">Correct
+                                        Answer *</label>
+                                    <select id="qCorrect" class="ui-input" style="max-width:200px;">
+                                        <option value="">-- Correct Option --</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button class="btn-login" style="width:auto;padding:11px 28px;background:#27ae60;"
+                                        onclick="addQuestion()">&#x2705; Add Question</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- â”€â”€ TAB: Exam Links â”€â”€ -->
+                        <div id="qpanel-links" style="display:none;">
+                            <p style="color:#666; margin-bottom:18px; font-size:13px;">Share these links with operators.
+                                Each link opens a random exam from that section.</p>
+                            <div style="display:grid; gap:14px;" id="examLinksContainer"></div>
+                        </div>
+
+                        <!-- â”€â”€ TAB: Results â”€â”€ -->
+                        <div id="qpanel-results" style="display:none;">
+                            <button class="btn-login" style="width:auto;padding:8px 20px;margin-bottom:16px;"
+                                onclick="loadExamResults()">&#x1F504; Refresh Results</button>
+                            <div id="examResultsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Answer Key Modal -->
+                    <div id="answerKeyModal"
+                        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center; overflow-y:auto;">
+                        <div
+                            style="background:white; padding:30px; border-radius:12px; width:95%; max-width:860px; margin:40px auto; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.3);">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="margin:0;">&#x1F4CB; Answer Key</h3>
+                                <button class="btn-login" style="width:auto;padding:6px 16px;background:#95a5a6;"
+                                    onclick="closeAnswerKey()">✖ Close</button>
+                            </div>
+                            <div id="answerKeyContent"></div>
+                        </div>
+                    </div>
+                </section>

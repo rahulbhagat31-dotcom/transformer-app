@@ -43,8 +43,8 @@ async function loadUsers() {
                 </thead>
                 <tbody>
                     ${users.map(u => {
-                        const rc = ROLE_COLORS[u.role] || ROLE_COLORS.production;
-                        return `
+        const rc = ROLE_COLORS[u.role] || ROLE_COLORS.production;
+        return `
                         <tr style="border-bottom:1px solid #f0f0f0; transition:background 0.15s;"
                             onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background=''">
                             <td style="padding:14px 20px; font-weight:600; color:#2c3e50; font-family:monospace;">${u.userId}</td>
@@ -70,7 +70,7 @@ async function loadUsers() {
                                 </div>
                             </td>
                         </tr>`;
-                    }).join('')}
+    }).join('')}
                 </tbody>
             </table>`;
     } catch (err) {
@@ -125,8 +125,8 @@ function showUserModal({ mode, user = {} }) {
                         <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px;">Role *</label>
                         <select name="role" required style="width:100%;padding:10px 14px;border:1.5px solid #dde1e7;border-radius:8px;font-size:14px;box-sizing:border-box;">
                             ${['admin','quality','production','customer'].map(r =>
-                                `<option value="${r}" ${user.role===r?'selected':''}>${r.charAt(0).toUpperCase()+r.slice(1)}</option>`
-                            ).join('')}
+        `<option value="${r}" ${user.role===r?'selected':''}>${r.charAt(0).toUpperCase()+r.slice(1)}</option>`
+    ).join('')}
                         </select>
                     </div>
                     <div>

@@ -1,0 +1,50 @@
+﻿ M .kluster/indexer.db
+ M .kluster/indexer.db-shm
+ M .kluster/indexer.db-wal
+ M data/transformer.db
+ M fix-encoding.js
+ M package-lock.json
+ M package.json
+ M public/js/core/api.js
+ M public/js/core/auth.js
+ M public/js/core/session.js
+ M public/js/features/checklist-ui.js
+ M public/js/features/checklist.js
+ M public/js/features/digital-twin.js
+ M public/js/features/questions-module.js
+ M public/js/features/stage-progression.js
+ M public/js/features/ui.js
+ M public/js/features/users.js
+ M public/js/features/wo-timeline.js
+ M public/js/main.js
+ M public/js/ui/sidebar-badges.js
+ M public/js/ui/sidebar.js
+ M public/js/ui/ui-helpers.js
+ M routes/checklist.routes.js
+ M routes/questions.routes.js
+ M scripts/migrate_legacy_data.js
+ M services/checklist.service.js
+ M services/transformer.service.js
+?? PRD.md
+?? api_fix.txt
+?? backup_questions_logic.txt
+?? backup_ui_methods.txt
+?? current_mcq_html.txt
+?? explore_questions.js
+?? extract_html.js
+?? fix_kluster.js
+?? fix_kluster2.js
+?? fix_kluster3.js
+?? fix_templates_easy.js
+?? fix_templates_legal.js
+?? mcq_html.txt
+?? patch_html.js
+?? patch_js.js
+?? patch_legacy_ui.js
+?? patch_routes.js
+?? patch_service.js
+?? patch_templates.js
+?? refactor-dt.js
+?? scripts_output.txt
+?? services/questions.service.js
+?? status_out.txt

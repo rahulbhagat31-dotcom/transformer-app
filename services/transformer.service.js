@@ -114,7 +114,9 @@ class TransformerService {
             WHERE wo = ?
         `);
         const result = stmt.run(visible ? 1 : 0, updatedBy, wo);
-        if (result.changes === 0) return null;
+        if (result.changes === 0) {
+            return null;
+        }
         return this.findByWO(wo);
     }
 

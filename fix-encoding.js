@@ -20,12 +20,12 @@ function processDirectory(dir) {
             processDirectory(fullPath);
         } else if (fullPath.endsWith('.html') || fullPath.endsWith('.js') || fullPath.endsWith('.css')) {
             let content = fs.readFileSync(fullPath, 'utf8');
-            let original = content;
-            
+            const original = content;
+
             for (const { search, replace } of replacements) {
                 content = content.replace(search, replace);
             }
-            
+
             if (content !== original) {
                 fs.writeFileSync(fullPath, content, 'utf8');
                 console.log('Fixed:', fullPath);

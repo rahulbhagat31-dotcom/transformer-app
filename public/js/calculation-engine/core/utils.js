@@ -56,7 +56,7 @@
          * Calculate proximity effect factor
          * Simplified formula for typical transformer windings
          */
-        proximityEffectFactor(conductorSpacing, conductorWidth, frequency) {
+        proximityEffectFactor(conductorSpacing, conductorWidth, _frequency) {
             // Simplified empirical formula
             const ratio = conductorSpacing / conductorWidth;
 
@@ -80,7 +80,7 @@
          * Returns weight in kg
          */
         coreWeight(limbVolume, yokeVolume, cornerVolume, material = 'CRGO') {
-            const materialData = CONSTANTS[material];
+            const materialData = CONSTANTS[material.toUpperCase()];
             if (!materialData) {
                 throw new Error(`Unknown core material: ${material}`);
             }
@@ -107,7 +107,7 @@
          * @returns {Object} Loss breakdown with total, hysteresis, eddy components
          */
         coreLoss(weight, frequency, fluxDensity, material = 'CRGO', grade = 'M4') {
-            const materialData = CONSTANTS[material];
+            const materialData = CONSTANTS[material.toUpperCase()];
             if (!materialData) {
                 throw new Error(`Unknown core material: ${material}`);
             }

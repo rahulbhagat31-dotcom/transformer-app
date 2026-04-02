@@ -12,7 +12,8 @@ const { authenticate, requireRole } = require('../middlewares/auth');
 const { handleValidationErrors } = require('../middlewares/validation');
 const { successResponse, errorResponse } = require('../utils/response');
 const { logAudit } = require('../utils/audit');
-const db = require('../config/database');
+const userService = require('../services/user.service');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 router.use(authenticate);
@@ -20,17 +21,18 @@ router.use(requireRole(['admin']));
 
 /* ─── helpers ─────────────────────────────────────────────── */
 function sanitizeUser(u) {
-    const { password, ...safe } = u;
+    const { password: _password, ...safe } = u;
     return safe;
 }
 
 /* ─── GET /api/users ──────────────────────────────────────── */
 router.get('/', (req, res) => {
     try {
-        const users = db.prepare('SELECT * FROM users ORDER BY createdAt DESC').all();
+        const users = userService.findAll();
         res.json(successResponse(users.map(sanitizeUser), `${users.length} users loaded`));
     } catch (err) {
-        res.status(500).json(errorResponse(err));
+        logger.error('GET /users error', err);
+        res.status(500).json(errorResponse('Failed to retrieve users'));
     }
 });
 
@@ -51,25 +53,19 @@ router.post('/',
             const { userId, name, role, password, email, department, customerId, customerName } = req.body;
 
             // Check duplicate
-            const existing = db.prepare('SELECT userId FROM users WHERE userId = ?').get(userId);
+            const existing = userService.findByUserId(userId);
             if (existing) {
                 return res.status(409).json({ success: false, error: 'User ID already exists' });
             }
 
             const hashed = await bcrypt.hash(password, 10);
+            const created = userService.create({ userId, password: hashed, name, email, role, department, customerId, customerName });
 
-            db.prepare(`
-                INSERT INTO users (userId, password, name, email, role, department, customerId, customerName)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `).run(userId, hashed, name, email || null, role, department || null, customerId || null, customerName || null);
-
-            logAudit(req.user.id, req.user.username, req.user.role, 'CREATE', 'user', userId,
-                { name, role, department });
-
-            const created = db.prepare('SELECT * FROM users WHERE userId = ?').get(userId);
+            logAudit(req.user.id, req.user.username, req.user.role, 'CREATE', 'user', userId, { name, role, department });
             res.status(201).json(successResponse(sanitizeUser(created), 'User created successfully'));
         } catch (err) {
-            res.status(500).json(errorResponse(err));
+            logger.error('POST /users error', err);
+            res.status(500).json(errorResponse('Failed to create user'));
         }
     }
 );
@@ -88,44 +84,38 @@ router.put('/:id',
     async (req, res) => {
         try {
             const { id } = req.params;
-            const user = db.prepare('SELECT * FROM users WHERE userId = ?').get(id);
-            if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+            const user = userService.findByUserId(id);
+            if (!user) {
+                return res.status(404).json({ success: false, error: 'User not found' });
+            }
 
             // Prevent admin from editing own role (safety)
             if (id === req.user.id && req.body.role && req.body.role !== 'admin') {
                 return res.status(403).json({ success: false, error: 'Cannot change your own admin role' });
             }
 
+            // Use consistent ternary checks for ALL fields so explicit values (including empty/null) are respected
             const updates = {
-                name: req.body.name || user.name,
+                name: req.body.name !== undefined ? req.body.name : user.name,
                 email: req.body.email !== undefined ? req.body.email : user.email,
-                role: req.body.role || user.role,
+                role: req.body.role !== undefined ? req.body.role : user.role,
                 department: req.body.department !== undefined ? req.body.department : user.department,
                 customerId: req.body.customerId !== undefined ? req.body.customerId : user.customerId,
                 customerName: req.body.customerName !== undefined ? req.body.customerName : user.customerName
             };
 
+            // Password change handled separately via dedicated service method
             if (req.body.password) {
-                updates.password = await bcrypt.hash(req.body.password, 10);
-                db.prepare(`
-                    UPDATE users SET name=?, email=?, role=?, department=?, customerId=?, customerName=?, password=?
-                    WHERE userId=?
-                `).run(updates.name, updates.email, updates.role, updates.department,
-                    updates.customerId, updates.customerName, updates.password, id);
-            } else {
-                db.prepare(`
-                    UPDATE users SET name=?, email=?, role=?, department=?, customerId=?, customerName=?
-                    WHERE userId=?
-                `).run(updates.name, updates.email, updates.role, updates.department,
-                    updates.customerId, updates.customerName, id);
+                const hashed = await bcrypt.hash(req.body.password, 10);
+                userService.changePassword(id, hashed);
             }
 
+            const updated = userService.update(id, updates);
             logAudit(req.user.id, req.user.username, req.user.role, 'UPDATE', 'user', id, updates);
-
-            const updated = db.prepare('SELECT * FROM users WHERE userId = ?').get(id);
             res.json(successResponse(sanitizeUser(updated), 'User updated'));
         } catch (err) {
-            res.status(500).json(errorResponse(err));
+            logger.error('PUT /users/:id error', err);
+            res.status(500).json(errorResponse('Failed to update user'));
         }
     }
 );
@@ -137,16 +127,17 @@ router.delete('/:id', (req, res) => {
         if (id === req.user.id) {
             return res.status(403).json({ success: false, error: 'Cannot delete your own account' });
         }
-        const user = db.prepare('SELECT * FROM users WHERE userId = ?').get(id);
-        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+        const user = userService.findByUserId(id);
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
 
-        db.prepare('DELETE FROM users WHERE userId = ?').run(id);
-        logAudit(req.user.id, req.user.username, req.user.role, 'DELETE', 'user', id,
-            { name: user.name, role: user.role });
-
+        userService.delete(id);
+        logAudit(req.user.id, req.user.username, req.user.role, 'DELETE', 'user', id, { name: user.name, role: user.role });
         res.json(successResponse(null, 'User deleted'));
     } catch (err) {
-        res.status(500).json(errorResponse(err));
+        logger.error('DELETE /users/:id error', err);
+        res.status(500).json(errorResponse('Failed to delete user'));
     }
 });
 

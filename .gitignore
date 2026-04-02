@@ -48,3 +48,10 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+# ──────────────────────────────────────────────
+# AI tooling (kluster indexer, scratch files)
+# ──────────────────────────────────────────────
+.kluster/
+changed.txt
+progress.txt

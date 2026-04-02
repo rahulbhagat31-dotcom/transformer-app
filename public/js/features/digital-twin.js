@@ -137,13 +137,13 @@ async function initDigitalTwin(wo) {
 
         digitalTwinState.isLoading = false;
         console.log('✅ Digital Twin loaded');
-        if (typeof showDTContent === 'function') showDTContent();
+        if (typeof window.DigitalTwinUI.showDTContent === 'function') window.DigitalTwinUI.showDTContent();
 
     } catch (error) {
         console.error('❌ Digital Twin initialization error:', error);
         digitalTwinState.isLoading = false;
-        if (typeof showDTError === 'function') showDTError(error.message || 'Failed to load transformer data');
-        if (typeof showDTEmptyState === 'function') showDTEmptyState();
+        if (typeof window.DigitalTwinUI.showDTError === 'function') window.DigitalTwinUI.showDTError(error.message || 'Failed to load transformer data');
+        if (typeof window.DigitalTwinUI.showDTEmptyState === 'function') window.DigitalTwinUI.showDTEmptyState();
     }
 }
 
@@ -690,7 +690,7 @@ function renderManufacturingHistory() {
 
         return `
             <div class="dt-stage-section" data-stage="${item.stage}">
-                <div class="dt-stage-header" onclick="toggleStageSection('${item.stage}')">
+                <div class="dt-stage-header" onclick="window.DigitalTwinUI.toggleStageSection('${item.stage}')">
                     <div class="dt-stage-header-left">
                         <span class="dt-stage-expand-icon">▶</span>
                         <span class="dt-stage-name">${item.label}${currentBadge}</span>
@@ -1136,7 +1136,7 @@ async function populateDTWODropdown() {
     try {
         const data = await DigitalTwinAPI.fetchWithAuth('/transformers');
         
-        // Always refresh dropdown logic
+        // Populate dropdown (only runs when cache is empty, controlled by dropdownPopulated flag above)
         select.innerHTML = '<option value="">— Select W.O. Number —</option>';
         
         const rawTransformers = data.data || data;
@@ -1176,7 +1176,7 @@ if (_origShowTab) {
 }
 
 // Export unused functions for potential external use
-window.toggleStageSection = toggleStageSection;
+window.toggleStageSection = window.DigitalTwinUI.toggleStageSection; // correctly alias the namespaced function
 window.renderDTPlaceholders = renderDTPlaceholders;
 window.navigateToDashboard = navigateToDashboard;
 window.renderComparison = renderComparison;

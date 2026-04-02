@@ -56,12 +56,22 @@ router.get('/logs', checkPermission('quality'), (req, res) => {
 
         const result = auditService.getLogs(filters);
 
-        // Parse details JSON for frontend consumption
-        const logs = result.data.map(log => ({
-            ...log,
-            entity: log.entityType,  // backward-compat alias
-            changes: log.details ? (typeof log.details === 'string' ? JSON.parse(log.details) : log.details) : null
-        }));
+        const logs = result.data.map(log => {
+            let parsedDetails = null;
+            if (log.details) {
+                if (typeof log.details === 'string') {
+                    try { parsedDetails = JSON.parse(log.details); } 
+                    catch (e) { parsedDetails = log.details; }
+                } else {
+                    parsedDetails = log.details;
+                }
+            }
+            return {
+                ...log,
+                entity: log.entityType,  // backward-compat alias
+                changes: parsedDetails
+            };
+        });
 
         res.json(successResponse(
             {

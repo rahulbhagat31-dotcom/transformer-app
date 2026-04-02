@@ -2,13 +2,13 @@
    MCQ EXAM SYSTEM — Imported Frontend Logic
 =============================== */
 
-let _allSections = [];
-let _allQuestions = [];
-let _currentQFilter = 'all';
+var _allSections = window._allSections || [];
+var _allQuestions = window._allQuestions || [];
+var _currentQFilter = window._currentQFilter || 'all';
 
 // Dynamic section metadata — built from API data
-let SECTION_COLOR = {};
-let SECTION_LABEL = {};
+var SECTION_COLOR = window.SECTION_COLOR || {};
+var SECTION_LABEL = window.SECTION_LABEL || {};
 
 // Build section metadata from loaded sections
 function buildSectionMeta(sections) {

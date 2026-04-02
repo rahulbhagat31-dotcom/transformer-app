@@ -105,6 +105,14 @@ function showDTError(msg) {
     }
 }
 
+// Expose UI functions to the global scope under DigitalTwinUI namespace
+window.DigitalTwinUI = window.DigitalTwinUI || {};
+window.DigitalTwinUI.showDTContent = showDTContent;
+window.DigitalTwinUI.showDTEmptyState = showDTEmptyState;
+window.DigitalTwinUI.showDTError = showDTError;
+window.DigitalTwinUI.toggleStageSection = toggleStageSection;
+window.toggleStageSection = toggleStageSection; // Alias for direct onclick usage
+
 /**
  * Initialize Digital Twin page
  * @param {string} wo - Work order number
@@ -266,7 +274,8 @@ async function loadAuditLogs(wo) {
 
         if (result.success) {
             // Filter audit logs for this work order
-            const auditLogs = result.data.filter(log => log.wo === wo);
+            const auditData = result.data.logs || result.data || [];
+            const auditLogs = auditData.filter(log => log.wo === wo || log.entityId === wo);
             digitalTwinState.auditLogs = auditLogs;
             console.log(`📜 Loaded ${auditLogs.length} audit log(s) for ${wo}`);
         } else {

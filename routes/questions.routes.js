@@ -100,7 +100,7 @@ router.post('/', authenticate, requireRole(['admin']), (req, res) => {
             return res.status(400).json({ success: false, error: 'Correct option must be A, B, C or D' });
         }
 
-        const id = Date.now().toString();
+        const id = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
         const q = questionService.addQuestion({id, section, text: text.trim(), optionA: optionA.trim(), optionB: optionB.trim(), optionC: optionC.trim(), optionD: optionD.trim(), correctOption, createdBy: req.user?.username || 'admin'});
         const newQ = {
             id: q.id,
@@ -146,7 +146,7 @@ router.get('/exam/:section', (req, res) => {
 
 // ── POST /questions/exam/submit  – submit exam answers ───────────────────────
 // ⚠️ MUST be before /:id route
-router.post('/exam/submit', (req, res) => {
+router.post('/exam/submit', authenticate, (req, res) => {
     try {
         const { section, operatorName, answers } = req.body;
         // answers: [{ questionId, chosen }]
@@ -188,7 +188,7 @@ router.post('/exam/submit', (req, res) => {
         const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
         const passed = percentage >= 60 ? 1 : 0;
 
-        const examId = Date.now().toString();
+        const examId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
         questionService.addResult({ examId, section, operatorName: operatorName.trim(), score, total, percentage, passed, answerKey: JSON.stringify(answerKey) });
 
         console.log(`📝 Exam: ${operatorName} | ${section} | ${score}/${total} (${percentage}%) | ${passed ? 'PASS' : 'FAIL'}`);

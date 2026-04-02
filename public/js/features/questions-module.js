@@ -1,37 +1,6 @@
-
-const buildSectionsTemplate = (sections, icons, colors) => {
-    let sectionsHtml = sections.map(s => `
-        <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 18px;
-            display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:38px;height:38px;border-radius:10px;background:${s.color}20;border:2px solid ${s.color};
-                    display:flex;align-items:center;justify-content:center;font-size:18px;">${s.icon || '📋'}</div>
-                <div>
-                    <div style="font-weight:700;font-size:14px;color:#1e293b;">${s.label}</div>
-                    <div style="font-size:11px;color:#94a3b8;font-family:monospace;">key: ${s.key}</div>
-                </div>
-            </div>
-            <button onclick="deleteSection('${s.key}','${s.label}')"
-                style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:7px 14px;
-                    cursor:pointer;color:#dc2626;font-size:12px;font-weight:600;">🗑 Delete</button>
-        </div>`).join('') || '<p style="color:#94a3b8;font-size:13px;">No sections yet.</p>';
-    
-    let iconsHtml = icons.map(ic => `<button onclick="document.getElementById('newSectIcon').value='${ic}';this.parentElement.querySelectorAll('button').forEach(b=>b.style.outline='none');this.style.outline='2px solid #3b82f6';"
-        style="width:36px;height:36px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:18px;background:#fff;cursor:pointer;">${ic}</button>`).join('');
-    
-    let colorsHtml = colors.map(c => `<button onclick="document.getElementById('newSectColor').value='${c.hex}';this.parentElement.querySelectorAll('button').forEach(b=>b.style.outline='none');this.style.outline='2px solid #1e293b';"
-        title="${c.name}" style="width:32px;height:32px;border-radius:50%;background:${c.hex};border:2px solid rgba(0,0,0,0.1);cursor:pointer;"></button>`).join('');
-
-    return `
-    buildSectionsTemplate(sections, ICONS, COLORS);
-};
-
-const buildLinksTemplate = (sectionsHtml, qrcodeSrc, linkListHtml, serverIp) => {
-    return `buildLinksTemplate(sectionsHtml, qrcodeSrc, linkListHtml, serverIp);
-};
 /* ===============================
    MCQ EXAM SYSTEM — Imported Frontend Logic
-================================ */
+=============================== */
 
 let _allSections = [];
 let _allQuestions = [];
@@ -220,12 +189,11 @@ async function deleteSection(key, label) {
     } catch (e) { alert('❌ ' + e.message); }
 }
 
-
 // ── Load all questions from server ────────────────────────────────────────────
 async function loadQuestions() {
     const container = document.getElementById('questionsList');
     if (!container) return;
-    loadSectionsIntoDropdown(); // refresh section dropdown and filter buttons
+    loadSectionsIntoDropdown();
     container.innerHTML = '<p style="color:#999; padding:20px; text-align:center;">Loading...</p>';
     try {
         const result = await apiCall('/questions');
@@ -250,18 +218,15 @@ function renderQuestionList() {
         return;
     }
 
-    
-    
-
-    let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;">
+    let html = `<table class="q-table">
         <thead><tr>
-            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left; width:40px;">#</th>
-            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left;">Question</th>
-            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center; width:110px;">Section</th>
-            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left;">Options (A/B/C/D)</th>
-            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center; width:80px;">Answer</th>
-            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center; width:80px;">Edit</th>
-            <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center; width:80px;">Delete</th>
+            <th style="text-align:left; width:40px;">#</th>
+            <th style="text-align:left;">Question</th>
+            <th style="text-align:center; width:110px;">Section</th>
+            <th style="text-align:left;">Options (A/B/C/D)</th>
+            <th style="text-align:center; width:80px;">Answer</th>
+            <th style="text-align:center; width:80px;">Edit</th>
+            <th style="text-align:center; width:80px;">Delete</th>
         </tr></thead><tbody>`;
 
     filtered.forEach((q, i) => {
@@ -270,25 +235,25 @@ function renderQuestionList() {
         const label = sectData.label || q.section;
         const opts = q.options || {};
         html += `<tr>
-            <td style="border:1px solid #ddd; padding:10px; text-align:center; color:#666;">${i + 1}</td>
-            <td style="border:1px solid #ddd; padding:10px;">${q.text}</td>
-            <td style="border:1px solid #ddd; padding:10px; text-align:center;">
-                <span style="background:${color}22; color:${color}; border:1px solid ${color}44; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:600;">${label}</span>
+            <td style="text-align:center; color:#666;">${i + 1}</td>
+            <td>${q.text}</td>
+            <td style="text-align:center;">
+                <span class="q-section-badge" style="background:${color}22; color:${color}; border:1px solid ${color}44;">${label}</span>
             </td>
-            <td style="border:1px solid #ddd; padding:10px; font-size:12px; color:#444;">
+            <td style="font-size:12px; color:#444;">
                 <b>A:</b> ${opts.A || '—'}<br>
                 <b>B:</b> ${opts.B || '—'}<br>
                 <b>C:</b> ${opts.C || '—'}<br>
                 <b>D:</b> ${opts.D || '—'}
             </td>
-            <td style="border:1px solid #ddd; padding:10px; text-align:center;">
-                <span style="background:#dcfce7; color:#16a34a; border:1px solid #86efac; padding:4px 12px; border-radius:99px; font-weight:700; font-size:13px;">${q.correctOption}</span>
+            <td style="text-align:center;">
+                <span class="q-answer-badge">${q.correctOption}</span>
             </td>
-            <td style="border:1px solid #ddd; padding:10px; text-align:center;">
-                <button class="btn-login" style="width:auto;padding:4px 10px;font-size:11px;background:#3498db;" onclick="openEditQuestionModal('${q.id}')">✏️</button>
+            <td style="text-align:center;">
+                <button class="btn-login q-action-btn" style="background:#3498db;" onclick="openEditQuestionModal('${q.id}')">✏️</button>
             </td>
-            <td style="border:1px solid #ddd; padding:10px; text-align:center;">
-                <button class="btn-login" style="width:auto;padding:4px 10px;font-size:11px;background:#e74c3c;" onclick="deleteQuestion('${q.id}')">🗑</button>
+            <td style="text-align:center;">
+                <button class="btn-login q-action-btn" style="background:#e74c3c;" onclick="deleteQuestion('${q.id}')">🗑</button>
             </td>
         </tr>`;
     });
@@ -395,7 +360,6 @@ async function renderExamLinks() {
     const container = document.getElementById('examLinksContainer');
     if (!container) return;
 
-    // Fetch dynamic sections from API
     let sections = [];
     try {
         const r = await fetch('/questions/sections');
@@ -405,45 +369,28 @@ async function renderExamLinks() {
         sections = [];
     }
 
-    // Fallback icons/colors for known section keys
-    const sectionMeta = {
-        winding: { icon: '🔧', color: '#7c3aed' },
-        core: { icon: '🏗', color: '#0ea5e9' },
-        tanking: { icon: '🛢', color: '#f59e0b' },
-    };
-
-    // Build question count per section key
     const qCount = {};
     sections.forEach(s => { qCount[s.key] = 0; });
     _allQuestions.forEach(q => { if (qCount[q.section] !== undefined) qCount[q.section]++; });
 
     container.innerHTML = `
     <div style="max-width:560px; margin:0 auto;">
-
-        <!-- Header -->
         <div style="text-align:center; margin-bottom:28px;">
             <div style="font-size:36px; margin-bottom:8px;">📋</div>
             <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:6px;">Create Exam Link</h2>
             <p style="color:#64748b; font-size:13px;">Configure the exam, then tap <strong>Create</strong> to get a fresh QR code &amp; link.</p>
         </div>
-
-        <!-- Form Card -->
         <div style="background:#fff; border:1.5px solid #e2e8f0; border-radius:16px; padding:28px; box-shadow:0 4px 24px rgba(0,0,0,0.07); display:flex; flex-direction:column; gap:20px;">
-
-            <!-- Section -->
             <div>
                 <label style="font-size:12px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.6px; display:block; margin-bottom:8px;">📚 Section</label>
                 ${sections.length === 0 ? `<p style="color:#ef4444; font-size:13px;">No sections found. Please add sections in the Sections tab first.</p>` :
             `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px;" id="sectionBtns">
                     ${sections.map(s => {
-                const meta = sectionMeta[s.key] || { icon: s.icon || '📝', color: '#64748b' };
-                const icon = s.icon || meta.icon;
-                const color = meta.color;
-                return `<button id="sectBtn-${s.key}" onclick="selectExamSection('${s.key}','${color}')"
+                return `<button id="sectBtn-${s.key}" onclick="selectExamSection('${s.key}','${s.color || '#64748b'}')"
                             style="padding:12px 6px; border:2px solid #e2e8f0; border-radius:10px; background:#f8fafc;
                                    font-size:13px; font-weight:600; cursor:pointer; transition:all .18s;
                                    display:flex; flex-direction:column; align-items:center; gap:4px; color:#64748b;">
-                            <span style="font-size:22px;">${icon}</span>
+                            <span style="font-size:22px;">${s.icon || '📋'}</span>
                             <span>${s.label}</span>
                             <span style="font-size:10px; color:#94a3b8;">${qCount[s.key] || 0} Qs</span>
                         </button>`;
@@ -451,8 +398,6 @@ async function renderExamLinks() {
                 </div>`}
                 <input type="hidden" id="elSection" value="">
             </div>
-
-            <!-- Count & Duration -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                 <div>
                     <label style="font-size:12px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.6px; display:block; margin-bottom:8px;">❓ No. of Questions</label>
@@ -469,8 +414,6 @@ async function renderExamLinks() {
                                transition:border-color .2s; background:#f8fafc;">
                 </div>
             </div>
-
-            <!-- Create button -->
             <button id="elCreateBtn" onclick="createExamLink()"
                 style="width:100%; padding:15px; background:linear-gradient(135deg,#3b82f6,#6366f1);
                        color:white; border:none; border-radius:12px; font-size:16px; font-weight:700;
@@ -478,19 +421,18 @@ async function renderExamLinks() {
                 🚀 Create Exam Link &amp; QR Code
             </button>
         </div>
-
-        <!-- Result area -->
         <div id="elResult" style="margin-top:24px; display:none;"></div>
     </div>`;
 }
 
-// ── Helper: highlight selected section button ─────────────────────────────────
+// ── Helper: highlight selected section button (uses dynamic sections) ─────────
 function selectExamSection(key, color) {
     document.getElementById('elSection').value = key;
-    ['winding', 'core', 'tanking'].forEach(k => {
-        const btn = document.getElementById(`sectBtn-${k}`);
+    // Use dynamic sections instead of hardcoded array
+    _allSections.forEach(s => {
+        const btn = document.getElementById(`sectBtn-${s.key}`);
         if (!btn) return;
-        if (k === key) {
+        if (s.key === key) {
             btn.style.borderColor = color;
             btn.style.background = color + '14';
             btn.style.color = color;
@@ -515,18 +457,16 @@ async function createExamLink() {
 
     const resultDiv = document.getElementById('elResult');
     const createBtn = document.getElementById('elCreateBtn');
-    
-    
-    const color = SECTION_COLOR[section] || '#3b82f6';
 
-    // Show loading state
+    const color = SECTION_COLOR[section] || '#3b82f6';
+    const label = SECTION_LABEL[section] || section;
+
     createBtn.disabled = true;
     createBtn.textContent = '⏳ Generating link...';
     createBtn.style.opacity = '0.7';
     resultDiv.style.display = 'none';
 
     try {
-        // Get LAN base
         let lanBase = window.location.origin;
         try {
             const r = await fetch('/api/server-ip');
@@ -534,7 +474,6 @@ async function createExamLink() {
             if (d.base) lanBase = d.base;
         } catch (e) { }
 
-        // Read the current active public tunnel URL
         createBtn.textContent = '🌐 Getting public URL...';
         let publicBase = null;
         try {
@@ -543,13 +482,8 @@ async function createExamLink() {
             if (td.active && td.url) publicBase = td.url;
         } catch (e) { }
 
-        // Public exam URL (for text display + direct link sharing)
         const examUrl = `${publicBase || lanBase}/exam/${section}?count=${count}&duration=${duration}`;
         const lanUrl = `${lanBase}/exam/${section}?count=${count}&duration=${duration}`;
-
-        // QR URL strategy:
-        // • If public tunnel is active → QR points to public URL directly (works on ANY network/5G)
-        // • If no tunnel → QR points to LAN stable redirect (same WiFi only)
         const qrUrl = publicBase
             ? `${publicBase}/exam/${section}?count=${count}&duration=${duration}`
             : `${lanBase}/go/exam/${section}?count=${count}&duration=${duration}`;
@@ -564,9 +498,7 @@ async function createExamLink() {
                     ${publicBase ? '🌐 Public link ready — works on any phone, any WiFi!' : '📱 LAN link ready — same WiFi only'}
                 </span>
             </div>
-
             <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
-                <!-- QR -->
                 <div style="flex-shrink:0; text-align:center;">
                     <img src="${QR_API(qrUrl)}" alt="QR Code"
                          style="width:200px; height:200px; border:3px solid ${publicBase ? '#86efac' : color + '44'}; border-radius:12px; display:block;">
@@ -574,18 +506,15 @@ async function createExamLink() {
                         ${publicBase ? '📷 Scan from anywhere (any WiFi / 5G)' : '📷 Same WiFi only'}
                     </div>
                 </div>
-
-                <!-- Info -->
                 <div style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:12px;">
                     <div style="background:${color}0d; border:1px solid ${color}33; border-radius:10px; padding:12px 14px;">
                         <div style="font-size:12px; color:${color}; font-weight:700; margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px;">
-                            ${SECTION_LABEL[section]} Exam
+                            ${label} Exam
                         </div>
                         <div style="font-size:13px; color:#475569;">
                             ❓ <strong>${count}</strong> questions &nbsp;·&nbsp; ⏱ <strong>${duration}</strong> min
                         </div>
                     </div>
-
                     <div>
                         <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px;">
                             ${publicBase ? '🌐 Public Link' : '📱 Network Link'}
@@ -596,16 +525,11 @@ async function createExamLink() {
                                        border-radius:8px; font-size:11px; background:${publicBase ? '#f0fdf4' : '#f8fafc'};
                                        font-family:monospace; color:#1e293b; min-width:0;">
                             <button class="btn-login" style="width:auto;padding:9px 14px;font-size:13px;background:${color};"
-                                onclick="navigator.clipboard.writeText(document.getElementById('el-final-link').value).then(()=>alert('✅ Link copied!'))">
-                                📋
-                            </button>
+                                onclick="navigator.clipboard.writeText(document.getElementById('el-final-link').value).then(()=>alert('✅ Link copied!'))">📋</button>
                             <button class="btn-login" style="width:auto;padding:9px 12px;font-size:13px;background:#27ae60;"
-                                onclick="window.open(document.getElementById('el-final-link').value,'_blank')">
-                                🚀
-                            </button>
+                                onclick="window.open(document.getElementById('el-final-link').value,'_blank')">🚀</button>
                         </div>
                     </div>
-
                     ${publicBase ? `
                     <div>
                         <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px;">📱 LAN Link (same WiFi)</div>
@@ -638,8 +562,6 @@ async function createExamLink() {
 // ── Live-update link + QR when count changes (kept for backward compat) ───────
 function updateExamCount() { /* replaced by createExamLink() */ }
 
-
-
 async function loadExamResults() {
     const container = document.getElementById('examResultsList');
     if (!container) return;
@@ -654,18 +576,16 @@ async function loadExamResults() {
             return;
         }
 
-        
-
-        let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;">
+        let html = `<table class="q-table">
             <thead><tr>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5;">#</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left;">Operator</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center;">Section</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center;">Score</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center;">%</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center;">Result</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center;">Date</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center;">Answer Key</th>
+                <th style="text-align:center;">#</th>
+                <th style="text-align:left;">Operator</th>
+                <th style="text-align:center;">Section</th>
+                <th style="text-align:center;">Score</th>
+                <th style="text-align:center;">%</th>
+                <th style="text-align:center;">Result</th>
+                <th style="text-align:center;">Date</th>
+                <th style="text-align:center;">Answer Key</th>
             </tr></thead><tbody>`;
 
         results.forEach((r, i) => {
@@ -673,20 +593,20 @@ async function loadExamResults() {
             const date = new Date(r.submittedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             const label = SECTION_LABEL[r.section] || r.section;
             html += `<tr>
-                <td style="border:1px solid #ddd; padding:10px; text-align:center; color:#666;">${i + 1}</td>
-                <td style="border:1px solid #ddd; padding:10px; font-weight:600;">${r.operatorName}</td>
-                <td style="border:1px solid #ddd; padding:10px; text-align:center;">${label}</td>
-                <td style="border:1px solid #ddd; padding:10px; text-align:center;">${r.score} / ${r.total}</td>
-                <td style="border:1px solid #ddd; padding:10px; text-align:center; font-weight:700;">${r.percentage}%</td>
-                <td style="border:1px solid #ddd; padding:10px; text-align:center;">
+                <td style="text-align:center; color:#666;">${i + 1}</td>
+                <td style="font-weight:600;">${r.operatorName}</td>
+                <td style="text-align:center;">${label}</td>
+                <td style="text-align:center;">${r.score} / ${r.total}</td>
+                <td style="text-align:center; font-weight:700;">${r.percentage}%</td>
+                <td style="text-align:center;">
                     <span style="padding:3px 12px; border-radius:99px; font-size:12px; font-weight:700;
                         background:${pass ? '#dcfce7' : '#fee2e2'}; color:${pass ? '#16a34a' : '#dc2626'};">
                         ${pass ? '✓ Pass' : '✗ Fail'}
                     </span>
                 </td>
-                <td style="border:1px solid #ddd; padding:10px; text-align:center; font-size:12px; color:#666;">${date}</td>
-                <td style="border:1px solid #ddd; padding:10px; text-align:center;">
-                    <button class="btn-login" style="width:auto;padding:4px 12px;font-size:12px;background:#3498db;" onclick="viewAnswerKey('${r.examId}')">📋 View</button>
+                <td style="text-align:center; font-size:12px; color:#666;">${date}</td>
+                <td style="text-align:center;">
+                    <button class="btn-login q-action-btn" style="background:#3498db;" onclick="viewAnswerKey('${r.examId}')">📋 View</button>
                 </td>
             </tr>`;
         });
@@ -718,26 +638,26 @@ async function viewAnswerKey(examId) {
             <div><b>Result:</b> <span style="font-weight:700; color:${r.percentage >= 60 ? '#16a34a' : '#dc2626'}">${r.percentage >= 60 ? 'PASS' : 'FAIL'}</span></div>
             <div><b>Date:</b> ${new Date(r.submittedAt).toLocaleString('en-IN')}</div>
         </div>
-        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <table class="q-table">
             <thead><tr>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left; width:40px;">#</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left;">Question</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left;">Operator's Answer</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:left;">Correct Answer</th>
-                <th style="border:1px solid #ddd; padding:10px; background:#f5f5f5; text-align:center; width:80px;">Result</th>
+                <th style="text-align:left; width:40px;">#</th>
+                <th style="text-align:left;">Question</th>
+                <th style="text-align:left;">Operator's Answer</th>
+                <th style="text-align:left;">Correct Answer</th>
+                <th style="text-align:center; width:80px;">Result</th>
             </tr></thead><tbody>`;
 
         r.answerKey.forEach((a, i) => {
             const opts = a.options || {};
             const bg = a.correct ? '#f0fdf4' : '#fff5f5';
             html += `<tr style="background:${bg};">
-                <td style="border:1px solid #ddd; padding:10px; text-align:center; color:#666;">${i + 1}</td>
-                <td style="border:1px solid #ddd; padding:10px;">${a.questionText}</td>
-                <td style="border:1px solid #ddd; padding:10px;">
+                <td style="text-align:center; color:#666;">${i + 1}</td>
+                <td>${a.questionText}</td>
+                <td>
                     ${a.chosen ? `<b>${a.chosen}:</b> ${opts[a.chosen] || '—'}` : '<em style="color:#999;">Not answered</em>'}
                 </td>
-                <td style="border:1px solid #ddd; padding:10px;"><b>${a.correctOption}:</b> ${opts[a.correctOption] || '—'}</td>
-                <td style="border:1px solid #ddd; padding:10px; text-align:center;">
+                <td><b>${a.correctOption}:</b> ${opts[a.correctOption] || '—'}</td>
+                <td style="text-align:center;">
                     <span style="padding:3px 10px; border-radius:99px; font-size:11px; font-weight:700;
                         background:${a.correct ? '#dcfce7' : '#fee2e2'}; color:${a.correct ? '#16a34a' : '#dc2626'};">
                         ${a.correct ? '✓' : '✗'}
@@ -773,5 +693,6 @@ window.loadExamResults = loadExamResults;
 window.viewAnswerKey = viewAnswerKey;
 window.closeAnswerKey = closeAnswerKey;
 window.updateExamCount = updateExamCount;
-
-
+window.openEditQuestionModal = openEditQuestionModal;
+window.closeEditQuestionModal = closeEditQuestionModal;
+window.submitEditQuestion = submitEditQuestion;

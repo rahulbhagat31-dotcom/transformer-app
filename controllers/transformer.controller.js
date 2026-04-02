@@ -7,8 +7,12 @@ exports.getTransformers = (req, res) => {
     try {
         const filters = {};
 
-        // Filter by customer for all users (except admin)
-        if (req.user?.customerId && req.user.role !== 'admin') {
+        // Filter by customer strictly
+        if (req.user?.role === 'customer') {
+            if (!req.user.customerId) {
+                // Return empty if customer string is missing
+                return res.json(successResponse([], 'Transformers loaded'));
+            }
             filters.customerId = req.user.customerId;
         }
 
@@ -28,9 +32,9 @@ exports.getTransformer = (req, res) => {
             return res.status(404).json(errorResponse('Transformer not found'));
         }
 
-        // Check customer access
-        if (req.user?.customerId && req.user.role !== 'admin') {
-            if (transformer.customerId !== req.user.customerId) {
+        // Check customer access strictly
+        if (req.user?.role === 'customer') {
+            if (!req.user.customerId || transformer.customerId !== req.user.customerId) {
                 return res.status(403).json(errorResponse('Access denied.'));
             }
         }
@@ -85,17 +89,21 @@ exports.updateTransformer = (req, res) => {
             return res.status(404).json(errorResponse('Transformer not found'));
         }
 
-        // Check customer access
-        if (req.user.customerId && req.user.role !== 'admin') {
-            if (oldTransformer.customerId !== req.user.customerId) {
+        // Check customer access strictly
+        if (req.user?.role === 'customer') {
+            if (!req.user.customerId || oldTransformer.customerId !== req.user.customerId) {
                 return res.status(403).json(errorResponse('Access denied. You can only update your own customer\'s transformers.'));
             }
         }
 
-        const updates = {
-            ...req.body,
-            updatedBy: req.user.id
-        };
+        // Whitelist allowed update fields (prevent mass assignment)
+        const allowedFields = ['customer', 'customerId', 'rating', 'hv', 'lv', 'designData', 'actuals'];
+        const updates = { updatedBy: req.user.id };
+        for (const key of allowedFields) {
+            if (req.body[key] !== undefined) {
+                updates[key] = req.body[key];
+            }
+        }
 
         const updatedTransformer = transformerService.update(req.params.id, updates);
 
@@ -122,9 +130,9 @@ exports.deleteTransformer = (req, res) => {
             return res.json(successResponse(null, 'Transformer already deleted or not found'));
         }
 
-        // Check customer access
-        if (req.user.customerId && req.user.role !== 'admin') {
-            if (transformerToDelete.customerId !== req.user.customerId) {
+        // Check customer access strictly
+        if (req.user?.role === 'customer') {
+            if (!req.user.customerId || transformerToDelete.customerId !== req.user.customerId) {
                 return res.status(403).json(errorResponse('Access denied. You can only delete your own customer\'s transformers.'));
             }
         }
@@ -210,9 +218,9 @@ exports.updateTransformerStage = (req, res) => {
             return res.status(404).json(errorResponse('Transformer not found'));
         }
 
-        // Check customer access
-        if (req.user.customerId && req.user.role !== 'admin') {
-            if (transformer.customerId !== req.user.customerId) {
+        // Check customer access strictly
+        if (req.user?.role === 'customer') {
+            if (!req.user.customerId || transformer.customerId !== req.user.customerId) {
                 return res.status(403).json(errorResponse('Access denied'));
             }
         }

@@ -16,19 +16,56 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate, requireRole } = require('../middlewares/auth');
-const db = require('../config/database');
+const questionService = require('../services/questions.service');
 
-const SECTIONS = ['winding', 'core', 'tanking'];
-const EXAM_SIZE = 3; // questions per exam (matches deep folder default)
+
+
+const EXAM_SIZE = 20; // questions per exam (matches deep folder default)
 
 function shuffle(arr) {
-    return arr.slice().sort(() => Math.random() - 0.5);
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
 }
+
+
+// ── GET /questions/sections  – list all sections (public) ────────────────────
+router.get('/sections', (req, res) => {
+    try { res.json({ success: true, data: questionService.getSections() }); }
+    catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// ── POST /questions/sections  – add a section (admin-only) ───────────────────
+router.post('/sections', authenticate, requireRole(['admin']), (req, res) => {
+    try {
+        const { key, label, color, icon } = req.body;
+        if (!key || !label) return res.status(400).json({ success: false, error: 'key and label are required' });
+        const slug = key.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+        const existing = questionService.getSectionBySlug(slug);
+        if (existing) return res.status(400).json({ success: false, error: 'Section key already exists' });
+        const newColor = color || '#64748b';
+        const newIcon = icon || '📋';
+        questionService.addSection(slug, label.trim(), newColor, newIcon);
+        res.json({ success: true, data: { key: slug, label: label.trim(), color: newColor, icon: newIcon } });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// ── DELETE /questions/sections/:key  – remove a section (admin-only) ─────────
+router.delete('/sections/:key', authenticate, requireRole(['admin']), (req, res) => {
+    try {
+        const info = questionService.deleteSection(req.params.key);
+        if (info.changes === 0) return res.status(404).json({ success: false, error: 'Section not found' });
+        res.json({ success: true, message: 'Section deleted' });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
 
 // ── GET /questions  – all questions ─────────────────────────────────────────
 router.get('/', authenticate, (req, res) => {
     try {
-        const qs = db.prepare('SELECT * FROM exam_questions ORDER BY section, createdAt DESC').all();
+        const qs = questionService.getAllQuestions();
         // Map to match deep folder format: { id, section, text, options:{A,B,C,D}, correctOption, createdAt, createdBy }
         const formatted = qs.map(q => ({
             id: q.id,
@@ -53,8 +90,8 @@ router.post('/', authenticate, requireRole(['admin']), (req, res) => {
         if (!text || !text.trim()) {
             return res.status(400).json({ success: false, error: 'Question text is required' });
         }
-        if (!SECTIONS.includes(section)) {
-            return res.status(400).json({ success: false, error: 'Invalid section. Must be winding, core or tanking' });
+        if (!questionService.getSections().map(s => s.key).includes(section)) {
+            return res.status(400).json({ success: false, error: 'Invalid section' });
         }
         if (!optionA || !optionB || !optionC || !optionD) {
             return res.status(400).json({ success: false, error: 'All four options (A-D) are required' });
@@ -64,12 +101,7 @@ router.post('/', authenticate, requireRole(['admin']), (req, res) => {
         }
 
         const id = Date.now().toString();
-        db.prepare(`
-            INSERT INTO exam_questions (id, section, text, optionA, optionB, optionC, optionD, correctOption, createdBy)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(id, section, text.trim(), optionA.trim(), optionB.trim(), optionC.trim(), optionD.trim(), correctOption, req.user?.username || 'admin');
-
-        const q = db.prepare('SELECT * FROM exam_questions WHERE id = ?').get(id);
+        const q = questionService.addQuestion({id, section, text: text.trim(), optionA: optionA.trim(), optionB: optionB.trim(), optionC: optionC.trim(), optionD: optionD.trim(), correctOption, createdBy: req.user?.username || 'admin'});
         const newQ = {
             id: q.id,
             section: q.section,
@@ -90,11 +122,11 @@ router.post('/', authenticate, requireRole(['admin']), (req, res) => {
 router.get('/exam/:section', (req, res) => {
     try {
         const section = req.params.section.toLowerCase();
-        if (!SECTIONS.includes(section)) {
+        if (!questionService.getSections().map(s => s.key).includes(section)) {
             return res.status(400).json({ success: false, error: 'Invalid section' });
         }
 
-        const all = db.prepare('SELECT * FROM exam_questions WHERE section = ?').all(section);
+        const all = questionService.getQuestionsBySection(section);
         // Allow ?count=N in URL; clamp between 1 and total available
         const requested = parseInt(req.query.count, 10);
         const count = (!isNaN(requested) && requested > 0) ? Math.min(requested, all.length) : Math.min(EXAM_SIZE, all.length);
@@ -119,7 +151,7 @@ router.post('/exam/submit', (req, res) => {
         const { section, operatorName, answers } = req.body;
         // answers: [{ questionId, chosen }]
 
-        if (!section || !SECTIONS.includes(section)) {
+        if (!section || !questionService.getSections().map(s => s.key).includes(section)) {
             return res.status(400).json({ success: false, error: 'Invalid section' });
         }
         if (!operatorName || !operatorName.trim()) {
@@ -129,7 +161,7 @@ router.post('/exam/submit', (req, res) => {
             return res.status(400).json({ success: false, error: 'Answers are required' });
         }
 
-        const allQs = db.prepare('SELECT * FROM exam_questions WHERE section = ?').all(section);
+        const allQs = questionService.getQuestionsBySection(section);
         const qMap = Object.fromEntries(allQs.map(q => [q.id, q]));
 
         let score = 0;
@@ -157,10 +189,7 @@ router.post('/exam/submit', (req, res) => {
         const passed = percentage >= 60 ? 1 : 0;
 
         const examId = Date.now().toString();
-        db.prepare(`
-            INSERT INTO exam_results (examId, section, operatorName, score, total, percentage, passed, answerKey)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(examId, section, operatorName.trim(), score, total, percentage, passed, JSON.stringify(answerKey));
+        questionService.addResult({ examId, section, operatorName: operatorName.trim(), score, total, percentage, passed, answerKey: JSON.stringify(answerKey) });
 
         console.log(`📝 Exam: ${operatorName} | ${section} | ${score}/${total} (${percentage}%) | ${passed ? 'PASS' : 'FAIL'}`);
 
@@ -185,11 +214,11 @@ router.post('/exam/submit', (req, res) => {
 // ── DELETE /questions/:id  – delete question (admin only) ───────────────────
 router.delete('/:id', authenticate, requireRole(['admin']), (req, res) => {
     try {
-        const q = db.prepare('SELECT id FROM exam_questions WHERE id = ?').get(req.params.id);
+        const q = questionService.getQuestionById(req.params.id);
         if (!q) {
             return res.status(404).json({ success: false, error: 'Question not found' });
         }
-        db.prepare('DELETE FROM exam_questions WHERE id = ?').run(req.params.id);
+        questionService.deleteQuestion(req.params.id);
         res.json({ success: true, message: 'Question deleted' });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
@@ -199,10 +228,7 @@ router.delete('/:id', authenticate, requireRole(['admin']), (req, res) => {
 // ── GET /questions/results  – all results (admin only) ──────────────────────
 router.get('/results', authenticate, requireRole(['admin']), (req, res) => {
     try {
-        const results = db.prepare(`
-            SELECT examId, section, operatorName, submittedAt, score, total, percentage
-            FROM exam_results ORDER BY submittedAt DESC
-        `).all();
+        const results = questionService.getAllResults();
         res.json({ success: true, data: results });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
@@ -212,7 +238,7 @@ router.get('/results', authenticate, requireRole(['admin']), (req, res) => {
 // ── GET /questions/results/:examId  – single result with answer key (admin) ─
 router.get('/results/:examId', authenticate, requireRole(['admin']), (req, res) => {
     try {
-        const row = db.prepare('SELECT * FROM exam_results WHERE examId = ?').get(req.params.examId);
+        const row = questionService.getResultById(req.params.examId);
         if (!row) {
             return res.status(404).json({ success: false, error: 'Result not found' });
         }
@@ -221,6 +247,22 @@ router.get('/results/:examId', authenticate, requireRole(['admin']), (req, res) 
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
+});
+
+
+// ── PUT /questions/:id  – edit question (admin only) ────────────────────────
+router.put('/:id', authenticate, requireRole(['admin']), (req, res) => {
+    try {
+        const { text, section, optionA, optionB, optionC, optionD, correctOption } = req.body;
+        if (!text || !text.trim()) return res.status(400).json({ success: false, error: 'Question text is required' });
+        if (!questionService.getSections().map(s => s.key).includes(section)) return res.status(400).json({ success: false, error: 'Invalid section' });
+        if (!optionA || !optionB || !optionC || !optionD) return res.status(400).json({ success: false, error: 'All four options (A-D) are required' });
+        if (!['A', 'B', 'C', 'D'].includes(correctOption)) return res.status(400).json({ success: false, error: 'Correct option must be A, B, C or D' });
+        const info = questionService.updateQuestion(req.params.id, {section, text: text.trim(), optionA: optionA.trim(), optionB: optionB.trim(), optionC: optionC.trim(), optionD: optionD.trim(), correctOption});
+        if (info.changes === 0) return res.status(404).json({ success: false, error: 'Question not found' });
+        const updatedQ = questionService.getQuestionById(req.params.id);
+        res.json({ success: true, data: { id: updatedQ.id, section: updatedQ.section, text: updatedQ.text, options: { A: updatedQ.optionA, B: updatedQ.optionB, C: updatedQ.optionC, D: updatedQ.optionD }, correctOption: updatedQ.correctOption } });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
 module.exports = router;

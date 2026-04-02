@@ -5,6 +5,7 @@ const { handleValidationErrors } = require('../middlewares/validation');
 const { errorResponse } = require('../utils/response');
 const { logAudit } = require('../utils/audit');
 const db = require('../config/database');
+const checklistService = require('../services/checklist.service');
 
 const router = express.Router();
 
@@ -156,7 +157,7 @@ router.get('/all', checkPermission('quality'), (req, res) => {
 });
 
 /** GET /checklist/pending-qa */
-router.get('/pending-qa', (req, res) => {
+router.get('/pending-qa', checkPermission('quality'), (req, res) => {
     try {
         const rows = db.prepare('SELECT * FROM checklists WHERE qaApproved = 0 OR qaApproved IS NULL').all();
         res.json({ success: true, data: rows });
@@ -166,7 +167,7 @@ router.get('/pending-qa', (req, res) => {
 });
 
 /** GET /checklist/pending-supervisor */
-router.get('/pending-supervisor', (req, res) => {
+router.get('/pending-supervisor', checkPermission('production'), (req, res) => {
     try {
         const rows = db.prepare('SELECT * FROM checklists WHERE supervisorApproved = 0 OR supervisorApproved IS NULL').all();
         res.json({ success: true, data: rows });
@@ -263,6 +264,14 @@ router.post('/save',
             }
 
             setItems(wo, stage, items, req.user?.username);
+
+            // Auto-save revision snapshot
+            try {
+                checklistService.saveRevision(wo, stage, items,
+                    `${actionType} item ${itemNumber}`, req.user?.username || 'unknown');
+            } catch (revErr) {
+                console.warn('⚠️ Revision save warning:', revErr.message);
+            }
 
             logAudit(
                 req.user.id, req.user.username, req.user.role,
@@ -376,6 +385,200 @@ router.delete('/clear/:stage/:wo', checkPermission('admin'), (req, res) => {
         res.json({ success: true, message: `Cleared ${before} items from ${stage} checklist`, deletedCount: before });
     } catch (error) {
         console.error('❌ Error clearing checklist:', error);
+        res.status(500).json(errorResponse(error));
+    }
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+ * TEMPLATE ENDPOINTS (Versioned checklist templates)
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/** POST /checklist/template/create — Create a new template */
+router.post('/template/create',
+    checkPermission('admin'),
+    [
+        body('name').trim().notEmpty().withMessage('Template name required'),
+        body('stage').notEmpty().isIn([
+            'winding1', 'winding2', 'winding3', 'winding4', 'winding5',
+            'vpd', 'coreCoil', 'tanking', 'tankFilling', 'spa', 'coreBuilding'
+        ]).withMessage('Invalid stage'),
+        body('items').isArray({ min: 1 }).withMessage('Items array required')
+    ],
+    handleValidationErrors,
+    (req, res) => {
+        try {
+            const { name, stage, description, items } = req.body;
+            const template = checklistService.createTemplate({
+                name, stage, description, items,
+                createdBy: req.user.username
+            });
+
+            logAudit(req.user.id, req.user.username, req.user.role,
+                'CREATE', 'checklist_template', name, { stage, version: template.version });
+
+            res.json({ success: true, message: `Template "${name}" v${template.version} created`, data: template });
+        } catch (error) {
+            console.error('❌ Error creating template:', error);
+            res.status(500).json(errorResponse(error));
+        }
+    }
+);
+
+/** GET /checklist/templates — List all templates */
+router.get('/templates', (req, res) => {
+    try {
+        const { stage } = req.query;
+        const templates = checklistService.getTemplates(stage || null);
+        res.json({ success: true, data: templates });
+    } catch (error) {
+        res.status(500).json(errorResponse(error));
+    }
+});
+
+/** GET /checklist/template/:id — Get specific template */
+router.get('/template/:id', (req, res) => {
+    try {
+        const template = checklistService.getTemplate(parseInt(req.params.id));
+        if (!template) {
+            return res.status(404).json({ success: false, error: 'Template not found' });
+        }
+        res.json({ success: true, data: template });
+    } catch (error) {
+        res.status(500).json(errorResponse(error));
+    }
+});
+
+/** POST /checklist/template/:id/update — Create new version of template */
+router.post('/template/:id/update',
+    checkPermission('admin'),
+    [body('items').isArray({ min: 1 }).withMessage('Items array required')],
+    handleValidationErrors,
+    (req, res) => {
+        try {
+            const { description, items } = req.body;
+            const template = checklistService.updateTemplate(
+                parseInt(req.params.id),
+                { description, items, createdBy: req.user.username }
+            );
+
+            logAudit(req.user.id, req.user.username, req.user.role,
+                'UPDATE', 'checklist_template', template.name, { version: template.version });
+
+            res.json({ success: true, message: `Template "${template.name}" v${template.version} created`, data: template });
+        } catch (error) {
+            console.error('❌ Error updating template:', error);
+            res.status(500).json(errorResponse(error));
+        }
+    }
+);
+
+/** DELETE /checklist/template/:name — Delete template and all versions */
+router.delete('/template/:name', checkPermission('admin'), (req, res) => {
+    try {
+        const deleted = checklistService.deleteTemplate(req.params.name);
+
+        logAudit(req.user.id, req.user.username, req.user.role,
+            'DELETE', 'checklist_template', req.params.name, { action: 'DELETE_ALL_VERSIONS' });
+
+        res.json({ success: true, message: deleted ? 'Template deleted' : 'Template not found' });
+    } catch (error) {
+        res.status(500).json(errorResponse(error));
+    }
+});
+
+/** POST /checklist/sync-template — Sync a template to WOs */
+router.post('/sync-template',
+    checkPermission('admin'),
+    [
+        body('templateId').isInt({ min: 1 }).withMessage('Valid template ID required')
+    ],
+    handleValidationErrors,
+    (req, res) => {
+        try {
+            const { templateId, woList } = req.body;
+            const affected = checklistService.syncTemplateToWOs(
+                templateId,
+                woList || null,
+                req.user.username
+            );
+
+            logAudit(req.user.id, req.user.username, req.user.role,
+                'SYNC', 'checklist_template', String(templateId), { affectedWOs: affected });
+
+            res.json({
+                success: true,
+                message: `Template synced to ${affected.length} work order(s)`,
+                data: { affectedWOs: affected }
+            });
+        } catch (error) {
+            console.error('❌ Error syncing template:', error);
+            res.status(500).json(errorResponse(error));
+        }
+    }
+);
+
+/* ═══════════════════════════════════════════════════════════════════
+ * REVISION ENDPOINTS (Per-WO revision history)
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/** GET /checklist/:stage/:wo/revisions — List all revisions for a WO+stage */
+router.get('/:stage/:wo/revisions', (req, res) => {
+    try {
+        const { stage, wo } = req.params;
+        const revisions = checklistService.getRevisions(wo, stage);
+        res.json({ success: true, data: revisions });
+    } catch (error) {
+        res.status(500).json(errorResponse(error));
+    }
+});
+
+/** GET /checklist/:stage/:wo/revision/:rev — Get a specific revision */
+router.get('/:stage/:wo/revision/:rev', (req, res) => {
+    try {
+        const { stage, wo, rev } = req.params;
+        const revision = checklistService.getRevision(wo, stage, parseInt(rev));
+        if (!revision) {
+            return res.status(404).json({ success: false, error: 'Revision not found' });
+        }
+        res.json({ success: true, data: revision });
+    } catch (error) {
+        res.status(500).json(errorResponse(error));
+    }
+});
+
+/** POST /checklist/:stage/:wo/restore/:rev — Restore a checklist to a specific revision */
+router.post('/:stage/:wo/restore/:rev',
+    checkPermission('admin'),
+    (req, res) => {
+        try {
+            const { stage, wo, rev } = req.params;
+            const restored = checklistService.restoreRevision(wo, stage, parseInt(rev), req.user.username);
+
+            logAudit(req.user.id, req.user.username, req.user.role,
+                'RESTORE', 'checklist', `${stage}-${wo}`, { revision: parseInt(rev) });
+
+            res.json({ success: true, message: `Restored to revision ${rev}`, data: restored });
+        } catch (error) {
+            console.error('❌ Error restoring revision:', error);
+            res.status(500).json(errorResponse(error));
+        }
+    }
+);
+
+/** POST /checklist/compare — Compare two template versions */
+router.post('/compare', (req, res) => {
+    try {
+        const { templateIdA, templateIdB } = req.body;
+        const tplA = checklistService.getTemplate(templateIdA);
+        const tplB = checklistService.getTemplate(templateIdB);
+
+        if (!tplA || !tplB) {
+            return res.status(404).json({ success: false, error: 'One or both templates not found' });
+        }
+
+        const diff = checklistService.compareVersions(tplA.items, tplB.items);
+        res.json({ success: true, data: { templateA: tplA.name + ' v' + tplA.version, templateB: tplB.name + ' v' + tplB.version, diff } });
+    } catch (error) {
         res.status(500).json(errorResponse(error));
     }
 });

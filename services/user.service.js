@@ -2,10 +2,10 @@ const db = require('../config/database');
 
 class UserService {
     /**
-     * Get all users
+     * Get all users (password hash excluded)
      */
     findAll() {
-        const users = db.prepare('SELECT * FROM users').all();
+        const users = db.prepare('SELECT userId, name, email, role, department, customerId, customerName, permissions, createdAt FROM users').all();
         return users.map(user => ({
             ...user,
             permissions: user.permissions ? JSON.parse(user.permissions) : []
@@ -13,14 +13,28 @@ class UserService {
     }
 
     /**
-     * Find user by userId
+     * Find user by userId (password hash excluded)
      */
     findByUserId(userId) {
-        const user = db.prepare('SELECT * FROM users WHERE userId = ?').get(userId);
+        const user = db.prepare('SELECT userId, name, email, role, department, customerId, customerName, permissions, createdAt FROM users WHERE userId = ?').get(userId);
         if (!user) {
             return null;
         }
 
+        return {
+            ...user,
+            permissions: user.permissions ? JSON.parse(user.permissions) : []
+        };
+    }
+
+    /**
+     * Find user with password hash (for auth only)
+     */
+    findByUserIdWithPassword(userId) {
+        const user = db.prepare('SELECT * FROM users WHERE userId = ?').get(userId);
+        if (!user) {
+            return null;
+        }
         return {
             ...user,
             permissions: user.permissions ? JSON.parse(user.permissions) : []

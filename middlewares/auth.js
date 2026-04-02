@@ -2,27 +2,56 @@ const jwt = require('jsonwebtoken');
 const userService = require('../services/user.service');
 const logger = require('../utils/logger');
 
-/**
- * Middleware to authenticate JWT token from Authorization header
- */
-function authenticate(req, res, next) {
-    const authHeader = req.headers.authorization;
+// Simple in-memory token blacklist for session invalidation on logout
+const tokenBlacklist = new Set();
+function invalidateToken(token) {
+    if (token) {
+        tokenBlacklist.add(token);
+        // Remove token from RAM after 8h (its natural expiration) to prevent memory leak
+        // TODO: Move to a distributed store like Redis for horizontal scaling
+        setTimeout(() => tokenBlacklist.delete(token), 8 * 60 * 60 * 1000);
+    }
+}
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+/**
+ * Middleware to authenticate JWT token.
+ * Priority:
+ *  1. HttpOnly cookie `authToken`  (browser sessions — XSS-safe)
+ *  2. Authorization: Bearer header (API clients / Postman / integrations)
+ */
+async function authenticate(req, res, next) {
+    // 1. Try HttpOnly cookie (preferred — invisible to JS)
+    let token = req.cookies && req.cookies.authToken;
+
+    // 2. Fall back to Bearer header (backward-compatible for API clients)
+    if (!token) {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7);
+        }
+    }
+
+    if (!token) {
         return res.status(401).json({
             success: false,
             error: 'No token provided. Please log in.'
         });
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    if (tokenBlacklist.has(token)) {
+        return res.status(401).json({
+            success: false,
+            error: 'Session has been logged out. Please log in again.'
+        });
+    }
+
 
     try {
         // Verify JWT token - NO FALLBACK for security
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Re-validate user exists in database
-        const user = userService.findByUserId(decoded.userId);
+        const user = await userService.findByUserIdWithPassword(decoded.userId);
 
         if (!user) {
             return res.status(401).json({
@@ -119,5 +148,6 @@ function requireRole(allowedRoles) {
 module.exports = {
     authenticate,
     checkPermission,
-    requireRole
+    requireRole,
+    invalidateToken
 };

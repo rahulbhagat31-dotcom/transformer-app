@@ -15,9 +15,11 @@ const path = require('path');
 const compression = require('compression');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 const { initUsersFile, initDataFiles, seedDefaultUsersIfNeeded } = require('./utils/init');
 const { globalErrorHandler, notFoundHandler } = require('./middlewares/errorHandler');
+const { authenticate, requireRole } = require('./middlewares/auth');
 const { initAuditFile } = require('./utils/audit');
 const { initStageStatusFile } = require('./utils/stageControl');
 
@@ -104,6 +106,7 @@ app.use(cors({
 
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
@@ -145,8 +148,8 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 // Routes are mounted at / — frontend calls with full paths like /auth/login, /transformers etc.
 app.use('/', apiRoutes);
 
-// Cache statistics endpoint (Phase 2)
-app.get('/api/cache/stats', (req, res) => {
+// Cache statistics endpoint (admin only)
+app.get('/api/cache/stats', authenticate, requireRole(['admin']), (req, res) => {
     res.json(cache.getStats());
 });
 

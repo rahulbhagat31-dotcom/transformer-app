@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS customers (
 );
 
 -- Users Table
+-- Note: customerId FK to customers(id) enforced at application level for existing DBs
 CREATE TABLE IF NOT EXISTS users (
     userId TEXT PRIMARY KEY,
     password TEXT NOT NULL,
@@ -187,7 +188,7 @@ CREATE INDEX IF NOT EXISTS idx_stage_status_wo ON transformer_stage_status(wo);
 -- Exam Questions Table (MCQ Bank)
 CREATE TABLE IF NOT EXISTS exam_questions (
     id TEXT PRIMARY KEY,
-    section TEXT NOT NULL CHECK(section IN ('winding','core','tanking')),
+    section TEXT NOT NULL,
     text TEXT NOT NULL,
     optionA TEXT NOT NULL,
     optionB TEXT NOT NULL,
@@ -211,3 +212,41 @@ CREATE TABLE IF NOT EXISTS exam_results (
     passed INTEGER NOT NULL DEFAULT 0,
     answerKey TEXT NOT NULL  -- JSON array
 );
+
+-- Exam Sections Table (Dynamic Sections)
+CREATE TABLE IF NOT EXISTS exam_sections (
+    key TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    color TEXT DEFAULT '#64748b',
+    icon TEXT DEFAULT '📋'
+);
+
+-- Checklist Templates Table (Versioned templates for syncing across WOs)
+CREATE TABLE IF NOT EXISTS checklist_templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    stage TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1,
+    description TEXT,
+    items TEXT NOT NULL,
+    isActive INTEGER DEFAULT 1,
+    createdBy TEXT NOT NULL,
+    createdAt TEXT DEFAULT (datetime('now')),
+    UNIQUE(name, version)
+);
+CREATE INDEX IF NOT EXISTS idx_templates_stage ON checklist_templates(stage);
+CREATE INDEX IF NOT EXISTS idx_templates_name ON checklist_templates(name, version DESC);
+
+-- Checklist Revisions Table (Per-WO revision history)
+CREATE TABLE IF NOT EXISTS checklist_revisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    wo TEXT NOT NULL,
+    stage TEXT NOT NULL,
+    revision INTEGER NOT NULL DEFAULT 1,
+    items TEXT NOT NULL,
+    changeReason TEXT,
+    createdBy TEXT NOT NULL,
+    createdAt TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (wo) REFERENCES transformers(wo)
+);
+CREATE INDEX IF NOT EXISTS idx_revisions_wo_stage ON checklist_revisions(wo, stage, revision DESC);

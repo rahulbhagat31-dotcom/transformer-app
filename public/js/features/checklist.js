@@ -317,7 +317,7 @@ async function approveCurrentStage() {
         const btn = document.getElementById('approveStageBtn');
         if (btn) { btn.disabled = true; btn.textContent = '⏳ Approving…'; }
 
-        const response = await apiCall(`/stage/${wo}/approve`, 'POST', { stage: mainStage });
+        const response = await apiCall(`/stage/${encodeURIComponent(wo)}/approve`, 'POST', { stage: mainStage });
 
         if (response.success || response.data) {
             alert(`✔ ${mainStage.toUpperCase()} stage approved successfully!\nThe next stage is now unlocked.`);
@@ -383,7 +383,7 @@ async function confirmRejectStage() {
         const confirmBtn = document.querySelector('#rejectStageModal .btn-danger');
         if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = '⏳ Rejecting…'; }
 
-        const response = await apiCall(`/stage/${wo}/reject`, 'POST', { stage: mainStage, reason });
+        const response = await apiCall(`/stage/${encodeURIComponent(wo)}/reject`, 'POST', { stage: mainStage, reason });
 
         if (response.success || response.data) {
             closeRejectStageModal();
@@ -418,7 +418,7 @@ async function submitStageForQAReview() {
         const btn = document.getElementById('readyForQABtn');
         if (btn) { btn.disabled = true; btn.textContent = '⏳ Submitting…'; }
 
-        const response = await apiCall(`/stage/${wo}/ready-for-qa`, 'POST', { stage: mainStage });
+        const response = await apiCall(`/stage/${encodeURIComponent(wo)}/ready-for-qa`, 'POST', { stage: mainStage });
 
         if (response.success || response.data) {
             alert(`📋 ${mainStage.toUpperCase()} submitted for QA review!\nYou will be notified once QA responds.`);
@@ -824,7 +824,7 @@ async function saveNewChecklistItem(stage, itemNumber, rowId) {
 
             // Brief toast instead of blocking alert
             if (typeof showToast === 'function') {
-                showToast(`✅ Item ${itemNumber} saved`, 'success', 1800);
+                showToast('success', `✅ Item ${itemNumber} saved`, { duration: 1800 });
             } else {
                 console.log(`✅ Item ${itemNumber} saved successfully`);
             }
@@ -890,7 +890,7 @@ async function loadChecklistData(stage) {
                             }
                         }
                     });
-                } catch {} {
+                } catch {
                     // Not JSON, try single value
                     const singleInput = document.getElementById(`actualValue_${rowId}`);
                     if (singleInput) {
@@ -1140,7 +1140,7 @@ async function unlockChecklistItem(stage, rowId) {
             if (unlockBtn) unlockBtn.style.display = 'none';
 
             if (typeof showToast === 'function') {
-                showToast('🔑 Item re-opened', 'info', 1800);
+                showToast('info', '🔑 Item re-opened', { duration: 1800 });
             }
         }
     } catch (error) {
@@ -1276,7 +1276,7 @@ async function confirmRowUnlock() {
             chips.classList.add('btn-click-bounce');
             setTimeout(() => chips.classList.remove('btn-click-bounce'), 350);
         }
-        if (typeof showToast === 'function') showToast('⚠️ Please select a reason', 'warning', 2000);
+        if (typeof showToast === 'function') showToast('warning', '⚠️ Please select a reason', { duration: 2000 });
         else alert('⚠️ Please select a reason for re-opening');
         return;
     }
@@ -1312,15 +1312,15 @@ async function confirmRowUnlock() {
             }
 
             closeRowUnlockModal();
-            if (typeof showToast === 'function') showToast('🔑 Row re-opened', 'info', 1800);
+            if (typeof showToast === 'function') showToast('info', '🔑 Row re-opened', { duration: 1800 });
 
         } else {
-            if (typeof showToast === 'function') showToast(`❌ ${response.error}`, 'error', 2500);
+            if (typeof showToast === 'function') showToast('error', `❌ ${response.error}`, { duration: 2500 });
             else alert(`❌ Error: ${response.error}`);
         }
     } catch (error) {
         console.error('❌ Error unlocking row:', error);
-        if (typeof showToast === 'function') showToast('❌ Error unlocking row', 'error', 2000);
+        if (typeof showToast === 'function') showToast('error', '❌ Error unlocking row', { duration: 2000 });
         else alert('❌ Error unlocking row. Check console for details.');
     }
 }
@@ -1339,7 +1339,7 @@ async function confirmRowLock() {
             chips.classList.add('btn-click-bounce');
             setTimeout(() => chips.classList.remove('btn-click-bounce'), 350);
         }
-        if (typeof showToast === 'function') showToast('⚠️ Please select a submission reason', 'warning', 2000);
+        if (typeof showToast === 'function') showToast('warning', '⚠️ Please select a submission reason', { duration: 2000 });
         else alert('⚠️ Please select a reason for submission');
         return;
     }
@@ -1376,15 +1376,15 @@ async function confirmRowLock() {
             }
 
             closeRowLockModal();
-            if (typeof showToast === 'function') showToast('✅ Row submitted for review', 'success', 1800);
+            if (typeof showToast === 'function') showToast('success', '✅ Row submitted for review', { duration: 1800 });
 
         } else {
-            if (typeof showToast === 'function') showToast(`❌ ${response.error}`, 'error', 2500);
+            if (typeof showToast === 'function') showToast('error', `❌ ${response.error}`, { duration: 2500 });
             else alert(`❌ Error: ${response.error}`);
         }
     } catch (error) {
         console.error('❌ Error locking row:', error);
-        if (typeof showToast === 'function') showToast('❌ Error submitting row', 'error', 2000);
+        if (typeof showToast === 'function') showToast('error', '❌ Error submitting row', { duration: 2000 });
         else alert('❌ Error locking row. Check console for details.');
     }
 }
@@ -1417,3 +1417,43 @@ window.toggleCustomReason = toggleCustomReason;       // legacy no-op
 window.toggleCustomLockReason = toggleCustomLockReason; // legacy no-op
 window.confirmRowUnlock = confirmRowUnlock;
 window.confirmRowLock = confirmRowLock;
+
+// ── Bulk Supervisor Sign-Off ──────────────────────────────────────────────────
+async function bulkSupervisorSignOff() {
+    if (!window.currentWO || !window.currentStage) {
+        alert('⚠ Please select a work order and stage first.');
+        return;
+    }
+    const items = document.querySelectorAll('#stageContent tr[id^="row_"]');
+    if (items.length === 0) {
+        alert('⚠ No checklist items found.');
+        return;
+    }
+    if (!confirm(`Sign off ALL technician-completed items for ${window.currentStage}?`)) return;
+
+    try {
+        const result = await apiCall(`/stage/${window.currentWO}/supervisor-signoff-all`, 'POST', {
+            stage: window.currentStage
+        });
+        if (result.success) {
+            if (typeof showToast === 'function') showToast('success', 'All items signed off successfully', { title: 'Bulk Sign-Off' });
+            loadChecklistData(window.currentStage);
+        } else {
+            alert('❌ ' + (result.error || 'Failed'));
+        }
+    } catch (error) {
+        alert('❌ ' + error.message);
+    }
+}
+window.bulkSupervisorSignOff = bulkSupervisorSignOff;
+
+// ── Export Checklist PDF ──────────────────────────────────────────────────────
+function exportChecklistPDF() {
+    if (!window.currentWO || !window.currentStage) {
+        alert('⚠ Please select a work order and stage first.');
+        return;
+    }
+    const url = `/checklist/${window.currentStage}/${window.currentWO}/pdf`;
+    window.open(url, '_blank');
+}
+window.exportChecklistPDF = exportChecklistPDF;

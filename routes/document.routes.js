@@ -75,7 +75,7 @@ router.get('/:wo', (req, res) => {
  * GET /api/document/download/:filename
  * Must be before /:wo to avoid route conflict — note: registered as /download/:filename
  */
-router.get('/download/:filename', (req, res) => {
+router.get('/download/:filename', checkPermission('production'), (req, res) => {
     try {
         const safeName = path.basename(req.params.filename);
         const filepath = path.resolve(uploadDir, safeName);

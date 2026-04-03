@@ -33,6 +33,115 @@ class ChecklistService {
         }));
     }
 
+    /* ═══════════════════════════════════════════════════════════════════
+     * LOW-LEVEL ITEM HELPERS
+     * Moved from route layer so all DB access is centralised here.
+     * ═══════════════════════════════════════════════════════════════════ */
+
+    /**
+     * Get the flat items array for a wo + stage.
+     * Returns [] when no record exists.
+     */
+    getItems(wo, stage) {
+        const row = db.prepare('SELECT items FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
+        if (!row) return [];
+        try { return JSON.parse(row.items) || []; } catch { return []; }
+    }
+
+    /**
+     * Persist the items array for a wo + stage (upsert).
+     * For concurrent-safe updates use withTransaction() instead.
+     */
+    setItems(wo, stage, items, completedBy = null) {
+        const existing = db.prepare('SELECT id FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
+        if (existing) {
+            db.prepare(`
+                UPDATE checklists
+                SET items = ?, completedBy = ?, lastUpdated = datetime('now')
+                WHERE wo = ? AND stage = ?
+            `).run(JSON.stringify(items), completedBy, wo, stage);
+        } else {
+            db.prepare(`
+                INSERT INTO checklists (wo, stage, items, completedBy)
+                VALUES (?, ?, ?, ?)
+            `).run(wo, stage, JSON.stringify(items), completedBy);
+        }
+    }
+
+    /**
+     * Execute a SQLite transaction for atomic read-modify-write operations.
+     * The callback receives scoped { getItems, setItems } helpers and MUST
+     * return its result — the wrapper forwards it to the caller so
+     * res.json() can be called after the commit is guaranteed.
+     */
+    withTransaction(fn) {
+        return db.transaction(() => {
+            const getItemsTx = (wo, stage) => {
+                const row = db.prepare('SELECT items FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
+                if (!row) return [];
+                try { return JSON.parse(row.items) || []; } catch { return []; }
+            };
+            const setItemsTx = (wo, stage, items, completedBy = null) => {
+                const existing = db.prepare('SELECT id FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
+                if (existing) {
+                    db.prepare(`
+                        UPDATE checklists
+                        SET items = ?, completedBy = ?, lastUpdated = datetime('now')
+                        WHERE wo = ? AND stage = ?
+                    `).run(JSON.stringify(items), completedBy, wo, stage);
+                } else {
+                    db.prepare(`
+                        INSERT INTO checklists (wo, stage, items, completedBy)
+                        VALUES (?, ?, ?, ?)
+                    `).run(wo, stage, JSON.stringify(items), completedBy);
+                }
+            };
+            return fn({ getItems: getItemsTx, setItems: setItemsTx });
+        })();
+    }
+
+    /**
+     * Verify a Work Order exists in the transformers table.
+     * Used by routes for object-level access control before modifying checklist data.
+     * Returns the transformer row or null.
+     */
+    findTransformer(wo) {
+        return db.prepare('SELECT wo, customerId, stage, customerVisible FROM transformers WHERE wo = ?').get(wo);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+     * ADMIN / ANALYTICS QUERIES
+     * ═══════════════════════════════════════════════════════════════════ */
+
+    /**
+     * Get all checklists (admin / quality view — no WO filter)
+     */
+    getAllChecklists() {
+        return db.prepare('SELECT * FROM checklists ORDER BY lastUpdated DESC').all();
+    }
+
+    /**
+     * Checklists awaiting QA approval
+     */
+    getPendingQA() {
+        return db.prepare(
+            'SELECT * FROM checklists WHERE qaApproved = 0 OR qaApproved IS NULL ORDER BY lastUpdated DESC'
+        ).all();
+    }
+
+    /**
+     * Checklists awaiting supervisor approval
+     */
+    getPendingSupervisor() {
+        return db.prepare(
+            'SELECT * FROM checklists WHERE supervisorApproved = 0 OR supervisorApproved IS NULL ORDER BY lastUpdated DESC'
+        ).all();
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+     * CHECKLIST-LEVEL OPERATIONS
+     * ═══════════════════════════════════════════════════════════════════ */
+
     /**
      * Save or update checklist
      */

@@ -4,7 +4,6 @@ const { authenticate, checkPermission, requireRole } = require('../middlewares/a
 const { handleValidationErrors } = require('../middlewares/validation');
 const { errorResponse } = require('../utils/response');
 const { logAudit } = require('../utils/audit');
-const db = require('../config/database');
 const checklistService = require('../services/checklist.service');
 
 const router = express.Router();
@@ -13,87 +12,11 @@ const router = express.Router();
 router.use(authenticate);
 
 /* ─────────────────────────────────────────────────────────────────────────
- * HELPERS: translate between SQLite blob storage ↔ flat-item API
- *
- * SQLite stores items as a JSON array in checklists.items for each wo+stage.
- * The frontend (from "transformer deep") expects a flat array of item objects:
- *   [{ rowId, actualValue, technician, shopSupervisor, qaSupervisor, remark, locked, timestamp }]
+ * LOCAL SHORTHANDS — all data access is delegated to checklistService
  * ───────────────────────────────────────────────────────────────────────── */
-
-/**
- * Get the items array for a given wo + stage from the DB.
- * Returns [] if no record exists.
- */
-function getItems(wo, stage) {
-    const row = db.prepare('SELECT items FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
-    if (!row) {
-        return [];
-    }
-    try {
-        return JSON.parse(row.items) || [];
-    } catch {
-        return [];
-    }
-}
-
-/**
- * Persist the items array for a given wo + stage.
- * Upserts the checklists row.
- * NOTE: For transactional updates, use setItemsTransactional below
- */
-function setItems(wo, stage, items, completedBy = null) {
-    const existing = db.prepare('SELECT id FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
-    if (existing) {
-        db.prepare(`
-            UPDATE checklists
-            SET items = ?, completedBy = ?, lastUpdated = datetime('now')
-            WHERE wo = ? AND stage = ?
-        `).run(JSON.stringify(items), completedBy, wo, stage);
-    } else {
-        db.prepare(`
-            INSERT INTO checklists (wo, stage, items, completedBy)
-            VALUES (?, ?, ?, ?)
-        `).run(wo, stage, JSON.stringify(items), completedBy);
-    }
-}
-
-/**
- * Execute a transaction for atomic read-modify-write operations
- * @param {Function} fn - Function that receives {getItems, setItems} helpers
- */
-function withTransaction(fn) {
-    return db.transaction(() => {
-        // Create scoped helpers that use the transaction
-        const getItemsTx = (wo, stage) => {
-            const row = db.prepare('SELECT items FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
-            if (!row) return [];
-            try {
-                return JSON.parse(row.items) || [];
-            } catch {
-                return [];
-            }
-        };
-
-        const setItemsTx = (wo, stage, items, completedBy = null) => {
-            const existing = db.prepare('SELECT id FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
-            if (existing) {
-                db.prepare(`
-                    UPDATE checklists
-                    SET items = ?, completedBy = ?, lastUpdated = datetime('now')
-                    WHERE wo = ? AND stage = ?
-                `).run(JSON.stringify(items), completedBy, wo, stage);
-            } else {
-                db.prepare(`
-                    INSERT INTO checklists (wo, stage, items, completedBy)
-                    VALUES (?, ?, ?, ?)
-                `).run(wo, stage, JSON.stringify(items), completedBy);
-            }
-        };
-
-        // fn MUST return its result so callers can use it after commit
-        return fn({ getItems: getItemsTx, setItems: setItemsTx });
-    })();
-}
+const getItems         = (wo, stage)                   => checklistService.getItems(wo, stage);
+const setItems         = (wo, stage, items, by)        => checklistService.setItems(wo, stage, items, by);
+const withTransaction  = (fn)                          => checklistService.withTransaction(fn);
 
 /* ─────────────────────────────────────────────────────────────────────────
  * ROW-LEVEL LOCK / UNLOCK  (admin only)
@@ -108,13 +31,20 @@ router.post('/row/:itemId/unlock',
     (req, res) => {
         try {
             const { itemId } = req.params;
-            const { reason } = req.body;
+            const { reason, wo, stage } = req.body;
 
-            // itemId format: "row_<stage>_<number>"  e.g. "row_winding1_3"
-            // We need wo too — frontend must supply it
-            const { wo, stage } = req.body;
             if (!wo || !stage) {
                 return res.status(400).json({ success: false, error: 'wo and stage required in body' });
+            }
+
+            // Issue 6: itemId format is 'row_<stage>_<num>' — cross-validate embedded stage against body
+            // e.g. itemId='row_winding1_3' means stage should be 'winding1'
+            const embeddedStage = itemId.startsWith('row_') ? itemId.split('_').slice(1, -1).join('_') : null;
+            if (embeddedStage && embeddedStage !== stage) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Stage mismatch: itemId '${itemId}' belongs to stage '${embeddedStage}', but body stage is '${stage}'`
+                });
             }
 
             // Transaction returns updated item; res.json() fires AFTER commit is guaranteed
@@ -135,7 +65,7 @@ router.post('/row/:itemId/unlock',
                 logAudit(req.user.id, req.user.username, req.user.role, 'UPDATE', 'checklist', itemId,
                     { action: 'UNLOCK_ROW', reason });
 
-                return items[idx]; // return data — DO NOT call res.json() inside the transaction
+                return items[idx];
             });
 
             res.json({ success: true, message: 'Row unlocked successfully', data: updatedItem });
@@ -163,6 +93,15 @@ router.post('/row/:itemId/lock',
                 return res.status(400).json({ success: false, error: 'wo and stage required in body' });
             }
 
+            // Issue 6: cross-validate stage embedded in itemId against body stage
+            const embeddedStage = itemId.startsWith('row_') ? itemId.split('_').slice(1, -1).join('_') : null;
+            if (embeddedStage && embeddedStage !== stage) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Stage mismatch: itemId '${itemId}' belongs to stage '${embeddedStage}', but body stage is '${stage}'`
+                });
+            }
+
             // Transaction returns locked item; res.json() fires AFTER commit is guaranteed
             const lockedItem = withTransaction(({ getItems, setItems }) => {
                 const items = getItems(wo, stage);
@@ -181,7 +120,7 @@ router.post('/row/:itemId/lock',
                 logAudit(req.user.id, req.user.username, req.user.role, 'UPDATE', 'checklist', itemId,
                     { action: 'LOCK_ROW', reason });
 
-                return items[idx]; // return data — DO NOT call res.json() inside the transaction
+                return items[idx];
             });
 
             res.json({ success: true, message: 'Row locked successfully', data: lockedItem });
@@ -202,8 +141,7 @@ router.post('/row/:itemId/lock',
 /** GET /checklist/all */
 router.get('/all', checkPermission('quality'), (req, res) => {
     try {
-        const rows = db.prepare('SELECT * FROM checklists').all();
-        res.json({ success: true, data: rows });
+        res.json({ success: true, data: checklistService.getAllChecklists() });
     } catch (error) {
         res.status(500).json(errorResponse(error));
     }
@@ -212,8 +150,7 @@ router.get('/all', checkPermission('quality'), (req, res) => {
 /** GET /checklist/pending-qa */
 router.get('/pending-qa', checkPermission('quality'), (req, res) => {
     try {
-        const rows = db.prepare('SELECT * FROM checklists WHERE qaApproved = 0 OR qaApproved IS NULL').all();
-        res.json({ success: true, data: rows });
+        res.json({ success: true, data: checklistService.getPendingQA() });
     } catch (error) {
         res.status(500).json(errorResponse(error));
     }
@@ -222,8 +159,7 @@ router.get('/pending-qa', checkPermission('quality'), (req, res) => {
 /** GET /checklist/pending-supervisor */
 router.get('/pending-supervisor', checkPermission('production'), (req, res) => {
     try {
-        const rows = db.prepare('SELECT * FROM checklists WHERE supervisorApproved = 0 OR supervisorApproved IS NULL').all();
-        res.json({ success: true, data: rows });
+        res.json({ success: true, data: checklistService.getPendingSupervisor() });
     } catch (error) {
         res.status(500).json(errorResponse(error));
     }
@@ -256,6 +192,12 @@ router.post('/save',
 
             if (!wo || !stage || !itemNumber || !rowId) {
                 return res.status(400).json({ success: false, error: 'Missing required fields' });
+            }
+
+            // Issue 2: verify the WO exists before allowing any modification
+            const transformer = checklistService.findTransformer(wo);
+            if (!transformer) {
+                return res.status(404).json({ success: false, error: `Work Order '${wo}' not found` });
             }
 
             // Transaction returns { actionType, rowId }; res.json() fires AFTER commit is guaranteed
@@ -347,6 +289,12 @@ router.post('/production/save', checkPermission('production'), (req, res) => {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
         }
 
+        // Issue 2: verify the WO exists before allowing any modification
+        const transformer = checklistService.findTransformer(wo);
+        if (!transformer) {
+            return res.status(404).json({ success: false, error: `Work Order '${wo}' not found` });
+        }
+
         const items = getItems(wo, stage);
         const existingIdx = items.findIndex(i => i.rowId === rowId);
 
@@ -391,11 +339,23 @@ router.get('/:stage/:wo', (req, res) => {
     try {
         const { stage, wo } = req.params;
 
-        // Admin bypass with audit log
+        // Issue 3: verify WO exists before returning data (prevents IDOR fishing)
+        const transformer = checklistService.findTransformer(wo);
+        if (!transformer) {
+            return res.status(404).json({ success: false, error: `Work Order '${wo}' not found` });
+        }
+
+        // Customer role: additionally verify the WO is marked visible for customers
+        if (req.user?.role === 'customer') {
+            if (!transformer.customerVisible) {
+                return res.status(403).json({ success: false, error: 'Access denied to this Work Order' });
+            }
+        }
+
+        // Admin: full access with audit trail
         if (req.user?.role === 'admin') {
             logAudit(req.user.id, req.user.username, req.user.role, 'READ', 'checklist',
-                `${stage}-${wo}`, { action: 'ADMIN_STAGE_OVERRIDE', stage, wo });
-            console.log(`🔑 Admin override: accessing stage ${stage} on WO ${wo}`);
+                `${stage}-${wo}`, { action: 'ADMIN_STAGE_ACCESS', stage, wo });
         }
 
         let items = getItems(wo, stage);
@@ -405,7 +365,6 @@ router.get('/:stage/:wo', (req, res) => {
             items = items.filter(i => i.customerId === req.user.customerId);
         }
 
-        console.log(`📋 Loaded ${items.length} checklist items for ${stage} - WO: ${wo}`);
         res.json(items);
     } catch (error) {
         console.error('❌ Error loading checklist:', error);

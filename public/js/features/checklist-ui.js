@@ -3485,8 +3485,8 @@ window.clearAuditFilters = clearAuditFilters;
    QUESTIONS MANAGEMENT – MCQ System
 ================================ */
 
-let _allQuestions = [];
-let _currentQFilter = 'all';
+var _allQuestions = window._allQuestions || [];
+var _currentQFilter = window._currentQFilter || 'all';
 
 // ── Tab switcher ──────────────────────────────────────────────────────────────
 function _legacy_switchQTab(tab) {

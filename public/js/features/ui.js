@@ -3608,10 +3608,8 @@ window.clearAuditFilters = clearAuditFilters;
 /* ===============================
    QUESTIONS MANAGEMENT – MCQ System
 ================================ */
-
-let _allQuestions = [];
-let _currentQFilter = 'all';
-
+var _allQuestions = window._allQuestions || [];
+var _currentQFilter = window._currentQFilter || 'all';
 // ── Tab switcher ──────────────────────────────────────────────────────────────
 function _legacy_switchQTab(tab) {
     ['bank', 'add', 'links', 'results'].forEach(t => {
@@ -3657,8 +3655,8 @@ function renderQuestionList() {
         return;
     }
 
-    const SECTION_COLOR = { winding: '#7c3aed', core: '#0ea5e9', tanking: '#f59e0b' };
-    const SECTION_LABEL = { winding: 'Winding', core: 'Core Building', tanking: 'Tanking' };
+    var SECTION_COLOR = { winding: '#7c3aed', core: '#0ea5e9', tanking: '#f59e0b' };
+    var SECTION_LABEL = { winding: 'Winding', core: 'Core Building', tanking: 'Tanking' };
 
     let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;">
         <thead><tr>

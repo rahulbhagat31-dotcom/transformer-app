@@ -4020,3 +4020,13 @@ window.viewAnswerKey = viewAnswerKey;
 window.closeAnswerKey = closeAnswerKey;
 window.updateExamCount = updateExamCount;
 
+
+
+/* Added for xmer-calc integration */
+window.showCalcView = function(viewId, btn) {
+    document.querySelectorAll('.xmer-calc-tab').forEach(t => t.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    document.querySelectorAll('.calc-view').forEach(v => v.style.display = 'none');
+    const target = document.getElementById(viewId);
+    if(target) target.style.display = 'block';
+};

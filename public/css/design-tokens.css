@@ -96,17 +96,18 @@
     /* ============ SPACING SCALE ============ */
     --sp-xs: 4px;
     --sp-sm: 8px;
-    --sp-md: 15px;
-    --sp-lg: 20px;
-    --sp-xl: 30px;
+    --sp-md: 16px;
+    --sp-lg: 24px;
+    --sp-xl: 32px;
+    --sp-2xl: 48px;
 
-    /* Alternate spacing scale (for components) */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-    --spacing-2xl: 48px;
+    /* Aliases for backwards compatibility */
+    --spacing-xs: var(--sp-xs);
+    --spacing-sm: var(--sp-sm);
+    --spacing-md: var(--sp-md);
+    --spacing-lg: var(--sp-lg);
+    --spacing-xl: var(--sp-xl);
+    --spacing-2xl: var(--sp-2xl);
 
     /* ============ BORDER RADIUS ============ */
     --radius-sm: 4px;
@@ -245,7 +246,7 @@
 }
 
 .clk-progress-fill {
-    background: linear-gradient(90deg, var(--clr-danger), #c0392b);
+    background: linear-gradient(90deg, var(--clr-success), #1e8449);
     height: 100%;
     width: 0%;
     transition: width 0.5s ease;

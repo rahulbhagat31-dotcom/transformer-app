@@ -1269,65 +1269,696 @@
                         <div id="customerCalcList"></div>
                     </div>
 
+                    
+                    <!-- IEC Calc Tab Navigation -->
+                    <div class="xmer-calc-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;padding:0 4px;">
+                        <button class="xmer-calc-tab active" id="tab-winding"
+                            onclick="showCalcView('calc-winding-view', this)"
+                            style="flex:1;padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;background:#1a3a5c;color:#fff;min-width:120px;">
+                            &#128423; Winding Design
+                        </button>
+                        <button class="xmer-calc-tab" id="tab-core"
+                            onclick="showCalcView('calc-core-view', this)"
+                            style="flex:1;padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;background:#e9ecef;color:#495057;min-width:120px;">
+                            &#128297; Core Design
+                        </button>
+                        <button class="xmer-calc-tab" id="tab-tank"
+                            onclick="showCalcView('calc-tank-view', this)"
+                            style="flex:1;padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;background:#e9ecef;color:#495057;min-width:120px;">
+                            &#9924; Tanking &amp; Thermal
+                        </button>
+                        <button class="xmer-calc-tab" id="tab-other"
+                            onclick="showCalcView('calc-other-view', this)"
+                            style="flex:1;padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;background:#e9ecef;color:#495057;min-width:120px;">
+                            &#128209; Other &amp; Summary
+                        </button>
+                    </div>
                     <div id="engineerCalcView">
-                        <div class="calc-container">
-                            <!-- Input Section -->
-                            <div class="input-section">
-                                <div class="input-card">
-                                    <div class="card-header">
-                                        <h3>&#x2699; Design Parameters</h3>
-                                    </div>
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label>Rating (MVA)</label>
-                                            <input type="number" id="calc_rating" class="modern-input"
-                                                placeholder="e.g. 100">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Voltage Ratio (kV)</label>
-                                            <input type="text" id="calc_voltage" class="modern-input"
-                                                placeholder="e.g. 132/33">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Customer Name</label>
-                                            <input type="text" id="calc_customer" class="modern-input"
-                                                placeholder="Client Name">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Winding Configuration</label>
-                                            <select id="numWindings" class="modern-select"
-                                                onchange="generateWindingForms()">
-                                                <option value="2">2 Windings (HV + LV)</option>
-                                                <option value="3">3 Windings (HV + LV + Tap)</option>
-                                            </select>
+                        <div id="calc-winding-view" class="calc-view">
+                            <div class="card">
+                                <h2>巻 Transformer Winding Design Calculation</h2>
+                                <p style="color:#666; font-size:13px; margin-bottom:18px;">Enter parameters to compute
+                                    winding turns, conductors, and dimensions.</p>
+
+                                <!-- Loading Overlay -->
+                                <div id="loading"
+                                    style="display:none; text-align:center; padding:30px; background:#f8f9fa; border-radius:8px; margin-bottom:20px;">
+                                    <div style="font-size:28px;">⚙️</div>
+                                    <p style="font-weight:bold; color:#2c3e50;" id="loadingText">Calculating...</p>
+                                    <div
+                                        style="background:#ddd; border-radius:20px; height:20px; margin:12px 0; overflow:hidden;">
+                                        <div id="progressBar"
+                                            style="background:linear-gradient(90deg,#3498db,#27ae60); height:100%; width:0%; transition:width 0.4s; text-align:center; color:white; font-size:11px; line-height:20px;">
                                         </div>
                                     </div>
                                 </div>
 
-                                <div id="windingFormsContainer">
-                                    <!-- Dynamic Winding inputs will appear here -->
+                                <div class="form-grid">
+                                    <!-- PART A — TRANSFORMER SPECIFICATION -->
+                                    <div
+                                        style="grid-column: 1 / -1; background: #1a3a5c; color: white; padding: 10px 15px; border-radius: 4px; margin-top: 15px;">
+                                        <h4 style="margin: 0; text-transform: uppercase;">Part A — Transformer
+                                            Specification</h4>
+
+                                    </div>
+                                    <div class="form-group">
+                                        <label>1. MVA Rating:</label>
+                                        <input type="number" id="mva" class="ui-input" value="100" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>2. HV Voltage (kV):</label>
+                                        <input type="number" id="hv" class="ui-input" value="132" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>3. LV Voltage (kV):</label>
+                                        <input type="number" id="lv" class="ui-input" value="33" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>4. Vector Group:</label>
+                                        <select id="vectorGroup" class="ui-input">
+                                            <option value="YNyn0" selected>YNyn0</option>
+                                            <option value="YNd1">YNd1</option>
+                                            <option value="Dyn11">Dyn11</option>
+                                            <option value="YDn11">YDn11</option>
+                                            <option value="Yd1">Yd1</option>
+                                            <option value="Dd0">Dd0</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>5. Frequency (Hz):</label>
+                                        <input type="number" id="frequency" class="ui-input" value="50">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>6. Cooling Type:</label>
+                                        <select id="cooling" class="ui-input">
+                                            <option value="ONAN" selected>ONAN</option>
+                                            <option value="ONAF">ONAF</option>
+                                            <option value="OFAF">OFAF</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- PART B — CORE MATERIAL -->
+                                    <div
+                                        style="grid-column: 1 / -1; background: #34495e; color: white; padding: 10px 15px; border-radius: 4px; margin-top: 15px;">
+                                        <h4 style="margin: 0; text-transform: uppercase;">Part B — Core Material</h4>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>7. Flux Density Bm (T):</label>
+                                        <input type="number" id="fluxDensity" class="ui-input" value="1.7" step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>8. Stacking Factor (Ki/Sf):</label>
+                                        <input type="number" id="sf" class="ui-input" value="0.97" step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>9. Core Filling Factor (Kf):</label>
+                                        <input type="number" id="kf" class="ui-input" value="0.867" step="0.001">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>10. Spec. Core Loss (W/kg):</label>
+                                        <input type="number" id="specificCoreLoss" class="ui-input" value="1.2"
+                                            step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>11. Spec. Mag VA (VA/kg):</label>
+                                        <input type="number" id="specificMagVA" class="ui-input" value="3.5" step="0.1">
+                                    </div>
+                                    <div class="form-group"
+                                        style="background:#f0f9ff; padding:8px; border-radius:4px; border-left:3px solid #3498db; font-size:12px;">
+                                        <strong>Auto Outputs:</strong> Et, D, An, Ag, Φm, Φrms, etc.
+                                    </div>
+
+                                    <!-- PART C — HV WINDING CONDUCTOR -->
+                                    <div
+                                        style="grid-column: 1 / -1; background: #27ae60; color: white; padding: 10px 15px; border-radius: 4px; margin-top: 15px;">
+                                        <h4 style="margin: 0; text-transform: uppercase;">Part C — HV Winding Conductor
+                                        </h4>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>12. HV Bare Width (mm):</label>
+                                        <input type="number" id="bareWidthHV" class="ui-input" value="6.95" step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>13. HV Bare Thick (mm):</label>
+                                        <input type="number" id="bareThicknessHV" class="ui-input" value="1.45"
+                                            step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>14. HV Parallel Cond.:</label>
+                                        <input type="number" id="nCondHV" class="ui-input" value="13">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>15. HV Parallel Coils:</label>
+                                        <input type="number" id="nCoilHV" class="ui-input" value="2">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>16. HV Corner Radius:</label>
+                                        <input type="number" id="cornerRadiusHV" class="ui-input" value="0.5"
+                                            step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>17. HV Main Turns <span
+                                                style="color: #27ae60; font-size: 11px;">(Auto)</span>:</label>
+                                        <input type="number" id="hvMainTurns" class="ui-input" readonly
+                                            style="background: #eef2f5; font-weight: bold; border-color: #27ae60;"
+                                            value="421">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>18. HV Normal Tap Turns:</label>
+                                        <input type="number" id="hvNormalTapTurns" class="ui-input" value="64">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>19. HV Max Tap Turns:</label>
+                                        <input type="number" id="hvMaxTapTurns" class="ui-input" value="88">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>19a. HV Inner Wrap (mm):</label>
+                                        <input type="number" id="innerWrapHV" class="ui-input" value="4.5" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>19b. HV Outer Wrap (mm):</label>
+                                        <input type="number" id="outerWrapHV" class="ui-input" value="4.5" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>19c. HV Lead Length (mm):</label>
+                                        <input type="number" id="leadLengthHV" class="ui-input" value="3000">
+                                    </div>
+                                    <div class="form-group"></div>
+                                    <div class="form-group"></div>
+
+                                    <!-- PART D — LV WINDING CONDUCTOR -->
+                                    <div
+                                        style="grid-column: 1 / -1; background: #e67e22; color: white; padding: 10px 15px; border-radius: 4px; margin-top: 15px;">
+                                        <h4 style="margin: 0; text-transform: uppercase;">Part D — LV Winding Conductor
+                                        </h4>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>20. LV Bare Width (mm):</label>
+                                        <input type="number" id="bareWidthLV" class="ui-input" value="9.30" step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>21. LV Bare Thick (mm):</label>
+                                        <input type="number" id="bareThicknessLV" class="ui-input" value="1.85"
+                                            step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>22. LV Parallel Cond.:</label>
+                                        <input type="number" id="nCondLV" class="ui-input" value="12">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>23. LV Parallel Coils:</label>
+                                        <input type="number" id="nCoilLV" class="ui-input" value="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>24. LV Corner Radius:</label>
+                                        <input type="number" id="cornerRadiusLV" class="ui-input" value="0.85"
+                                            step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>24a. LV Paper Thick (mm):</label>
+                                        <input type="number" id="paperThickLV" class="ui-input" value="0.2" step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>24b. LV Inner Wrap (mm):</label>
+                                        <input type="number" id="innerWrapLV" class="ui-input" value="3.6" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>24c. LV Outer Wrap (mm):</label>
+                                        <input type="number" id="outerWrapLV" class="ui-input" value="3.6" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>24d. LV Lead Length (mm):</label>
+                                        <input type="number" id="leadLengthLV" class="ui-input" value="4500">
+                                    </div>
+                                    <div class="form-group"
+                                        style="background:#fef9e7; padding:8px; border-radius:4px; border-left:3px solid #f1c40f; font-size:12px;">
+                                        <strong>Auto Outputs:</strong> LV Turns, Weights, Dimensions.
+                                    </div>
+
+                                    <!-- PART E — HV TAP WINDING CONDUCTOR -->
+                                    <div
+                                        style="grid-column: 1 / -1; background: #9b59b6; color: white; padding: 10px 15px; border-radius: 4px; margin-top: 15px;">
+                                        <h4 style="margin: 0; text-transform: uppercase;">Part E — HV Tap Winding
+                                            Conductor</h4>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>25. Tap Bare Width (mm):</label>
+                                        <input type="number" id="bareWidthTap" class="ui-input" value="6.95"
+                                            step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>26. Tap Bare Thick (mm):</label>
+                                        <input type="number" id="bareThicknessTap" class="ui-input" value="1.70"
+                                            step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>27. Tap Parallel Cond.:</label>
+                                        <input type="number" id="nCondTap" class="ui-input" value="15">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>28. Tap Parallel Coils:</label>
+                                        <input type="number" id="nCoilTap" class="ui-input" value="2">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>29. Tap Corner Radius:</label>
+                                        <input type="number" id="cornerRadiusTap" class="ui-input" value="0.86"
+                                            step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>29a. Tap Inner Wrap (mm):</label>
+                                        <input type="number" id="innerWrapTap" class="ui-input" value="5.0" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>29b. Tap Outer Wrap (mm):</label>
+                                        <input type="number" id="outerWrapTap" class="ui-input" value="5.0" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>29c. Tap Lead Length (mm):</label>
+                                        <input type="number" id="leadLengthTap" class="ui-input" value="1500">
+                                    </div>
+                                    <div class="form-group"></div>
+                                    <div class="form-group"></div>
+                                    <div class="form-group"></div>
+
+                                    <!-- PART F — LOSSES & GUARANTEE -->
+                                    <div
+                                        style="grid-column: 1 / -1; background: #e74c3c; color: white; padding: 10px 15px; border-radius: 4px; margin-top: 15px;">
+                                        <h4 style="margin: 0; text-transform: uppercase;">Part F — Losses & Guarantee
+                                        </h4>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>30. Eddy & Stray Loss (W):</label>
+                                        <input type="number" id="eddyStrayLoss" class="ui-input" value="25000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>31. Guar. Load Loss (kW):</label>
+                                        <input type="number" id="guaranteedLoadLoss" class="ui-input" value="220"
+                                            step="1">
+                                    </div>
+                                    <div class="form-group"></div>
+
+                                    <!-- PART G — TANK & WEIGHTS -->
+                                    <div
+                                        style="grid-column: 1 / -1; background: #34495e; color: white; padding: 10px 15px; border-radius: 4px; margin-top: 15px;">
+                                        <h4 style="margin: 0; text-transform: uppercase;">Part G — Tank & Weights</h4>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>32. Core Weight (kg) <span
+                                                style="color: #27ae60; font-size: 11px;">(Auto)</span>:</label>
+                                        <input type="number" id="coreWeight" class="ui-input" readonly
+                                            style="background: #eef2f5; font-weight: bold; border-color: #27ae60;"
+                                            value="18000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>33. Oil Volume (Litres) <span
+                                                style="color: #27ae60; font-size: 11px;">(Auto)</span>:</label>
+                                        <input type="number" id="oilVolume" class="ui-input" readonly
+                                            style="background: #eef2f5; font-weight: bold; border-color: #27ae60;"
+                                            value="12000">
+                                    </div>
+                                    <div class="form-group"></div>
+
                                 </div>
 
-                                <div class="action-buttons">
-                                    <button class="btn-primary btn-large" onclick="calculateDesign()">
-                                        <span>&#x1F680; Calculate Design</span>
-                                    </button>
-                                    <button class="btn-secondary btn-large" id="pdfBtn" onclick="exportWindingPDF()"
-                                        style="display:none;">
-                                        <span>&#x1F4C4; Export Report</span>
-                                    </button>
+                                <!-- Mechanical Clearances (Hidden/Optional) -->
+                                <details style="margin-top:20px; color:#666;">
+                                    <summary style="cursor:pointer; font-weight:600;">Optional: Insulation Clearances
+                                        (for Coil Dims)</summary>
+                                    <div class="form-grid" style="margin-top:10px;">
+                                        <div class="form-group">
+                                            <label>Wrapping Paper (mm):</label>
+                                            <input type="number" id="wrappingPaper" class="ui-input" value="5">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Core-LV Duct (mm):</label>
+                                            <input type="number" id="coreToLvOilDuct" class="ui-input" value="15">
+                                        </div>
+                                    </div>
+                                </details>
+                                <div style="margin-top: 20px; display:flex; gap:12px; flex-wrap:wrap;">
+                                    <button class="btn-login" style="width:auto; padding:12px 30px; background:#1a3a5c;"
+                                        onclick="calculateFullDesignMaster()">🚀 Generate Full Transformer
+                                        Design</button>
+                                    <button class="btn-login" style="width:auto; padding:12px 22px; background:#95a5a6;"
+                                        onclick="clearResults()">🗑️ Clear</button>
+                                    <button class="btn-login" style="width:auto; padding:12px 22px; background:#27ae60;"
+                                        onclick="saveToLocalStorage()">💾 Save Draft</button>
+                                    <button class="btn-login" style="width:auto; padding:12px 22px; background:#3498db;"
+                                        onclick="loadFromLocalStorage()">📂 Load Draft</button>
+                                    <button class="btn-login" style="width:auto; padding:12px 22px; background:#e67e22;"
+                                        id="toggleWorkingBtn" onclick="toggleShowWorking()">📁 Show Working:
+                                        OFF</button>
+                                </div>
+
+
+                                <!-- TAP SELECTION OPTION (NEW) -->
+                                <div class="tap-selection-group" style="margin-top:20px;">
+                                    <h4 style="margin:0 0 10px 0; font-size:14px; color:#2c3e50;">🎚️ SELECT CALCULATION
+                                        MODE:</h4>
+                                    <div style="display:flex; gap:10px;">
+                                        <button id="tap_normal_btn" class="tap-mode-btn active"
+                                            onclick="setTapMode('normal')">
+                                            📌 Normal Tap Design
+                                        </button>
+                                        <button id="tap_max_btn" class="tap-mode-btn" onclick="setTapMode('max')">
+                                            ⚡ Max Tap Design
+                                        </button>
+                                    </div>
+                                </div>
+
+
+                                <!-- Results container (Winding Only) -->
+                                <div id="windingResultsContainer" style="display:none; margin-top:20px;">
+                                    <div class="result-section" style="background:#f8f9fa;">
+                                        <h4>⚡ Rated Currents</h4>
+                                        <div id="currentResults"></div>
+                                    </div>
+                                    <div class="result-section" style="background:#fdf2e9;">
+                                        <h4>巻 Winding Design</h4>
+                                        <div id="windingResults"></div>
+                                    </div>
+                                    <div class="result-section" style="background:#f4f6f6;">
+                                        <h4>📏 Conductor Selection</h4>
+                                        <div id="conductorResults"></div>
+                                    </div>
+                                    <div class="result-section" style="background:#fcf3cf;">
+                                        <h4>⚖️ Weights & Dimensions</h4>
+                                        <div id="windingWeightResults"></div>
+                                    </div>
+                                    <div class="result-section" style="background:#e8f8f5;">
+                                        <h4>⚡ Resistance & Losses</h4>
+                                        <div id="windingLossResults"></div>
+                                    </div>
                                 </div>
                             </div>
+                        </div> <!-- /calc-winding-view -->
 
-                            <!-- Results Section -->
-                            <div class="results-panel">
-                                <div id="windingResultsSection" class="empty-state">
-                                    <div style="text-align: center; color: var(--gray); padding: 40px;">
-                                        <div style="font-size: 48px; margin-bottom: 20px;">&#x1F4CA;</div>
-                                        <h3>Ready to Calculate</h3>
-                                        <p>Enter design parameters and click Calculate to view detailed results.</p>
+                        <!-- =====================================================
+                         TRANSFORMER CORE ELECTRICAL DESIGN CALCULATOR
+                    ====================================================== -->
+                        <div id="calc-core-view" class="calc-view" style="display:none;">
+                            <div class="card">
+
+                                <!-- Header banner matching user screenshot style -->
+                                <div style="background: #1a3a5c; color: white; padding: 14px 20px;
+                                    border-radius: 6px 6px 0 0; margin: -20px -20px 24px -20px;
+                                    font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
+                                    text-align: center; text-transform: uppercase;">
+                                    🔩 Transformer Core Electrical Design Calculator
+                                </div>
+
+                                <!-- Sub-heading -->
+                                <p style="color:#555; margin-top:0; margin-bottom:20px; font-size:13px;">
+                                    IEC 60076 compliant core design — Flux · EMF/Turns · Currents &amp; AT · Core Loss
+                                </p>
+
+                                <!-- Input Grid -->
+                                <div class="form-grid"
+                                    style="grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 14px;">
+
+                                    <div class="form-group">
+                                        <label>Rating (MVA):</label>
+                                        <input type="number" id="cd_mva" class="ui-input" value="100" min="0.1"
+                                            step="0.1" placeholder="e.g. 100">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>HV Voltage (kV):</label>
+                                        <input type="number" id="cd_hv" class="ui-input" value="132" min="0.4"
+                                            step="0.1" placeholder="e.g. 132">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>LV Voltage (kV):</label>
+                                        <input type="number" id="cd_lv" class="ui-input" value="33" min="0.1" step="0.1"
+                                            placeholder="e.g. 33">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Frequency (Hz):</label>
+                                        <select id="cd_freq" class="ui-input">
+                                            <option value="50" selected>50 Hz</option>
+                                            <option value="60">60 Hz</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>HV Main Turns:</label>
+                                        <input type="number" id="cd_hv_main_turns" class="ui-input" value="421" min="1"
+                                            placeholder="e.g. 421">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>HV Normal Tap Turns:</label>
+                                        <input type="number" id="cd_hv_normal_tap_turns" class="ui-input" value="64"
+                                            min="0" placeholder="e.g. 64">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Core Filling Factor (Kf):</label>
+                                        <input type="number" id="cd_kf" class="ui-input" value="0.75" min="0.4"
+                                            max="0.8" step="0.01" placeholder="e.g. 0.75">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Core Diameter D (mm) <span
+                                                style="color: #27ae60; font-size: 11px;">(Auto)</span>:</label>
+                                        <input type="text" id="cd_diameter" class="ui-input" readonly
+                                            placeholder="Calculated automatically"
+                                            style="background: #eef2f5; font-weight: bold; border-color: #27ae60; color: #333;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Stacking Factor (Sf / Ki):</label>
+                                        <input type="number" id="cd_sf" class="ui-input" value="0.96" min="0.80"
+                                            max="1.00" step="0.01" placeholder="e.g. 0.96">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Max Flux Density Bm (T):</label>
+                                        <input type="number" id="cd_bm" class="ui-input" value="1.7" min="1.0"
+                                            max="1.95" step="0.01" placeholder="e.g. 1.7">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Vector Group:</label>
+                                        <select id="cd_vecgroup" class="ui-input">
+                                            <option value="YNd11" selected>YNd11 (Star-Delta)</option>
+                                            <option value="YNyn0">YNyn0 (Star-Star)</option>
+                                            <option value="Dyn11">Dyn11 (Delta-Star)</option>
+                                            <option value="Dd0">Dd0 (Delta-Delta)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Winding Config:</label>
+                                        <select id="cd_windingConfig" class="ui-input"
+                                            onchange="toggleTertiaryField('core')">
+                                            <option value="LV_HV" selected>LV + HV</option>
+                                            <option value="LV_HV_TAP">LV + HV + Tap</option>
+                                            <option value="LV_HV_TAP_TERTIARY">LV + HV + Tap + Tertiary</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="tertiaryVoltageGroup_core" style="display:none;">
+                                        <label>Tertiary Voltage (kV):</label>
+                                        <input type="number" id="cd_tv" class="ui-input" value="11" min="0.4"
+                                            step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Core Weight (kg) <span
+                                                style="color: #27ae60; font-size: 11px;">(Auto)</span>:</label>
+                                        <input type="number" id="cd_wcore" class="ui-input" readonly
+                                            style="background: #eef2f5; font-weight: bold; border-color: #27ae60;"
+                                            value="18000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Specific Core Loss wsp (W/kg):</label>
+                                        <input type="number" id="cd_wsp" class="ui-input" value="1.2" min="0.1" max="5"
+                                            step="0.01" placeholder="e.g. 1.2">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Specific Mag VA (VA/kg):</label>
+                                        <input type="number" id="cd_magva" class="ui-input" value="3.5" min="0.5"
+                                            max="20" step="0.1" placeholder="e.g. 3.5">
+                                    </div>
+
+                                </div><!-- /form-grid -->
+
+                                <!-- Action Buttons -->
+                                <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button class="btn-login" style="width:auto; padding:12px 28px; background:#1a3a5c;"
+                                        onclick="calculateCoreElectricalDesign()">
+                                        🔩 Calculate Core Design
+                                    </button>
+                                    <button class="btn-login" style="width:auto; padding:12px 22px; background:#95a5a6;"
+                                        onclick="clearCoreResults()">
+                                        🗑️ Clear
+                                    </button>
+                                </div>
+
+                                <!-- Results Panel (hidden until calculation runs) -->
+                                <div id="coreDesignResults" style="display:none; margin-top:28px;"></div>
+
+                            </div><!-- /Core Design Card -->
+                        </div><!-- /calc-core-view -->
+
+                        <!-- =====================================================
+                         TANKING CALCULATOR
+                    ====================================================== -->
+                        <div id="calc-tank-view" class="calc-view" style="display:none;">
+                            <div class="card">
+                                <div style="background: #1a3a5c; color: white; padding: 14px 20px;
+                                    border-radius: 6px 6px 0 0; margin: -20px -20px 24px -20px;
+                                    font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
+                                    text-align: center; text-transform: uppercase;">
+                                    ⚖️ Tanking &amp; Thermal Calculator
+                                </div>
+                                <p style="color:#555; margin-top:0; margin-bottom:20px; font-size:13px;">
+                                    Atlanta Cooling Sheet · Hot-Spot Temperature (IS-2026) · Radiator Sizing
+                                </p>
+
+                                <!-- ATLANTA COOLING INPUTS (Image 2) -->
+                                <div style="background:#e8f4f8; border-radius:6px; padding:16px; margin-bottom:14px;">
+                                    <div style="font-weight:bold; color:#1a3a5c; margin-bottom:12px; font-size:13px;">🧊 A. ATLANTA COOLING CALCULATION (Image 2)</div>
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label>No-Load Loss NLL (W):</label>
+                                            <input type="number" id="tk_nll" class="ui-input" value="17500" step="1" placeholder="e.g. 17500">
+                                            <small style="color:#666;font-size:11px;">From Core Loss calculation</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Load Loss at Full Load (W):</label>
+                                            <input type="number" id="tk_loadloss" class="ui-input" value="430000" step="1" placeholder="e.g. 430000">
+                                            <small style="color:#666;font-size:11px;">From Winding loss calculation</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>GTD Top Oil Rise (°C):</label>
+                                            <input type="number" id="tk_topoilrise" class="ui-input" value="50" step="1" placeholder="50">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>GTD Winding Rise (°C):</label>
+                                            <input type="number" id="tk_wdgrise" class="ui-input" value="55" step="1" placeholder="55">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Gradient (°C):</label>
+                                            <input type="number" id="tk_gradient" class="ui-input" value="18" step="1" placeholder="18">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Tank Dimensions L×B×H (m):</label>
+                                            <div style="display:flex;gap:6px;">
+                                                <input type="number" id="tk_L" class="ui-input" value="6.215" step="0.001" placeholder="L">
+                                                <input type="number" id="tk_B" class="ui-input" value="2.21" step="0.001" placeholder="B">
+                                                <input type="number" id="tk_Ht" class="ui-input" value="2.92" step="0.001" placeholder="H">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Radiator: No. of Sections:</label>
+                                            <input type="number" id="tk_rad_nos" class="ui-input" value="20" step="1" placeholder="e.g. 20">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Sections per Radiator:</label>
+                                            <input type="number" id="tk_rad_sections" class="ui-input" value="28" step="1" placeholder="e.g. 28">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Cooling Surface per Section (m²):</label>
+                                            <input type="number" id="tk_rad_area_per_sec" class="ui-input" value="3.88" step="0.01" placeholder="e.g. 3.88">
+                                        </div>
                                     </div>
                                 </div>
+
+                                <!-- HOT SPOT INPUTS (Image 3) -->
+                                <div style="background:#fff3e0; border-radius:6px; padding:16px; margin-bottom:14px;">
+                                    <div style="font-weight:bold; color:#b71c1c; margin-bottom:12px; font-size:13px;">🔥 B. HOT SPOT TEMPERATURE CALCULATION (IS-2026, Image 3)</div>
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label>Ambient Temperature θa (°C):</label>
+                                            <input type="number" id="hs_ambient" class="ui-input" value="32" step="1" placeholder="32">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Top Oil Rise at Rated Load Δθbor (°C):</label>
+                                            <input type="number" id="hs_topoilrated" class="ui-input" value="33" step="1" placeholder="33">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Over-Load Ratio K (e.g. 1.2 = 120% load):</label>
+                                            <input type="number" id="hs_k" class="ui-input" value="1.2" step="0.1" min="0.1" max="2.0" placeholder="1.2">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Duration of Overload t (min):</label>
+                                            <input type="number" id="hs_duration" class="ui-input" value="120" step="1" placeholder="120">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Hot Spot Factor H (IS-2026 Annex E):</label>
+                                            <input type="number" id="hs_H" class="ui-input" value="1.3" step="0.1" placeholder="1.3">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Winding Gradient at Rated Load gr (°C):</label>
+                                            <input type="number" id="hs_gradient" class="ui-input" value="20" step="1" placeholder="20">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button class="btn-login" style="width:auto; padding:12px 28px; background:#1a3a5c;"
+                                        onclick="calculateTankingOnly()">🔥 Calculate Cooling &amp; Hot Spot</button>
+                                    <button class="btn-login" style="width:auto; padding:12px 22px; background:#95a5a6;"
+                                        onclick="clearTankingResults()">🗑️ Clear</button>
+                                </div>
+
+                                <div id="tankDesignResults" style="display:none; margin-top:28px;">
+                                    <div id="coolingResults"></div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- =====================================================
+                         OTHER CALCULATOR
+                    ====================================================== -->
+                        <div id="calc-other-view" class="calc-view" style="display:none;">
+                            <div class="card">
+                                <div style="background: #1a3a5c; color: white; padding: 14px 20px;
+                                    border-radius: 6px 6px 0 0; margin: -20px -20px 24px -20px;
+                                    font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
+                                    text-align: center; text-transform: uppercase;">
+                                    📑 Other Calculations & Summary
+                                </div>
+                                <p style="color:#555; margin-top:0; margin-bottom:20px; font-size:13px;">
+                                    OLTC Tap Design · BIL Clearances · Transformer Accessories
+                                </p>
+
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Tap Changer Type:</label>
+                                        <select id="tapChangerType" class="ui-input">
+                                            <option value="NONE" selected>None</option>
+                                            <option value="OCTC">OCTC (Off-Circuit)</option>
+                                            <option value="OLTC">OLTC (On-Load)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tapping Range (±%):</label>
+                                        <select id="tappingRange" class="ui-input">
+                                            <option value="5">± 5% (OCTC)</option>
+                                            <option value="10" selected>± 10% (OLTC)</option>
+                                            <option value="15">± 15% (OLTC Special)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>System Voltage (kV) for BIL:</label>
+                                        <input type="number" id="systemVoltage" class="ui-input" value="132" min="11"
+                                            step="0.1" placeholder="e.g. 132">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Phase Connection:</label>
+                                        <select id="phaseConnection" class="ui-input">
+                                            <option value="Star" selected>Star</option>
+                                            <option value="Delta">Delta</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button class="btn-login" style="width:auto; padding:12px 28px; background:#1a3a5c;"
+                                        onclick="calculateOtherOnly()">📑 Calculate Other Modules</button>
+                                    <button class="btn-login" style="width:auto; padding:12px 22px; background:#95a5a6;"
+                                        onclick="clearOtherResults()">🗑️ Clear</button>
+                                </div>
+
+                                <div id="otherDesignResults" style="display:none; margin-top:28px;">
+                                    <div id="advancedFeaturesContainer">
+                                        <!-- OLTC and BIL results injected here -->
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -2454,33 +3085,12 @@
     <!-- User Management (Admin only) -->
     <script defer src="/js/features/users.js"></script>
 
-    <!-- Calculator Engine + UI (IEC 60076 Calculator Section) -->
-    <!-- Calculator Core -->
-    <script defer src="/js/calculation-engine/core/constants.js"></script>
-    <script defer src="/js/calculation-engine/core/errors.js"></script>
-    <script defer src="/js/calculation-engine/core/utils.js"></script>
-    <script defer src="/js/calculation-engine/core/validator.js"></script>
-    <script defer src="/js/calculation-engine/core/warnings.js"></script>
-
-    <!-- Calculator Modules -->
-    <script defer src="/js/calculation-engine/modules/01-currents.js"></script>
-    <script defer src="/js/calculation-engine/modules/02-core-design.js"></script>
-    <script defer src="/js/calculation-engine/modules/03-winding-design.js"></script>
-    <script defer src="/js/calculation-engine/modules/04-conductors.js"></script>
-    <script defer src="/js/calculation-engine/modules/05-losses.js"></script>
-    <script defer src="/js/calculation-engine/modules/06-dimensions.js"></script>
-    <script defer src="/js/calculation-engine/modules/07-temperature.js"></script>
-    <script defer src="/js/calculation-engine/modules/08-impedance.js"></script>
-    <script defer src="/js/calculation-engine/modules/09-short-circuit.js"></script>
-    <script defer src="/js/calculation-engine/modules/10-advanced.js"></script>
-    <script defer src="/js/calculation-engine/modules/11-tap-extremes.js"></script>
-    <script defer src="/js/calculation-engine/modules/validation.js"></script>
-
-    <!-- Calculator App -->
-    <script defer src="/js/calculation-engine/orchestrator.js"></script>
-    <script defer src="/js/calculation-engine/index.js"></script>
-    <script defer src="/js/features/calculator/ui.js"></script>
-    <script defer src="/js/features/calculator/charts.js"></script>
+    <!-- xmer_kp IEC Calculator Engine -->
+    <script src="/js/xmer-calc/winding-calc.js?v=20260403"></script>
+    <script src="/js/xmer-calc/calculation.js?v=20260403"></script>
+    <script src="/js/xmer-calc/advanced-features.js?v=20260403"></script>
+    <script src="/js/xmer-calc/charts.js?v=20260403"></script>
+    <script src="/js/xmer-calc/core-calc.js?v=20260403"></script>
     <!-- Main Application -->
     <script defer src="/js/core/session.js"></script>
     <script defer src="/js/main.js"></script>

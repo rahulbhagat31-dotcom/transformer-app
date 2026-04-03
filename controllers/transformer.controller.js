@@ -8,12 +8,13 @@ exports.getTransformers = (req, res) => {
         const filters = {};
 
         // Filter by customer strictly
-        if (req.user?.role === 'customer') {
+        if (req.user?.role === 'customer' || req.user?.role?.includes('customer')) {
             if (!req.user.customerId) {
                 // Return empty if customer string is missing
                 return res.json(successResponse([], 'Transformers loaded'));
             }
             filters.customerId = req.user.customerId;
+            filters.customerVisible = 1; // Only show explicitly shared transformers
         }
 
         const transformers = transformerService.findAll(filters);
@@ -33,9 +34,12 @@ exports.getTransformer = (req, res) => {
         }
 
         // Check customer access strictly
-        if (req.user?.role === 'customer') {
+        if (req.user?.role === 'customer' || req.user?.role?.includes('customer')) {
             if (!req.user.customerId || transformer.customerId !== req.user.customerId) {
                 return res.status(403).json(errorResponse('Access denied.'));
+            }
+            if (transformer.customerVisible !== 1 && transformer.customerVisible !== true) {
+                return res.status(403).json(errorResponse('Access denied. Checklist not authorized for customer view yet.'));
             }
         }
 

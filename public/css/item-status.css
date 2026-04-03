@@ -44,28 +44,28 @@
 .item-status--pending {
     color: #7a3b00;
     background: #fff3e0;
-    border-color: #e67e22;
+    border-color: var(--orange);
 }
 
 /* ── Verified — blue ─────────────────────────────── */
 .item-status--verified {
     color: #0d3d6b;
     background: #e8f4fd;
-    border-color: #2980b9;
+    border-color: var(--primary-dark);
 }
 
 /* ── Approved — green ────────────────────────────── */
 .item-status--approved {
     color: #1a4d2e;
     background: #eafaf0;
-    border-color: #27ae60;
+    border-color: var(--green);
 }
 
 /* ── Rejected — red ──────────────────────────────── */
 .item-status--rejected {
     color: #7b1d1d;
     background: #fdf3f3;
-    border-color: #e74c3c;
+    border-color: var(--red);
 }
 
 /* ── State-change transition (JS toggles classes) ── */
@@ -170,8 +170,8 @@
 /* Flat industrial — colours match badge language     */
 
 .btn-submit {
-    background: #27ae60;
-    color: #fff;
+    background: var(--green);
+    color: var(--white);
     border: 1.5px solid #219a52;
     font-weight: 600;
     transition: background 150ms ease, transform 80ms ease;
@@ -189,8 +189,8 @@
 }
 
 .btn-verify {
-    background: #2980b9;
-    color: #fff;
+    background: var(--primary-dark);
+    color: var(--white);
     border: 1.5px solid #2471a3;
     font-weight: 600;
     transition: background 150ms ease, transform 80ms ease;
@@ -225,8 +225,8 @@
 }
 
 .btn-reject {
-    background: #e74c3c;
-    color: #fff;
+    background: var(--red);
+    color: var(--white);
     border: 1.5px solid #cb4335;
     font-weight: 600;
     transition: background 150ms ease, transform 80ms ease;
@@ -259,22 +259,22 @@
 
 /* Individual stage colors */
 .stage-design {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--gradient-primary);
     color: white;
 }
 
 .stage-winding {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    background: linear-gradient(135deg, var(--blue) 0%, var(--primary-dark) 100%);
     color: white;
 }
 
 .stage-vpd {
-    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--accent-purple) 100%);
     color: white;
 }
 
 .stage-coreCoil {
-    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    background: linear-gradient(135deg, var(--orange) 0%, #d35400 100%);
     color: white;
 }
 
@@ -284,17 +284,17 @@
 }
 
 .stage-tankFilling {
-    background: linear-gradient(135deg, #3498db 0%, #2874a6 100%);
+    background: linear-gradient(135deg, var(--blue) 0%, #2874a6 100%);
     color: white;
 }
 
 .stage-testing {
-    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    background: linear-gradient(135deg, #f39c12 0%, var(--orange) 100%);
     color: white;
 }
 
 .stage-completed {
-    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    background: linear-gradient(135deg, var(--green) 0%, #229954 100%);
     color: white;
 }
 
@@ -313,13 +313,13 @@
 .filter-group label {
     font-size: 13px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--navy);
 }
 
 /* Logout button styling */
 .btn-logout {
     padding: 8px 16px;
-    background: #e74c3c;
+    background: var(--red);
     color: white;
     border: none;
     border-radius: 6px;

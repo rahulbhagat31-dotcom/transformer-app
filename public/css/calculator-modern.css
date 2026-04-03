@@ -3,35 +3,31 @@
  * MODERN TRANSFORMER CALCULATOR - STYLESHEET
  * v2.0.0 - Professional Design
  *
- * NOTE: Shared design tokens (--shadow-*, --radius-*, --spacing-*,
- * --font-*, --transition-*) come from design-tokens.css.
- * Only calculator-specific variables are defined here.
- * All selectors that could conflict globally are scoped to
- * #designCalculations to avoid overriding other sections.
+ * NOTE: All design tokens are now defined in design-tokens.css.
+ * This file uses those tokens for consistent theming.
+ * All selectors are scoped to #designCalculations to avoid
+ * overriding other sections.
  * ================================================
  */
 
-/* ========== CALCULATOR-SPECIFIC VARIABLES ========== */
-/* All variables prefixed --calc-* to prevent any global name clashes.       */
-/* Shared tokens (--shadow-*, --radius-*, --spacing-*, --font-*,             */
-/* --transition-*, --clr-*, --accent-*) come from design-tokens.css.         */
+/* ========== CALCULATOR-SPECIFIC ALIASES ========== */
+/* These point to global tokens for backwards compatibility */
 :root {
-    /* Calculator brand palette */
-    --calc-primary:          #3498db;
-    --calc-primary-dark:     #2980b9;
-    --calc-primary-light:    #5dade2;
-    --calc-secondary:        #9b59b6;
-    --calc-dark:             #2c3e50;
-    --calc-dark-2:           #34495e;
-    --calc-gray:             #7f8c8d;
-    --calc-gray-light:       #bdc3c7;
-    --calc-gray-lighter:     #ecf0f1;
-    --calc-white:            #ffffff;
+    --calc-primary:          var(--blue);
+    --calc-primary-dark:    var(--primary-dark);
+    --calc-primary-light:   var(--primary-light);
+    --calc-secondary:        var(--secondary);
+    --calc-dark:             var(--navy);
+    --calc-dark-2:          var(--dark-2);
+    --calc-gray:             var(--gray);
+    --calc-gray-light:      var(--gray-light);
+    --calc-gray-lighter:    var(--gray-lighter);
+    --calc-white:           var(--white);
 
-    /* Gradients (calculator-specific) */
-    --calc-gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --calc-gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    --calc-gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    /* Gradients (use global tokens) */
+    --calc-gradient-primary: var(--gradient-primary);
+    --calc-gradient-success: var(--gradient-success);
+    --calc-gradient-warning: var(--gradient-warning);
 }
 
 /* ========== RESET & BASE ==========

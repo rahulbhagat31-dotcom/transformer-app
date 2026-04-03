@@ -24,13 +24,13 @@
     display: block;
     width: 25px;
     height: 3px;
-    background: #2c3e50;
+    background: var(--navy);
     border-radius: 3px;
     transition: all 0.3s ease;
 }
 
 .sidebar-toggle:hover span {
-    background: #3498db;
+    background: var(--blue);
 }
 
 /* Animated hamburger to X */
@@ -121,22 +121,22 @@
 
 /* Supervisor pending — amber */
 .nav-badge.badge-supervisor {
-    background: #e67e22;
-    color: #fff;
+    background: var(--orange);
+    color: var(--white);
     box-shadow: 0 0 6px rgba(230, 126, 34, 0.55);
 }
 
 /* QA pending — purple */
 .nav-badge.badge-qa {
-    background: #8e44ad;
-    color: #fff;
+    background: var(--accent-purple);
+    color: var(--white);
     box-shadow: 0 0 6px rgba(142, 68, 173, 0.55);
 }
 
 /* Both pending (combined on parent nav item) — red */
 .nav-badge.badge-both {
-    background: #e74c3c;
-    color: #fff;
+    background: var(--red);
+    color: var(--white);
     box-shadow: 0 0 8px rgba(231, 76, 60, 0.6);
 }
 
@@ -166,32 +166,32 @@ div.row-tier-unsaved {
 tr.row-tier-tech,
 div.row-tier-tech {
     background: linear-gradient(90deg, rgba(39, 174, 96, 0.08) 0%, transparent 100%) !important;
-    border-left: 3px solid #27ae60 !important;
+    border-left: 3px solid var(--green) !important;
 }
 
 tr.row-tier-supervisor,
 div.row-tier-supervisor {
     background: linear-gradient(90deg, rgba(41, 128, 185, 0.10) 0%, transparent 100%) !important;
-    border-left: 3px solid #2980b9 !important;
+    border-left: 3px solid var(--primary-dark) !important;
 }
 
 tr.row-tier-qa-approved,
 div.row-tier-qa-approved {
     background: linear-gradient(90deg, rgba(142, 68, 173, 0.12) 0%, transparent 100%) !important;
-    border-left: 3px solid #8e44ad !important;
+    border-left: 3px solid var(--accent-purple) !important;
     opacity: 0.88;
 }
 
 tr.row-tier-qa-rejected,
 div.row-tier-qa-rejected {
     background: linear-gradient(90deg, rgba(231, 76, 60, 0.12) 0%, transparent 100%) !important;
-    border-left: 3px solid #e74c3c !important;
+    border-left: 3px solid var(--red) !important;
 }
 
 tr.row-tier-unlocked,
 div.row-tier-unlocked {
     background: linear-gradient(90deg, rgba(230, 126, 34, 0.10) 0%, transparent 100%) !important;
-    border-left: 3px solid #e67e22 !important;
+    border-left: 3px solid var(--orange) !important;
 }
 
 /* ── SIGN-OFF BADGE SYSTEM ── */
@@ -218,33 +218,33 @@ div.row-tier-unlocked {
 }
 
 .signoff-badge.pending {
-    background: #dee2e6;
-    color: #555;
-    border-color: #ccc;
+    background: var(--tier-unsaved-bg);
+    color: var(--tier-unsaved-text);
+    border-color: var(--border-neutral);
 }
 
 .signoff-badge.tier-tech {
-    background: rgba(39, 174, 96, 0.18);
-    color: #1a6b3c;
-    border-color: #27ae60;
+    background: var(--tier-tech-bg);
+    color: var(--tier-tech-text);
+    border-color: var(--tier-tech-border);
 }
 
 .signoff-badge.tier-sup {
-    background: rgba(41, 128, 185, 0.18);
-    color: #1a5276;
-    border-color: #2980b9;
+    background: var(--tier-sup-bg);
+    color: var(--tier-sup-text);
+    border-color: var(--tier-sup-border);
 }
 
 .signoff-badge.tier-qa-ok {
-    background: rgba(142, 68, 173, 0.18);
-    color: #6c3483;
-    border-color: #8e44ad;
+    background: var(--tier-qa-ok-bg);
+    color: var(--tier-qa-ok-text);
+    border-color: var(--tier-qa-ok-border);
 }
 
 .signoff-badge.tier-qa-rej {
-    background: rgba(231, 76, 60, 0.18);
-    color: #922b21;
-    border-color: #e74c3c;
+    background: var(--tier-qa-rej-bg);
+    color: var(--tier-qa-rej-text);
+    border-color: var(--tier-qa-rej-border);
 }
 
 .signoff-action-btn {
@@ -265,13 +265,13 @@ div.row-tier-unlocked {
 }
 
 .signoff-btn-supervisor {
-    background: #2980b9;
-    color: white;
+    background: var(--primary-dark);
+    color: var(--white);
 }
 
 .signoff-btn-qa {
-    background: #8e44ad;
-    color: white;
+    background: var(--accent-purple);
+    color: var(--white);
 }
 
 /* ── Tier status chip ── */
@@ -290,30 +290,30 @@ div.row-tier-unlocked {
 }
 
 .tier-chip-unsaved {
-    background: #dee2e6;
-    color: #555;
+    background: var(--tier-unsaved-bg);
+    color: var(--tier-unsaved-text);
 }
 
 .tier-chip-tech {
-    background: rgba(39, 174, 96, 0.18);
-    color: #1e8449;
-    border: 1px solid #27ae60;
+    background: var(--tier-tech-bg);
+    color: var(--tier-tech-text);
+    border: 1px solid var(--tier-tech-border);
 }
 
 .tier-chip-sup {
-    background: rgba(41, 128, 185, 0.18);
-    color: #1a5276;
-    border: 1px solid #2980b9;
+    background: var(--tier-sup-bg);
+    color: var(--tier-sup-text);
+    border: 1px solid var(--tier-sup-border);
 }
 
 .tier-chip-qa-ok {
-    background: rgba(142, 68, 173, 0.18);
-    color: #6c3483;
-    border: 1px solid #8e44ad;
+    background: var(--tier-qa-ok-bg);
+    color: var(--tier-qa-ok-text);
+    border: 1px solid var(--tier-qa-ok-border);
 }
 
 .tier-chip-qa-rej {
-    background: rgba(231, 76, 60, 0.18);
-    color: #922b21;
-    border: 1px solid #e74c3c;
+    background: var(--tier-qa-rej-bg);
+    color: var(--tier-qa-rej-text);
+    border: 1px solid var(--tier-qa-rej-border);
 }

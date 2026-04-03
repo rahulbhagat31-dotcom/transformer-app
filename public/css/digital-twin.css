@@ -13,7 +13,7 @@
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
     margin: 0;
-    color: #1a1a2e;
+    color: var(--navy);
 }
 
 .digital-twin-page {
@@ -56,7 +56,7 @@
 
 .dt-back-btn:hover {
     background: #eff1fb;
-    border-color: #667eea;
+    border-color: var(--blue);
     color: #667eea;
     transform: translateX(-2px);
 }
@@ -74,7 +74,7 @@
 }
 
 .dt-breadcrumb .current {
-    color: #1a1a2e;
+    color: var(--navy);
     font-weight: 600;
 }
 
@@ -82,8 +82,8 @@
     display: inline-block;
     padding: 4px 12px;
     border-radius: 20px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: #fff;
+    background: var(--gradient-primary);
+    color: var(--white);
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -96,11 +96,11 @@
     display: flex;
     align-items: center;
     gap: 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--gradient-primary);
     border-radius: 20px;
     padding: 36px 40px;
     margin-bottom: 32px;
-    color: #fff;
+    color: var(--white);
     box-shadow: 0 8px 32px rgba(102, 126, 234, 0.35);
 }
 
@@ -140,7 +140,7 @@
     border-radius: 10px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.15);
-    color: #fff;
+    color: var(--white);
     font-size: 15px;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
@@ -270,7 +270,7 @@
     gap: 12px;
     font-size: 26px;
     font-weight: 800;
-    color: #1a1a2e;
+    color: var(--navy);
     margin: 0;
 }
 
@@ -286,7 +286,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #fff;
+    color: var(--white);
     background: #667eea;
 }
 
@@ -295,7 +295,7 @@
 }
 
 .dt-status-badge.stage-winding {
-    background: #3498db;
+    background: var(--blue);
 }
 
 .dt-status-badge.stage-coreCoil {
@@ -311,15 +311,15 @@
 }
 
 .dt-status-badge.stage-tankFilling {
-    background: #e67e22;
+    background: var(--orange);
 }
 
 .dt-status-badge.stage-testing {
-    background: #e74c3c;
+    background: var(--red);
 }
 
 .dt-status-badge.stage-completed {
-    background: #27ae60;
+    background: var(--green);
 }
 
 /* Specs grid inside header */
@@ -356,7 +356,7 @@
 .dt-spec-value {
     font-size: 18px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--navy);
 }
 
 .dt-last-updated {
@@ -410,7 +410,7 @@
     gap: 10px;
     font-size: 18px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--navy);
     margin: 0 0 22px;
     padding-bottom: 14px;
     border-bottom: 2px solid #f0f2f8;
@@ -476,17 +476,17 @@
 
 /* — Completed — */
 .dt-stage-indicator.completed .dt-stage-dot {
-    background: #27ae60;
+    background: var(--green);
     border-color: #27ae60;
-    color: #fff;
+    color: var(--white);
     box-shadow: 0 4px 12px rgba(39, 174, 96, .3);
 }
 
 /* — Active — */
 .dt-stage-indicator.active .dt-stage-dot {
     background: linear-gradient(135deg, #667eea, #764ba2);
-    border-color: #667eea;
-    color: #fff;
+    border-color: var(--blue);
+    color: var(--white);
     box-shadow: 0 0 0 5px rgba(102, 126, 234, .2);
     animation: dtPulse 2s ease-in-out infinite;
 }
@@ -508,7 +508,7 @@
 }
 
 .dt-stage-indicator.completed .dt-stage-label {
-    color: #27ae60;
+    color: var(--green);
 }
 
 .dt-stage-indicator.active .dt-stage-label {
@@ -558,7 +558,7 @@
 .dt-snapshot-value {
     font-size: 16px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--navy);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -584,22 +584,22 @@
 
 .dt-lock-status.locked {
     background: #fff0ee;
-    color: #e74c3c;
+    color: var(--red);
 }
 
 .dt-lock-status.unlocked {
     background: #edfff6;
-    color: #27ae60;
+    color: var(--green);
 }
 
 .dt-qa-action.approved {
     background: #edfff6;
-    color: #27ae60;
+    color: var(--green);
 }
 
 .dt-qa-action.rejected {
     background: #fff0ee;
-    color: #e74c3c;
+    color: var(--red);
 }
 
 .dt-qa-action.pending {
@@ -666,7 +666,7 @@
 .dt-stage-name {
     font-size: 15px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--navy);
 }
 
 .dt-stage-status-badge {
@@ -681,12 +681,12 @@
 
 .dt-stage-status-badge.completed {
     background: #edfff6;
-    color: #27ae60;
+    color: var(--green);
 }
 
 .dt-stage-status-badge.rejected {
     background: #fff0ee;
-    color: #e74c3c;
+    color: var(--red);
 }
 
 .dt-stage-status-badge.pending {
@@ -734,7 +734,7 @@
 
 .dt-stage-detail-value {
     font-size: 14px;
-    color: #1a1a2e;
+    color: var(--navy);
 }
 
 .dt-rejection-reason {
@@ -748,7 +748,7 @@
 
 .dt-rejection-reason-label {
     font-weight: 700;
-    color: #e74c3c;
+    color: var(--red);
     display: block;
     margin-bottom: 4px;
 }
@@ -802,7 +802,7 @@
 .dt-audit-action {
     font-size: 14px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--navy);
 }
 
 .dt-audit-timestamp {
@@ -858,7 +858,7 @@
 .dt-placeholder-title {
     font-size: 18px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--navy);
     margin: 0;
 }
 
@@ -1048,7 +1048,7 @@
 
 .dt-comp-label {
     font-weight: 600;
-    color: #1a1a2e;
+    color: var(--navy);
 }
 
 .dt-comp-val {
@@ -1077,7 +1077,7 @@
     border-radius: 20px;
     font-size: 13px;
     font-weight: 600;
-    color: #fff;
+    color: var(--white);
     white-space: nowrap;
     transition: background 0.2s, transform 0.2s;
     cursor: default;
@@ -1160,7 +1160,7 @@
 .dt-empty-title {
     font-size: 22px;
     font-weight: 800;
-    color: #1a1a2e;
+    color: var(--navy);
     margin: 0 0 12px;
     position: relative;
     z-index: 1;
@@ -1198,7 +1198,7 @@
 
 .dt-empty-feat:hover {
     background: linear-gradient(135deg, #eff1fb, #e5e8fb);
-    border-color: #667eea;
+    border-color: var(--blue);
     color: #667eea;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);

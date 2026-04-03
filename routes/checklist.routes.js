@@ -5,6 +5,8 @@ const { handleValidationErrors } = require('../middlewares/validation');
 const { errorResponse } = require('../utils/response');
 const { logAudit } = require('../utils/audit');
 const checklistService = require('../services/checklist.service');
+const templateService  = require('../services/template.service');
+const revisionService  = require('../services/revision.service');
 
 const router = express.Router();
 
@@ -413,7 +415,7 @@ router.post('/template/create',
     (req, res) => {
         try {
             const { name, stage, description, items } = req.body;
-            const template = checklistService.createTemplate({
+            const template = templateService.createTemplate({
                 name, stage, description, items,
                 createdBy: req.user.username
             });
@@ -433,7 +435,7 @@ router.post('/template/create',
 router.get('/templates', (req, res) => {
     try {
         const { stage } = req.query;
-        const templates = checklistService.getTemplates(stage || null);
+        const templates = templateService.getTemplates(stage || null);
         res.json({ success: true, data: templates });
     } catch (error) {
         res.status(500).json(errorResponse(error));
@@ -443,7 +445,7 @@ router.get('/templates', (req, res) => {
 /** GET /checklist/template/:id — Get specific template */
 router.get('/template/:id', (req, res) => {
     try {
-        const template = checklistService.getTemplate(parseInt(req.params.id));
+        const template = templateService.getTemplate(parseInt(req.params.id));
         if (!template) {
             return res.status(404).json({ success: false, error: 'Template not found' });
         }
@@ -461,7 +463,7 @@ router.post('/template/:id/update',
     (req, res) => {
         try {
             const { description, items } = req.body;
-            const template = checklistService.updateTemplate(
+            const template = templateService.updateTemplate(
                 parseInt(req.params.id),
                 { description, items, createdBy: req.user.username }
             );
@@ -480,7 +482,7 @@ router.post('/template/:id/update',
 /** DELETE /checklist/template/:name — Delete template and all versions */
 router.delete('/template/:name', checkPermission('admin'), (req, res) => {
     try {
-        const deleted = checklistService.deleteTemplate(req.params.name);
+        const deleted = templateService.deleteTemplate(req.params.name);
 
         logAudit(req.user.id, req.user.username, req.user.role,
             'DELETE', 'checklist_template', req.params.name, { action: 'DELETE_ALL_VERSIONS' });
@@ -501,10 +503,14 @@ router.post('/sync-template',
     (req, res) => {
         try {
             const { templateId, woList } = req.body;
-            const affected = checklistService.syncTemplateToWOs(
+            // Issue 3 fix: syncTemplateToWOs now batches all DB writes in one transaction.
+            // checklistService and revisionService are injected to avoid circular deps in TemplateService.
+            const affected = templateService.syncTemplateToWOs(
                 templateId,
                 woList || null,
-                req.user.username
+                req.user.username,
+                checklistService,
+                revisionService
             );
 
             logAudit(req.user.id, req.user.username, req.user.role,
@@ -574,14 +580,14 @@ router.post('/:stage/:wo/restore/:rev',
 router.post('/compare', (req, res) => {
     try {
         const { templateIdA, templateIdB } = req.body;
-        const tplA = checklistService.getTemplate(templateIdA);
-        const tplB = checklistService.getTemplate(templateIdB);
+        const tplA = templateService.getTemplate(templateIdA);
+        const tplB = templateService.getTemplate(templateIdB);
 
         if (!tplA || !tplB) {
             return res.status(404).json({ success: false, error: 'One or both templates not found' });
         }
 
-        const diff = checklistService.compareVersions(tplA.items, tplB.items);
+        const diff = revisionService.compareVersions(tplA.items, tplB.items);
         res.json({ success: true, data: { templateA: tplA.name + ' v' + tplA.version, templateB: tplB.name + ' v' + tplB.version, diff } });
     } catch (error) {
         res.status(500).json(errorResponse(error));
@@ -602,6 +608,15 @@ router.get('/summary/:wo', (req, res) => {
     try {
         const { wo } = req.params;
 
+        // HIGH security fix (kluster P3): verify WO exists and is accessible before aggregating
+        const transformer = checklistService.findTransformer(wo);
+        if (!transformer) {
+            return res.status(404).json({ success: false, error: `Work Order '${wo}' not found` });
+        }
+        if (req.user?.role === 'customer' && !transformer.customerVisible) {
+            return res.status(403).json({ success: false, error: 'Access denied to this Work Order' });
+        }
+
         // All active stages — winding is split into 5 sub-stages in the DB
         const STAGES = [
             'winding1', 'winding2', 'winding3', 'winding4', 'winding5',
@@ -609,6 +624,7 @@ router.get('/summary/:wo', (req, res) => {
         ];
 
         const summary = {};
+
 
         for (const stage of STAGES) {
             let items = getItems(wo, stage);

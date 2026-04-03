@@ -629,41 +629,57 @@ router.post('/compare', (req, res) => {
     }
 });
 
-
 /**
  * GET /checklist/summary/:wo
  * Batch endpoint: returns techDone / supervisorDone / qaDone counts
  * for EVERY stage of a WO in a single request.
- * Replaces 5 individual /checklist/:stage/:wo/summary calls from the sidebar badge engine.
+ *
+ * NOTE on field names: the /save route stores technician/shopSupervisor/qaSupervisor
+ * (string names), not techSignedOff/supervisorSignedOff/qaSignedOff (boolean flags).
+ * This summary uses the same fields as /save to ensure counts are accurate.
+ * If a sign-off boolean workflow is added in future, update both /save and here together.
  */
 router.get('/summary/:wo', (req, res) => {
     try {
         const { wo } = req.params;
-        const STAGES = ['winding', 'vpd', 'coreCoil', 'tanking', 'tankFilling'];
+
+        // All active stages — winding is split into 5 sub-stages in the DB
+        const STAGES = [
+            'winding1', 'winding2', 'winding3', 'winding4', 'winding5',
+            'vpd', 'coreCoil', 'tanking', 'tankFilling', 'spa', 'coreBuilding'
+        ];
+
         const summary = {};
+
         for (const stage of STAGES) {
-            let items = [];
-            if (stage === 'winding') {
-                for (let i = 1; i <= 5; i++) {
-                    items = items.concat(getItems(wo, `winding` + i));
-                }
-            } else {
-                items = getItems(wo, stage);
-            }
+            let items = getItems(wo, stage);
+
             // Customer isolation: restrict counts to their assigned customerId
             if (req.user && req.user.role === 'customer' && req.user.customerId) {
                 items = items.filter(i => i.customerId === req.user.customerId);
             }
+
             summary[stage] = {
-                techDone: items.filter(i => i.technician).length,
+                total:          items.length,
+                techDone:       items.filter(i => i.technician).length,
                 supervisorDone: items.filter(i => i.shopSupervisor).length,
-                qaDone: items.filter(i => i.qaSupervisor).length
+                qaDone:         items.filter(i => i.qaSupervisor).length
             };
         }
+
+        // Also expose a rolled-up 'winding' group for the sidebar badge engine
+        const windingStages = ['winding1','winding2','winding3','winding4','winding5'];
+        summary['winding'] = {
+            total:          windingStages.reduce((n, s) => n + summary[s].total, 0),
+            techDone:       windingStages.reduce((n, s) => n + summary[s].techDone, 0),
+            supervisorDone: windingStages.reduce((n, s) => n + summary[s].supervisorDone, 0),
+            qaDone:         windingStages.reduce((n, s) => n + summary[s].qaDone, 0)
+        };
+
         res.json({ success: true, data: summary });
     } catch (error) {
         console.error('Error fetching checklist batch summary:', error);
         res.status(500).json(errorResponse(error));
     }
 });
-module.exports = router;
+module.exports = router;

@@ -1,11 +1,21 @@
 /* ===============================
    UI NAVIGATION & DISPLAY LOGIC
    Sidebar, tabs, stage navigation, checklist rendering
-================================ */
+ ================================ */
+
+// Import sanitization utility
+var sanitizeHTML = (function() {
+    function _sanitize(str) {
+        if (str == null) return '';
+        if (typeof str !== 'string') return String(str);
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    return _sanitize;
+})();
 
 /* ===============================
    TAB NAVIGATION
-================================ */
+ ================================ */
 function showTab(id, btn) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -3460,11 +3470,11 @@ function loadAuditLogs() {
             if (response.success) {
                 renderAuditTable(response.data);
             } else {
-                resultsDiv.innerHTML = `< p style = "color:red;" > Error: ${response.error}</p > `;
+                resultsDiv.innerHTML = '<p style="color:red;">Error: ' + sanitizeHTML(response.error) + '</p>';
             }
         })
         .catch(error => {
-            resultsDiv.innerHTML = `< p style = "color:red;" > Error loading logs: ${error.message}</p > `;
+            resultsDiv.innerHTML = '<p style="color:red;">Error loading logs: ' + sanitizeHTML(error.message) + '</p>';
         });
 }
 
@@ -3637,7 +3647,7 @@ async function _legacy_loadQuestions() {
         _allQuestions = result.data || [];
         renderQuestionList();
     } catch (error) {
-        container.innerHTML = `<p style="color:#e74c3c;">❌ Failed to load questions: ${error.message}</p>`;
+        container.innerHTML = '<p style="color:#e74c3c;">❌ Failed to load questions: ' + sanitizeHTML(error.message) + '</p>';
     }
 }
 
@@ -3945,7 +3955,7 @@ async function loadExamResults() {
         html += '</tbody></table>';
         container.innerHTML = html;
     } catch (error) {
-        container.innerHTML = `<p style="color:#e74c3c;">❌ Failed to load results: ${error.message}</p>`;
+        container.innerHTML = '<p style="color:#e74c3c;">❌ Failed to load results: ' + sanitizeHTML(error.message) + '</p>';
     }
 }
 
@@ -4000,7 +4010,7 @@ async function viewAnswerKey(examId) {
         html += '</tbody></table>';
         content.innerHTML = html;
     } catch (error) {
-        content.innerHTML = `<p style="color:#e74c3c;">❌ Failed to load answer key: ${error.message}</p>`;
+        content.innerHTML = '<p style="color:#e74c3c;">❌ Failed to load answer key: ' + sanitizeHTML(error.message) + '</p>';
     }
 }
 

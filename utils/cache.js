@@ -24,6 +24,11 @@ const stats = {
  * @returns {*} Cached value or undefined
  */
 function get(key) {
+    if (!key || typeof key !== 'string') {
+        logger.warn('Cache get: invalid key', { key });
+        return undefined;
+    }
+    
     const value = cache.get(key);
     if (value !== undefined) {
         stats.hits++;
@@ -43,6 +48,15 @@ function get(key) {
  * @returns {boolean} Success
  */
 function set(key, value, ttl) {
+    if (!key || typeof key !== 'string') {
+        logger.warn('Cache set: invalid key', { key });
+        return false;
+    }
+    if (value === undefined) {
+        logger.warn('Cache set: cannot cache undefined value', { key });
+        return false;
+    }
+    
     stats.sets++;
     const success = cache.set(key, value, ttl);
     if (success) {
@@ -57,6 +71,10 @@ function set(key, value, ttl) {
  * @returns {number} Number of deleted entries
  */
 function del(key) {
+    if (!key || typeof key !== 'string') {
+        logger.warn('Cache del: invalid key', { key });
+        return 0;
+    }
     stats.deletes++;
     const deleted = cache.del(key);
     logger.debug(`Cache DELETE: ${key}`);
@@ -77,9 +95,10 @@ function flush() {
  */
 function getStats() {
     const cacheStats = cache.getStats();
+    const totalRequests = stats.hits + stats.misses;
     return {
         ...stats,
-        hitRate: stats.hits / (stats.hits + stats.misses) || 0,
+        hitRate: totalRequests > 0 ? stats.hits / totalRequests : 0,
         keys: cache.keys().length,
         ...cacheStats
     };

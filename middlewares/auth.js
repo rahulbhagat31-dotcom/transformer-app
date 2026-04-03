@@ -1,16 +1,23 @@
 const jwt = require('jsonwebtoken');
 const userService = require('../services/user.service');
 const logger = require('../utils/logger');
+const cache = require('../utils/cache');
 
-// Simple in-memory token blacklist for session invalidation on logout
-const tokenBlacklist = new Set();
+// Token blacklist using node-cache for automatic TTL-based garbage collection
+// Tokens are automatically removed after 8 hours (JWT expiration time)
+const TOKEN_BLACKLIST_TTL = 8 * 60 * 60; // 8 hours in seconds
+
 function invalidateToken(token) {
     if (token) {
-        tokenBlacklist.add(token);
-        // Remove token from RAM after 8h (its natural expiration) to prevent memory leak
-        // TODO: Move to a distributed store like Redis for horizontal scaling
-        setTimeout(() => tokenBlacklist.delete(token), 8 * 60 * 60 * 1000);
+        // Store in cache with 8-hour TTL - node-cache will auto-garbage collect
+        cache.set('blacklist:' + token, true, TOKEN_BLACKLIST_TTL);
+        logger.debug(`Token invalidated, will expire in ${TOKEN_BLACKLIST_TTL}s`);
     }
+}
+
+function isTokenBlacklisted(token) {
+    if (!token) return false;
+    return cache.get('blacklist:' + token) !== undefined;
 }
 
 /**
@@ -38,7 +45,7 @@ async function authenticate(req, res, next) {
         });
     }
 
-    if (tokenBlacklist.has(token)) {
+    if (isTokenBlacklisted(token)) {
         return res.status(401).json({
             success: false,
             error: 'Session has been logged out. Please log in again.'

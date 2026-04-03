@@ -39,6 +39,7 @@ function getItems(wo, stage) {
 /**
  * Persist the items array for a given wo + stage.
  * Upserts the checklists row.
+ * NOTE: For transactional updates, use setItemsTransactional below
  */
 function setItems(wo, stage, items, completedBy = null) {
     const existing = db.prepare('SELECT id FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
@@ -54,6 +55,44 @@ function setItems(wo, stage, items, completedBy = null) {
             VALUES (?, ?, ?, ?)
         `).run(wo, stage, JSON.stringify(items), completedBy);
     }
+}
+
+/**
+ * Execute a transaction for atomic read-modify-write operations
+ * @param {Function} fn - Function that receives {getItems, setItems} helpers
+ */
+function withTransaction(fn) {
+    return db.transaction(() => {
+        // Create scoped helpers that use the transaction
+        const getItemsTx = (wo, stage) => {
+            const row = db.prepare('SELECT items FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
+            if (!row) return [];
+            try {
+                return JSON.parse(row.items) || [];
+            } catch {
+                return [];
+            }
+        };
+
+        const setItemsTx = (wo, stage, items, completedBy = null) => {
+            const existing = db.prepare('SELECT id FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
+            if (existing) {
+                db.prepare(`
+                    UPDATE checklists
+                    SET items = ?, completedBy = ?, lastUpdated = datetime('now')
+                    WHERE wo = ? AND stage = ?
+                `).run(JSON.stringify(items), completedBy, wo, stage);
+            } else {
+                db.prepare(`
+                    INSERT INTO checklists (wo, stage, items, completedBy)
+                    VALUES (?, ?, ?, ?)
+                `).run(wo, stage, JSON.stringify(items), completedBy);
+            }
+        };
+
+        // fn MUST return its result so callers can use it after commit
+        return fn({ getItems: getItemsTx, setItems: setItemsTx });
+    })();
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -78,26 +117,33 @@ router.post('/row/:itemId/unlock',
                 return res.status(400).json({ success: false, error: 'wo and stage required in body' });
             }
 
-            const items = getItems(wo, stage);
-            const idx = items.findIndex(i => i.rowId === itemId || i.id === itemId);
-            if (idx === -1) {
-                return res.status(404).json({ success: false, error: 'Checklist item not found' });
-            }
+            // Transaction returns updated item; res.json() fires AFTER commit is guaranteed
+            const updatedItem = withTransaction(({ getItems, setItems }) => {
+                const items = getItems(wo, stage);
+                const idx = items.findIndex(i => i.rowId === itemId || i.id === itemId);
+                if (idx === -1) {
+                    throw { status: 404, message: 'Checklist item not found' };
+                }
 
-            items[idx].locked = false;
-            items[idx].unlockedBy = req.user.username;
-            items[idx].unlockedAt = new Date().toISOString();
-            items[idx].unlockReason = reason;
+                items[idx].locked = false;
+                items[idx].unlockedBy = req.user.username;
+                items[idx].unlockedAt = new Date().toISOString();
+                items[idx].unlockReason = reason;
 
-            setItems(wo, stage, items);
+                setItems(wo, stage, items);
 
-            logAudit(req.user.id, req.user.username, req.user.role, 'UPDATE', 'checklist', itemId,
-                { action: 'UNLOCK_ROW', reason });
+                logAudit(req.user.id, req.user.username, req.user.role, 'UPDATE', 'checklist', itemId,
+                    { action: 'UNLOCK_ROW', reason });
 
-            console.log(`🔓 Unlocked checklist row ${itemId} by ${req.user.username}. Reason: ${reason}`);
-            res.json({ success: true, message: 'Row unlocked successfully', data: items[idx] });
+                return items[idx]; // return data — DO NOT call res.json() inside the transaction
+            });
+
+            res.json({ success: true, message: 'Row unlocked successfully', data: updatedItem });
         } catch (error) {
-            console.error('❌ Error unlocking checklist row:', error);
+            if (error.status) {
+                return res.status(error.status).json({ success: false, error: error.message });
+            }
+            console.error('Error unlocking checklist row:', error);
             res.status(500).json(errorResponse(error));
         }
     }
@@ -117,26 +163,33 @@ router.post('/row/:itemId/lock',
                 return res.status(400).json({ success: false, error: 'wo and stage required in body' });
             }
 
-            const items = getItems(wo, stage);
-            const idx = items.findIndex(i => i.rowId === itemId || i.id === itemId);
-            if (idx === -1) {
-                return res.status(404).json({ success: false, error: 'Checklist item not found' });
-            }
+            // Transaction returns locked item; res.json() fires AFTER commit is guaranteed
+            const lockedItem = withTransaction(({ getItems, setItems }) => {
+                const items = getItems(wo, stage);
+                const idx = items.findIndex(i => i.rowId === itemId || i.id === itemId);
+                if (idx === -1) {
+                    throw { status: 404, message: 'Checklist item not found' };
+                }
 
-            items[idx].locked = true;
-            items[idx].lockedBy = req.user.username;
-            items[idx].lockedAt = new Date().toISOString();
-            items[idx].lockReason = reason;
+                items[idx].locked = true;
+                items[idx].lockedBy = req.user.username;
+                items[idx].lockedAt = new Date().toISOString();
+                items[idx].lockReason = reason;
 
-            setItems(wo, stage, items);
+                setItems(wo, stage, items);
 
-            logAudit(req.user.id, req.user.username, req.user.role, 'UPDATE', 'checklist', itemId,
-                { action: 'LOCK_ROW', reason });
+                logAudit(req.user.id, req.user.username, req.user.role, 'UPDATE', 'checklist', itemId,
+                    { action: 'LOCK_ROW', reason });
 
-            console.log(`🔒 Locked checklist row ${itemId} by ${req.user.username}. Reason: ${reason}`);
-            res.json({ success: true, message: 'Row locked successfully', data: items[idx] });
+                return items[idx]; // return data — DO NOT call res.json() inside the transaction
+            });
+
+            res.json({ success: true, message: 'Row locked successfully', data: lockedItem });
         } catch (error) {
-            console.error('❌ Error locking checklist row:', error);
+            if (error.status) {
+                return res.status(error.status).json({ success: false, error: error.message });
+            }
+            console.error('Error locking checklist row:', error);
             res.status(500).json(errorResponse(error));
         }
     }
@@ -205,84 +258,77 @@ router.post('/save',
                 return res.status(400).json({ success: false, error: 'Missing required fields' });
             }
 
-            const items = getItems(wo, stage);
-            const existingIdx = items.findIndex(i => i.rowId === rowId);
-
-            const itemData = {
-                rowId: String(rowId),
-                itemNumber: Number(itemNumber),
-                actualValue: actualValue || '',
-                technician: technician || '',
-                shopSupervisor: shopSupervisor || '',
-                qaSupervisor: qaSupervisor || '',
-                remark: remark || '',
-                timestamp: timestamp || new Date().toLocaleString('en-IN'),
-                userId: userId || req.user?.id || 'unknown',
-                userName: userName || req.user?.name || 'Unknown',
-                userRole: userRole || req.user?.role || 'unknown',
-                locked: true,
-                lockedBy: req.user?.username || 'unknown',
-                lockedAt: new Date().toISOString()
-            };
-
-            let actionType;
-
-            if (existingIdx >= 0) {
-                // Concurrency check: if client sends updatedAt, verify it
-                const dbItem = items[existingIdx];
-                if (updatedAt && dbItem.updatedAt && updatedAt !== dbItem.updatedAt) {
-                    console.log(`⚠️ Conflict: Item ${rowId} was modified. DB: ${dbItem.updatedAt}, Client: ${updatedAt}`);
-                    return res.status(409).json({
-                        success: false,
-                        error: 'Item was modified by another user. Please refresh and try again.',
-                        current: dbItem
-                    });
-                }
-
-                // Preserve previous unlock metadata if present
-                if (items[existingIdx].unlockedBy) {
-                    itemData.previousUnlock = {
-                        unlockedBy: items[existingIdx].unlockedBy,
-                        unlockedAt: items[existingIdx].unlockedAt,
-                        unlockReason: items[existingIdx].unlockReason
-                    };
-                }
-
-                items[existingIdx] = { ...items[existingIdx], ...itemData, updatedAt: new Date().toISOString() };
-                actionType = 'UPDATE';
-                console.log(`📝 Updated checklist item: ${stage} - Item ${itemNumber} - WO: ${wo}`);
-            } else {
-                const newItem = {
-                    id: Date.now().toString(),
-                    wo, customerId, customer, stage,
-                    ...itemData,
-                    createdAt: new Date().toISOString()
-                };
-                items.push(newItem);
-                actionType = 'CREATE';
-                console.log(`✅ Saved checklist item: ${stage} - Item ${itemNumber} - WO: ${wo}`);
-            }
-
-            setItems(wo, stage, items, req.user?.username);
-
-            // Auto-save revision snapshot
+            // Transaction returns { actionType, rowId }; res.json() fires AFTER commit is guaranteed
+            let txResult;
             try {
-                checklistService.saveRevision(wo, stage, items,
-                    `${actionType} item ${itemNumber}`, req.user?.username || 'unknown');
-            } catch (revErr) {
-                console.warn('⚠️ Revision save warning:', revErr.message);
+                txResult = withTransaction(({ getItems, setItems }) => {
+                    const items = getItems(wo, stage);
+                    const existingIdx = items.findIndex(i => i.rowId === rowId);
+
+                    const itemData = {
+                        rowId: String(rowId),
+                        itemNumber: Number(itemNumber),
+                        actualValue: actualValue || '',
+                        technician: technician || '',
+                        shopSupervisor: shopSupervisor || '',
+                        qaSupervisor: qaSupervisor || '',
+                        remark: remark || '',
+                        timestamp: timestamp || new Date().toLocaleString('en-IN'),
+                        userId: userId || req.user?.id || 'unknown',
+                        userName: userName || req.user?.name || 'Unknown',
+                        userRole: userRole || req.user?.role || 'unknown',
+                        locked: true,
+                        lockedBy: req.user?.username || 'unknown',
+                        lockedAt: new Date().toISOString()
+                    };
+
+                    let actionType;
+
+                    if (existingIdx >= 0) {
+                        const dbItem = items[existingIdx];
+                        if (updatedAt && dbItem.updatedAt && updatedAt !== dbItem.updatedAt) {
+                            throw { status: 409, message: 'Item was modified by another user. Please refresh and try again.', current: dbItem };
+                        }
+                        if (items[existingIdx].unlockedBy) {
+                            itemData.previousUnlock = {
+                                unlockedBy: items[existingIdx].unlockedBy,
+                                unlockedAt: items[existingIdx].unlockedAt,
+                                unlockReason: items[existingIdx].unlockReason
+                            };
+                        }
+                        items[existingIdx] = { ...items[existingIdx], ...itemData, updatedAt: new Date().toISOString() };
+                        actionType = 'UPDATE';
+                    } else {
+                        items.push({ id: Date.now().toString(), wo, customerId, customer, stage, ...itemData, createdAt: new Date().toISOString() });
+                        actionType = 'CREATE';
+                    }
+
+                    setItems(wo, stage, items, req.user?.username);
+
+                    try {
+                        checklistService.saveRevision(wo, stage, items, `${actionType} item ${itemNumber}`, req.user?.username || 'unknown');
+                    } catch (revErr) {
+                        console.warn('Revision save warning:', revErr.message);
+                    }
+
+                    logAudit(
+                        req.user.id, req.user.username, req.user.role,
+                        actionType, 'checklist',
+                        `${stage}-${itemNumber}-${wo}`,
+                        { itemNumber, rowId, wo, stage }
+                    );
+
+                    return { actionType, rowId }; // return data — DO NOT call res.json() inside the transaction
+                });
+            } catch (error) {
+                if (error.status) {
+                    return res.status(error.status).json({ success: false, error: error.message, current: error.current });
+                }
+                throw error;
             }
 
-            logAudit(
-                req.user.id, req.user.username, req.user.role,
-                actionType, 'checklist',
-                `${stage}-${itemNumber}-${wo}`,
-                itemData
-            );
-
-            const saved = items.find(i => i.rowId === rowId);
-            res.json({ success: true, message: `Item ${itemNumber} saved successfully`, item: saved });
-
+            // Send response only after transaction has fully committed
+            res.json({ success: true, message: `${txResult.actionType} successful`, rowId: txResult.rowId });
         } catch (error) {
             console.error('❌ Error saving checklist:', error);
             res.status(500).json(errorResponse(error));
@@ -599,7 +645,7 @@ router.get('/summary/:wo', (req, res) => {
             let items = [];
             if (stage === 'winding') {
                 for (let i = 1; i <= 5; i++) {
-                    items = items.concat(getItems(wo, `winding`+i));
+                    items = items.concat(getItems(wo, `winding` + i));
                 }
             } else {
                 items = getItems(wo, stage);
@@ -609,9 +655,9 @@ router.get('/summary/:wo', (req, res) => {
                 items = items.filter(i => i.customerId === req.user.customerId);
             }
             summary[stage] = {
-                techDone:       items.filter(i => i.technician).length,
+                techDone: items.filter(i => i.technician).length,
                 supervisorDone: items.filter(i => i.shopSupervisor).length,
-                qaDone:         items.filter(i => i.qaSupervisor).length
+                qaDone: items.filter(i => i.qaSupervisor).length
             };
         }
         res.json({ success: true, data: summary });

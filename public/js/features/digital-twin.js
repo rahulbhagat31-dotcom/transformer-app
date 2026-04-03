@@ -5,6 +5,16 @@
  * ================================================
  */
 
+// Lightweight HTML sanitizer for XSS prevention
+var sanitizeHTML = (function() {
+    function _sanitize(str) {
+        if (str == null) return '';
+        if (typeof str !== 'string') return String(str);
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    return _sanitize;
+})();
+
 // Canonical stage order — must match backend STAGE_ORDER in stageControl.js
 if (typeof STAGE_ORDER === 'undefined') {
     var STAGE_ORDER = ['design', 'winding', 'vpd', 'coreCoil', 'tanking', 'tankFilling', 'testing', 'completed'];
@@ -309,10 +319,10 @@ function renderDTNavigation() {
             <span class="separator">›</span>
             <span>Transformer</span>
             <span class="separator">›</span>
-            <span class="current">${wo}</span>
+            <span class="current">${sanitizeHTML(wo)}</span>
         </div>
         <div class="dt-user-badge">
-            <span id="roleBadge" class="role-badge">${user.role}</span>
+            <span id="roleBadge" class="role-badge">${sanitizeHTML(user.role)}</span>
         </div>
     `;
 }
@@ -340,10 +350,10 @@ function renderDTHeader() {
         <div class="dt-header-title-row">
             <h1 class="dt-wo-title">
                 <span class="dt-wo-icon">🔧</span>
-                <span>${transformer.wo}</span>
+                <span>${sanitizeHTML(transformer.wo)}</span>
             </h1>
-            <div class="dt-status-badge stage-${transformer.stage}">
-                ${STAGE_LABELS[transformer.stage] || transformer.stage}
+            <div class="dt-status-badge stage-${sanitizeHTML(transformer.stage)}">
+                ${sanitizeHTML(STAGE_LABELS[transformer.stage] || transformer.stage)}
             </div>
         </div>
         
@@ -351,22 +361,22 @@ function renderDTHeader() {
             <div class="dt-spec-item">
                 <span class="dt-spec-icon">📊</span>
                 <span class="dt-spec-label">Rating</span>
-                <span class="dt-spec-value">${transformer.rating || 'N/A'} MVA</span>
+                <span class="dt-spec-value">${sanitizeHTML(transformer.rating) || 'N/A'} MVA</span>
             </div>
             <div class="dt-spec-item">
                 <span class="dt-spec-icon">⚡</span>
                 <span class="dt-spec-label">Voltage</span>
-                <span class="dt-spec-value">${transformer.voltage || 'N/A'} kV</span>
+                <span class="dt-spec-value">${sanitizeHTML(transformer.voltage) || 'N/A'} kV</span>
             </div>
             <div class="dt-spec-item">
                 <span class="dt-spec-icon">📍</span>
                 <span class="dt-spec-label">Customer</span>
-                <span class="dt-spec-value">${customerName}</span>
+                <span class="dt-spec-value">${sanitizeHTML(customerName)}</span>
             </div>
         </div>
         
         <div class="dt-last-updated">
-            Last Updated: ${lastUpdated} by ${lastUpdatedBy}
+            Last Updated: ${sanitizeHTML(lastUpdated)} by ${sanitizeHTML(lastUpdatedBy)}
         </div>
         
         <!-- Phase 3/4: Report & Export Buttons -->
@@ -374,7 +384,7 @@ function renderDTHeader() {
             <button class="btn-login" style="width: auto; padding: 8px 16px; background: #e74c3c;" onclick="downloadReport()">
                 📄 Engineering Report (PDF)
             </button>
-            <button class="btn-login" style="width: auto; padding: 8px 16px; background: #27ae60;" onclick="handleExcelExport('${transformer.stage}', '${transformer.wo}')">
+            <button class="btn-login" style="width: auto; padding: 8px 16px; background: #27ae60;" onclick="handleExcelExport('${sanitizeHTML(transformer.stage)}', '${sanitizeHTML(transformer.wo)}')">
                 📊 Export Checklist (Excel)
             </button>
         </div>
@@ -490,9 +500,9 @@ function renderLifecycleTimeline() {
         const label = STAGE_LABELS[stage] || stage;
 
         return `
-            <div class="dt-stage-indicator ${stateClass}">
-                <div class="dt-stage-dot">${icon}</div>
-                <div class="dt-stage-label">${label}</div>
+            <div class="dt-stage-indicator ${sanitizeHTML(stateClass)}">
+                <div class="dt-stage-dot">${sanitizeHTML(icon)}</div>
+                <div class="dt-stage-label">${sanitizeHTML(label)}</div>
             </div>
         `;
     }).join('');
@@ -580,27 +590,27 @@ function renderCurrentStageSnapshot() {
         <div class="dt-snapshot-grid">
             <div class="dt-snapshot-item">
                 <div class="dt-snapshot-label">Stage</div>
-                <div class="dt-snapshot-value">${STAGE_LABELS[currentStage] || currentStage}</div>
+                <div class="dt-snapshot-value">${sanitizeHTML(STAGE_LABELS[currentStage] || currentStage)}</div>
             </div>
             <div class="dt-snapshot-item">
                 <div class="dt-snapshot-label">Lock Status</div>
                 <div class="dt-snapshot-value">
-                    <span class="dt-lock-status ${lockStatus}">
-                        ${lockIcon} ${lockText}
+                    <span class="dt-lock-status ${sanitizeHTML(lockStatus)}">
+                        ${sanitizeHTML(lockIcon)} ${sanitizeHTML(lockText)}
                     </span>
                 </div>
             </div>
             <div class="dt-snapshot-item">
                 <div class="dt-snapshot-label">QA Action</div>
                 <div class="dt-snapshot-value">
-                    <span class="dt-qa-action ${qaStatus}">
-                        ${qaIcon} ${qaText}
+                    <span class="dt-qa-action ${sanitizeHTML(qaStatus)}">
+                        ${sanitizeHTML(qaIcon)} ${sanitizeHTML(qaText)}
                     </span>
                 </div>
             </div>
         </div>
         <div class="dt-snapshot-timestamp">
-            Last updated: ${lastUpdated}
+            Last updated: ${sanitizeHTML(lastUpdated)}
         </div>
     `;
 }
@@ -684,7 +694,7 @@ function renderManufacturingHistory() {
             rejectionReasonHTML = `
                 <div class="dt-rejection-reason">
                     <div class="dt-rejection-reason-label">Reason:</div>
-                    ${checklist.rejectionReason}
+                    ${sanitizeHTML(checklist.rejectionReason)}
                 </div>
             `;
         }
@@ -694,21 +704,21 @@ function renderManufacturingHistory() {
         const currentBadge = isCurrent ? ' (Current)' : '';
 
         return `
-            <div class="dt-stage-section" data-stage="${item.stage}">
-                <div class="dt-stage-header" onclick="window.DigitalTwinUI.toggleStageSection('${item.stage}')">
+            <div class="dt-stage-section" data-stage="${sanitizeHTML(item.stage)}">
+                <div class="dt-stage-header" onclick="window.DigitalTwinUI.toggleStageSection('${sanitizeHTML(item.stage)}')">
                     <div class="dt-stage-header-left">
                         <span class="dt-stage-expand-icon">▶</span>
-                        <span class="dt-stage-name">${item.label}${currentBadge}</span>
+                        <span class="dt-stage-name">${sanitizeHTML(item.label)}${sanitizeHTML(currentBadge)}</span>
                     </div>
-                    <div class="dt-stage-status-badge ${status}">
-                        ${statusIcon} ${statusText}
+                    <div class="dt-stage-status-badge ${sanitizeHTML(status)}">
+                        ${sanitizeHTML(statusIcon)} ${sanitizeHTML(statusText)}
                     </div>
                 </div>
                 <div class="dt-stage-content">
                     <div class="dt-stage-details">
                         <div class="dt-stage-detail-row">
                             <div class="dt-stage-detail-label">Last Updated</div>
-                            <div class="dt-stage-detail-value">${lastUpdated}</div>
+                            <div class="dt-stage-detail-value">${sanitizeHTML(lastUpdated)}</div>
                         </div>
                         ${rejectionReasonHTML}
                     </div>
@@ -776,12 +786,12 @@ async function renderDocuments() {
             <div class="dt-document-card">
                 <div class="dt-document-icon">📄</div>
                 <div class="dt-document-info">
-                    <div class="dt-document-name">${doc.filename}</div>
+                    <div class="dt-document-name">${sanitizeHTML(doc.filename)}</div>
                     <div class="dt-document-meta">
-                        ${doc.type.toUpperCase()} • ${new Date(doc.uploadedAt).toLocaleDateString()}
+                        ${sanitizeHTML(doc.type.toUpperCase())} • ${sanitizeHTML(new Date(doc.uploadedAt).toLocaleDateString())}
                     </div>
                 </div>
-                <a href="/document/download/${doc.filename}" class="dt-document-download" download>
+                <a href="/document/download/${encodeURIComponent(doc.filename)}" class="dt-document-download" download>
                     ⬇️
                 </a>
             </div>
@@ -855,20 +865,20 @@ function renderAuditTimeline() {
         if (log.details || log.description) {
             const details = log.details || log.description;
             detailsHTML = `
-                <div class="dt-audit-details">${details}</div>
+                <div class="dt-audit-details">${sanitizeHTML(details)}</div>
             `;
         }
 
         return `
             <div class="dt-audit-entry">
                 <div class="dt-audit-entry-header">
-                    <div class="dt-audit-action">${action}</div>
-                    <div class="dt-audit-timestamp">${formattedTime}</div>
+                    <div class="dt-audit-action">${sanitizeHTML(action)}</div>
+                    <div class="dt-audit-timestamp">${sanitizeHTML(formattedTime)}</div>
                 </div>
                 <div class="dt-audit-entry-body">
                     <div class="dt-audit-user">
                         <span class="dt-audit-user-icon">👤</span>
-                        ${user}
+                        ${sanitizeHTML(user)}
                     </div>
                     ${detailsHTML}
                 </div>
@@ -919,8 +929,8 @@ function renderPlaceholder(containerId, icon, title, visibility) {
     container.setAttribute('data-role-visibility', visibility);
     container.innerHTML = `
         <div class="dt-placeholder-content">
-            <span class="dt-placeholder-icon">${icon}</span>
-            <h3 class="dt-placeholder-title">${title}</h3>
+            <span class="dt-placeholder-icon">${sanitizeHTML(icon)}</span>
+            <h3 class="dt-placeholder-title">${sanitizeHTML(title)}</h3>
             <p class="dt-placeholder-text">
                 This section is not available in this view.
             </p>
@@ -997,7 +1007,7 @@ function showDTError(message) {
         <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
             <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
             <h3>Failed to load transformer</h3>
-            <p>${message}</p>
+            <p>${sanitizeHTML(message)}</p>
             <button class="dt-back-btn" onclick="navigateToDashboard()" style="margin-top: 20px;">
                 ← Back to Dashboard
             </button>
@@ -1079,11 +1089,11 @@ function renderComparison() {
 
         tableRows += `
             <div class="dt-comp-row">
-                <div class="dt-comp-label">${item.param}</div>
-                <div class="dt-comp-val">${item.design.toFixed(2)} ${item.unit}</div>
-                <div class="dt-comp-val">${item.actual.toFixed(2)} ${item.unit}</div>
+                <div class="dt-comp-label">${sanitizeHTML(item.param)}</div>
+                <div class="dt-comp-val">${sanitizeHTML(item.design.toFixed(2))} ${sanitizeHTML(item.unit)}</div>
+                <div class="dt-comp-val">${sanitizeHTML(item.actual.toFixed(2))} ${sanitizeHTML(item.unit)}</div>
                 <div class="dt-comp-dev" style="color: ${deviationColor}">
-                    ${dev > 0 ? '+' : ''}${dev.toFixed(2)}%
+                    ${dev > 0 ? '+' : ''}${sanitizeHTML(dev.toFixed(2))}%
                 </div>
             </div>
         `;
@@ -1104,7 +1114,7 @@ function renderComparison() {
                 </h2>
                 <div class="dt-health-score">
                     <div class="score-label" style="color: ${healthColor}">Health Score</div>
-                    <div class="score-val" style="color: ${healthColor}">${healthScore}</div>
+                    <div class="score-val" style="color: ${healthColor}">${sanitizeHTML(healthScore)}</div>
                 </div>
             </div>
             

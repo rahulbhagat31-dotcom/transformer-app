@@ -122,14 +122,25 @@ class TransformerService {
 
     /**
      * Parse transformer from database (convert JSON strings to objects)
+     * Safely handles corrupted JSON data by returning null instead of crashing
      */
     _parseTransformer(transformer) {
+        const safeParse = (str, fieldName) => {
+            if (!str) return null;
+            try {
+                return JSON.parse(str);
+            } catch (error) {
+                console.warn(`Warning: Failed to parse ${fieldName} for transformer ${transformer.wo}:`, error.message);
+                return null;
+            }
+        };
+        
         return {
             ...transformer,
             customerVisible: transformer.customerVisible === 1,
-            designData: transformer.designData ? JSON.parse(transformer.designData) : null,
-            actuals: transformer.actuals ? JSON.parse(transformer.actuals) : null,
-            stageHistory: transformer.stageHistory ? JSON.parse(transformer.stageHistory) : null
+            designData: safeParse(transformer.designData, 'designData'),
+            actuals: safeParse(transformer.actuals, 'actuals'),
+            stageHistory: safeParse(transformer.stageHistory, 'stageHistory')
         };
     }
 }

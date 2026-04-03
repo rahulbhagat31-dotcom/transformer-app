@@ -2,10 +2,35 @@ require('dotenv').config();
 
 // CRITICAL: Validate JWT_SECRET is set before starting server
 if (!process.env.JWT_SECRET) {
-    console.error('❌ FATAL ERROR: JWT_SECRET environment variable is not set');
+    console.error('FATAL ERROR: JWT_SECRET environment variable is not set');
     console.error('   Set JWT_SECRET in .env file (minimum 32 characters)');
     console.error('   Server cannot start without JWT_SECRET for security reasons');
     process.exit(1);
+}
+
+// Validate minimum JWT_SECRET length for security
+if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
+    console.error('FATAL ERROR: JWT_SECRET must be at least 32 characters for security');
+    console.error('   Current length: ' + process.env.JWT_SECRET.length);
+    console.error('   Generate a stronger secret: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+    process.exit(1);
+}
+
+// Warn about missing production configurations
+if (process.env.NODE_ENV === 'production') {
+    const requiredSecrets = ['JWT_SECRET'];
+    const missingSecrets = requiredSecrets.filter(s => !process.env[s]);
+    
+    if (missingSecrets.length > 0) {
+        console.error('FATAL ERROR: Missing required environment variables for production:');
+        missingSecrets.forEach(s => console.error('   - ' + s));
+        process.exit(1);
+    }
+    
+    // Warn about optional but recommended configurations
+    if (!process.env.ALLOWED_ORIGIN) {
+        console.warn('WARNING: ALLOWED_ORIGIN not set for production - using default localhost (insecure)');
+    }
 }
 
 const express = require('express');
@@ -39,8 +64,13 @@ const apiRoutes = require('./routes'); // 📊 Phase 3
 
 const app = express();
 const server = http.createServer(app);
+
 // Allowed origin — configure in .env for production
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000');
+
+if (process.env.NODE_ENV === 'production' && !ALLOWED_ORIGIN) {
+    console.warn('WARNING: ALLOWED_ORIGIN not set - CORS will deny all cross-origin requests');
+}
 
 const io = socketIO(server, {
     cors: {

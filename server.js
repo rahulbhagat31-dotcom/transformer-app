@@ -27,6 +27,7 @@ const { initStageStatusFile } = require('./utils/stageControl');
 const logger = require('./utils/logger');
 const cache = require('./utils/cache');
 const { initAutomatedBackups } = require('./utils/backup');
+const seedQuestions = require('./utils/seed-questions');
 
 // Phase 3: WebSocket and exports
 const http = require('http');
@@ -178,6 +179,7 @@ process.on('uncaughtException', (error) => {
     initDataFiles();
     initAuditFile(); // ← NEW: Initialize audit log file
     initStageStatusFile(); // ← NEW: Initialize stage status file
+    seedQuestions();        // ← Auto-seed questions/sections if DB is empty
 
     // Phase 2: Initialize automated backups
     initAutomatedBackups();

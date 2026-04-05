@@ -486,10 +486,8 @@ async function showUnlockDialog(wo, stage) {
 async function loadChecklistTransformers() {
     try {
         const response = await apiCall('/transformers');
-        console.log('📦 API Response:', response); // Debug log
 
         const transformers = response.data || response;
-        console.log('📋 Transformers:', transformers); // Debug log
 
         const select = document.getElementById('checklistWOSelect');
         if (!select) {
@@ -503,9 +501,12 @@ async function loadChecklistTransformers() {
             return;
         }
 
+        // Preserve the user's current selection so navigating away and back
+        // doesn't silently reset their activity (Bug 3)
+        const previousWO = select.value || window.currentWO || '';
+
         // Get unique W.O. numbers to avoid duplicates
         const uniqueTransformers = Array.from(new Map(transformers.map(t => [t.wo, t])).values());
-        console.log('✅ Unique transformers:', uniqueTransformers);
 
         const options = uniqueTransformers.map(t =>
             `<option value="${t.wo}" data-transformer='${JSON.stringify(t)}'>${t.wo} - ${t.customer || 'Unknown'}</option>`
@@ -513,6 +514,11 @@ async function loadChecklistTransformers() {
 
         select.innerHTML = '<option value="">-- Select Transformer W.O. --</option>' + options;
         console.log(`✅ Loaded ${uniqueTransformers.length} transformers`);
+
+        // Restore previous selection without firing the change event (data is already loaded)
+        if (previousWO && uniqueTransformers.some(t => t.wo === previousWO)) {
+            select.value = previousWO;
+        }
     } catch (error) {
         console.error('❌ Error loading transformers:', error);
         const select = document.getElementById('checklistWOSelect');
@@ -521,6 +527,8 @@ async function loadChecklistTransformers() {
         }
     }
 }
+
+
 
 /* ===============================
    W.O. SELECTION CHANGE

@@ -476,14 +476,10 @@ function getStageName(stage) {
     return stages[stage] || '❓ Unknown';
 }
 
-/* ===============================
-   INITIALIZE ON PAGE LOAD
-================================ */
-document.addEventListener('DOMContentLoaded', function () {
-    if (typeof loadCustomerList === 'function') {
-        loadCustomerList();
-    }
-});
+// NOTE: loadCustomerList() is called by auth.js after a successful login.
+// Do NOT call it on DOMContentLoaded — the user is not authenticated yet and
+// the request will 401, clear the session, and redirect back to the login page.
+
 
 window.doSearch = doSearch;
 window.addTransformer = addTransformer;

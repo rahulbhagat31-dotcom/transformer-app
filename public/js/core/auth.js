@@ -279,6 +279,11 @@ function initializeAuth() {
                 if (typeof loadCustomerList === 'function') loadCustomerList();
                 if (typeof updateTransformerDropdowns === 'function') updateTransformerDropdowns();
                 if (typeof loadChecklistTransformers === 'function') loadChecklistTransformers();
+                
+                // Analytics should only load after a user session is confirmed
+                if (typeof initAnalytics === 'function' && document.getElementById('dashboardSection')?.classList.contains('active')) {
+                    initAnalytics();
+                }
 
             } catch (error) {
                 // Show inline error instead of alert

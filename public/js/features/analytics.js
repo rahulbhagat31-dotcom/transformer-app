@@ -305,10 +305,11 @@ function showAnalyticsLoading(loading) {
 window.initAnalytics = initAnalytics;
 window.refreshAnalytics = refreshAnalytics;
 
-// Auto-init if dashboard is already the active section on page load
+// Auto-init if dashboard is already the active section on page load AND user is logged in
 document.addEventListener('DOMContentLoaded', () => {
     const dash = document.getElementById('dashboardSection');
-    if (dash && (dash.classList.contains('active') || dash.style.display !== 'none')) {
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp && mainApp.style.display !== 'none' && dash && (dash.classList.contains('active') || dash.style.display !== 'none')) {
         initAnalytics();
     }
 });

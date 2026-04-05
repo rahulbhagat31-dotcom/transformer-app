@@ -1316,25 +1316,38 @@ async function calculateOtherOnly(inputParams) {
             ? (rawInputs.mva * 1e6) / (Math.sqrt(3) * rawInputs.systemVoltage * 1000)
             : 0;
 
-        // Build real windings object
+        // Build minimal mock objects so advanced-features.js doesn't crash
         results.windings = {
             hvTurns:       totalHVTurns,
             lvTurns:       lvTurns,
             turnsRatio:    lvTurns > 0 ? (totalHVTurns / lvTurns) : 0,
-            hvVoltagePhase: hvVoltagePhase
+            hvVoltagePhase: hvVoltagePhase,
+            hvOuterDiameter: rawInputs.odHV || 500,
+            lvInnerDiameter: rawInputs.idLV || 300
         };
 
-        // Build minimal currents object for OLTC current calculations
         results.currents = {
             hvCurrent: hvCurrent.toFixed(2)
         };
 
-        // Build minimal losses/core stubs so advanced-features.js doesn't crash
         results.losses = {
-            totalLoss: rawInputs.mva * 3
+            totalLoss: rawInputs.mva * 3,
+            coreLoss: rawInputs.mva * 1,
+            totalCopperLoss: rawInputs.mva * 2,
+            efficiency: 99.5
         };
+
         results.core = {
             weight: rawInputs.mva * 250
+        };
+
+        results.conductors = {
+            hvArea: ((rawInputs.bareWidthHV || 1) * (rawInputs.bareThicknessHV || 1) * (rawInputs.nCondHV || 1)),
+            lvArea: ((rawInputs.bareWidthLV || 1) * (rawInputs.bareThicknessLV || 1) * (rawInputs.nCondLV || 1))
+        };
+
+        results.winding = {
+            totalWeight: rawInputs.mva * 100 || 1000
         };
 
         // Render advanced results

@@ -109,7 +109,7 @@ async function authenticate(req, res, next) {
  */
 function checkPermission(requiredRole) {
     return (req, res, next) => {
-        const userRole = req.user?.role;
+        const userRole = req.user?.role?.toLowerCase();
 
         if (!userRole) {
             return res.status(401).json({ success: false, error: 'Please log in' });
@@ -122,7 +122,7 @@ function checkPermission(requiredRole) {
             'customer': 0
         };
 
-        if (roleHierarchy[userRole] >= roleHierarchy[requiredRole]) {
+        if (roleHierarchy[userRole] >= roleHierarchy[requiredRole.toLowerCase()]) {
             next();
         } else {
             res.status(403).json({ success: false, error: 'Access denied' });

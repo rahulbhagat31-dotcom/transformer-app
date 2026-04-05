@@ -163,7 +163,12 @@ window.showTab = async function (tabId) {
     // ── Per-section refresh hooks ─────────────────────────
     setTimeout(() => {
         if (tabId === 'manufacturingChecklist') {
-            if (typeof loadChecklistTransformers === 'function') loadChecklistTransformers();
+            // Only load transformers on the FIRST visit — subsequent navigations
+            // preserve the user's current WO selection and avoid redundant network calls.
+            if (!window._checklistTransformersLoaded && typeof loadChecklistTransformers === 'function') {
+                loadChecklistTransformers();
+                window._checklistTransformersLoaded = true;
+            }
         }
         // documentsSection covers both BOM Upload and Design Documents tabs
         if (tabId === 'documentsSection' || tabId === 'designDocuments' || tabId === 'bomUpload') {
@@ -180,6 +185,7 @@ window.showTab = async function (tabId) {
             if (typeof initAnalytics === 'function') initAnalytics();
         }
     }, 50);
+
 };
 
 function updateActiveNavItem(tabId) {

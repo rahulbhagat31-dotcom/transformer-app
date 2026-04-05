@@ -13,6 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+ * Invalidate the checklist transformers cache.
+ * Call this when a new Work Order is created or assigned,
+ * so the next navigation to the checklist will fetch fresh data.
+ */
+window.invalidateChecklistTransformers = function() {
+    window._checklistTransformersLoadedAt = 0;
+};
+
+/**
  * Navigate to Digital Twin page for specific transformer
  * @param {string} wo - Work order number
  */
@@ -163,13 +172,18 @@ window.showTab = async function (tabId) {
     // ── Per-section refresh hooks ─────────────────────────
     setTimeout(() => {
         if (tabId === 'manufacturingChecklist') {
-            // Only load transformers on the FIRST visit — subsequent navigations
-            // preserve the user's current WO selection and avoid redundant network calls.
-            if (!window._checklistTransformersLoaded && typeof loadChecklistTransformers === 'function') {
+            // Guard: Only load transformers on first visit OR after a 10-minute TTL.
+            // This prevents redundant network calls while still refreshing after long sessions.
+            const CHECKLIST_TRANSFORMER_TTL_MS = 10 * 60 * 1000; // 10 minutes
+            const lastLoaded = window._checklistTransformersLoadedAt || 0;
+            const isStale = (Date.now() - lastLoaded) > CHECKLIST_TRANSFORMER_TTL_MS;
+
+            if (isStale && typeof loadChecklistTransformers === 'function') {
                 loadChecklistTransformers();
-                window._checklistTransformersLoaded = true;
+                window._checklistTransformersLoadedAt = Date.now();
             }
         }
+
         // documentsSection covers both BOM Upload and Design Documents tabs
         if (tabId === 'documentsSection' || tabId === 'designDocuments' || tabId === 'bomUpload') {
             if (typeof updateTransformerDropdowns === 'function') updateTransformerDropdowns();

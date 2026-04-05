@@ -56,7 +56,7 @@ router.post('/assign',
             const { userId, wo, expiresAt, notes } = req.body;
             const assignment = assignmentService.assign(userId, wo, req.user.username, { expiresAt, notes });
 
-            logAudit(req.user.id, req.user.username, req.user.role,
+            logAudit(req.user.userId, req.user.username, req.user.role,
                 'CREATE', 'user_assignment', `${userId}:${wo}`,
                 { userId, wo, expiresAt, notes });
 
@@ -87,7 +87,7 @@ router.delete('/revoke',
                 return res.status(404).json({ success: false, error: 'Assignment not found' });
             }
 
-            logAudit(req.user.id, req.user.username, req.user.role,
+            logAudit(req.user.userId, req.user.username, req.user.role,
                 'DELETE', 'user_assignment', `${userId}:${wo}`, { userId, wo });
 
             res.json({ success: true, message: `Assignment for ${userId} on WO ${wo} removed` });
@@ -103,7 +103,7 @@ router.delete('/revoke',
 router.post('/purge-expired', requireRole(['admin']), (req, res) => {
     try {
         const removed = assignmentService.purgeExpired();
-        logAudit(req.user.id, req.user.username, req.user.role,
+        logAudit(req.user.userId, req.user.username, req.user.role,
             'DELETE', 'user_assignment', 'expired', { removed });
         res.json({ success: true, message: `Purged ${removed} expired assignment(s)`, removed });
     } catch (error) {

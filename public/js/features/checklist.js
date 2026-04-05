@@ -515,10 +515,13 @@ async function loadChecklistTransformers() {
         select.innerHTML = '<option value="">-- Select Transformer W.O. --</option>' + options;
         console.log(`✅ Loaded ${uniqueTransformers.length} transformers`);
 
-        // Restore previous selection without firing the change event (data is already loaded)
+        // Restore previous selection and fire change event so the UI syncs
         if (previousWO && uniqueTransformers.some(t => t.wo === previousWO)) {
             select.value = previousWO;
+            // Fire the change event to ensure customer details / stage tables load
+            select.dispatchEvent(new Event('change'));
         }
+
     } catch (error) {
         console.error('❌ Error loading transformers:', error);
         const select = document.getElementById('checklistWOSelect');

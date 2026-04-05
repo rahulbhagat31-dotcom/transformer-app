@@ -131,17 +131,28 @@ function checkPermission(requiredRole) {
 }
 
 /**
- * Middleware to check if user has one of the allowed roles (exact match)
+ * Middleware to check if user has one of the allowed roles (exact match).
+ * Both the stored role and the allowedRoles list are normalised to lowercase
+ * so that casing differences in the DB or at call-sites cannot bypass the check.
  */
 function requireRole(allowedRoles) {
+    // Normalise once at middleware creation time — not per-request
+    const normalised = allowedRoles.map(r => r.toLowerCase());
+
     return (req, res, next) => {
-        const userRole = req.user?.role;
+        const userRole = req.user?.role?.toLowerCase();
 
         if (!userRole) {
             return res.status(401).json({ success: false, error: 'Please log in' });
         }
 
-        if (allowedRoles.includes(userRole)) {
+        // Deny unrecognised roles immediately rather than silently falling through
+        const knownRoles = ['admin', 'quality', 'production', 'customer'];
+        if (!knownRoles.includes(userRole)) {
+            return res.status(403).json({ success: false, error: 'Unrecognised role. Access denied.' });
+        }
+
+        if (normalised.includes(userRole)) {
             next();
         } else {
             res.status(403).json({
@@ -151,6 +162,7 @@ function requireRole(allowedRoles) {
         }
     };
 }
+
 
 module.exports = {
     authenticate,

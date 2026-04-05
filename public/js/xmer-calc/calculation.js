@@ -1270,6 +1270,8 @@ async function calculateOtherOnly(inputParams) {
             ? (rawInputs.mva * 1e6) / (Math.sqrt(3) * rawInputs.systemVoltage * 1000)
             : 0;
 
+        const formatNum = (num) => Number.isFinite(num) ? num.toFixed(2) : '0.00';
+
         return {
             windings: {
                 hvTurns: totalHVTurns,
@@ -1277,7 +1279,7 @@ async function calculateOtherOnly(inputParams) {
                 turnsRatio: lvTurns > 0 ? (totalHVTurns / lvTurns) : 0,
                 hvVoltagePhase: hvVoltagePhase
             },
-            currents: { hvCurrent: hvCurrent.toFixed(2) },
+            currents: { hvCurrent: formatNum(hvCurrent) },
             losses: { totalLoss: rawInputs.mva * 3 },
             core: { weight: rawInputs.mva * 250 }
         };
@@ -1326,8 +1328,10 @@ async function calculateOtherOnly(inputParams) {
             lvInnerDiameter: rawInputs.idLV || 300
         };
 
+        const formatNum = (num) => Number.isFinite(num) ? num.toFixed(2) : '0.00';
+
         results.currents = {
-            hvCurrent: hvCurrent.toFixed(2)
+            hvCurrent: formatNum(hvCurrent)
         };
 
         results.losses = {
@@ -1700,13 +1704,15 @@ function calculateCurrents(inputs) {
     const tvCurrent = (inputs.tv > 0) ? (mvaToVA / (sqrt3 * inputs.tv * 1000)) : 0;
     const tvPhaseCurrent = (inputs.tv > 0) ? (inputs.phases === 3 ? tvCurrent : tvCurrent * sqrt3) : 0;
 
+    const formatNum = (num) => Number.isFinite(num) ? num.toFixed(2) : '0.00';
+
     return {
-        hvCurrent: hvCurrent.toFixed(2),
-        lvCurrent: lvCurrent.toFixed(2),
-        tvCurrent: tvCurrent.toFixed(2),
-        hvPhaseCurrent: hvPhaseCurrent.toFixed(2),
-        lvPhaseCurrent: lvPhaseCurrent.toFixed(2),
-        tvPhaseCurrent: tvPhaseCurrent.toFixed(2),
+        hvCurrent: formatNum(hvCurrent),
+        lvCurrent: formatNum(lvCurrent),
+        tvCurrent: formatNum(tvCurrent),
+        hvPhaseCurrent: formatNum(hvPhaseCurrent),
+        lvPhaseCurrent: formatNum(lvPhaseCurrent),
+        tvPhaseCurrent: formatNum(tvPhaseCurrent),
         sqrt3: sqrt3.toFixed(4)
     };
 }

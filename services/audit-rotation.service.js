@@ -48,34 +48,46 @@ class AuditRotationService {
     rotate() {
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
-        const cutoffISO = cutoff.toISOString().slice(0, 19); // 'YYYY-MM-DDTHH:MM:SS'
+
+        // IMPORTANT: SQLite's datetime('now') stores timestamps with a SPACE separator
+        // ('YYYY-MM-DD HH:MM:SS'), not the 'T' separator used by JS toISOString().
+        // Using the wrong format means the WHERE timestamp < ? clause matches nothing.
+        const cutoffISO = cutoff.toISOString()
+            .slice(0, 19)       // 'YYYY-MM-DDTHH:MM:SS'
+            .replace('T', ' '); // → 'YYYY-MM-DD HH:MM:SS'  ← matches SQLite format
 
         let archived = 0;
 
-        db.transaction(() => {
-            // 1. Copy old rows to archive
-            const inserted = db.prepare(`
-                INSERT OR IGNORE INTO audit_logs_archive
-                    (id, timestamp, userId, username, role, action,
-                     entityType, entityId, details, ipAddress,
-                     previousHash, currentHash)
-                SELECT id, timestamp, userId, username, role, action,
-                       entityType, entityId, details, ipAddress,
-                       previousHash, currentHash
-                FROM   audit_logs
-                WHERE  timestamp < ?
-            `).run(cutoffISO);
+        try {
+            db.transaction(() => {
+                // 1. Copy old rows to archive
+                const inserted = db.prepare(`
+                    INSERT OR IGNORE INTO audit_logs_archive
+                        (id, timestamp, userId, username, role, action,
+                         entityType, entityId, details, ipAddress,
+                         previousHash, currentHash)
+                    SELECT id, timestamp, userId, username, role, action,
+                           entityType, entityId, details, ipAddress,
+                           previousHash, currentHash
+                    FROM   audit_logs
+                    WHERE  timestamp < ?
+                `).run(cutoffISO);
 
-            archived = inserted.changes;
+                archived = inserted.changes;
 
-            // 2. Delete the archived rows from the live table
-            if (archived > 0) {
-                db.prepare('DELETE FROM audit_logs WHERE timestamp < ?').run(cutoffISO);
-            }
-        })();
+                // 2. Delete the archived rows from the live table
+                if (archived > 0) {
+                    db.prepare('DELETE FROM audit_logs WHERE timestamp < ?').run(cutoffISO);
+                }
+            })();
+        } catch (err) {
+            // Re-throw so the caller (server.js cron) can log it properly
+            throw new Error(`Audit rotation failed (cutoff: ${cutoffISO}): ${err.message}`);
+        }
 
         return { archived, cutoff: cutoffISO, retentionDays: RETENTION_DAYS };
     }
+
 
     /**
      * Return row-count stats for both tables.

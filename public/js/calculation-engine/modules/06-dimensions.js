@@ -58,7 +58,7 @@
             const activePartLength = windowWidth * 2.5; // For 3-phase
 
             // ===== STEP 4: CALCULATE COOLING SURFACE AREA =====
-            const coolingSurfaceArea = calculateCoolingSurfaceArea(tankDimensions);
+            const coolingSurfaceArea = calculateCoolingSurfaceArea(tankDimensions, mva);
 
             console.log(`   Cooling surface: ${Utils.round(coolingSurfaceArea, 2)} m²`);
 
@@ -189,20 +189,26 @@
     }
 
     /**
-     * Calculate cooling surface area
+     * Calculate cooling surface area with radiator estimation
      */
-    function calculateCoolingSurfaceArea(tankDims) {
+    function calculateCoolingSurfaceArea(tankDims, mva = 0) {
         const { length, width, height } = tankDims;
 
-        // Convert to meters
         const L = length / 1000;
         const W = width / 1000;
         const H = height / 1000;
 
-        // Surface area (excluding bottom)
-        const area = (2 * L * H) + (2 * W * H) + (L * W);
+        let area = (2 * L * H) + (2 * W * H) + (L * W);
 
-        return area; // m²
+        const radiator = CONSTANTS.RADIATOR || { areaPerSection: 3.5, sectionsPerRadiator: 28, radiators: 20 };
+        
+        if (mva >= radiator.minMVAForRadiators) {
+            const radiatorArea = radiator.radiators * radiator.sectionsPerRadiator * radiator.areaPerSection;
+            console.log(`   Radiator area: ${radiatorArea.toFixed(2)} m² (${radiator.radiators} banks × ${radiator.sectionsPerRadiator} sections × ${radiator.areaPerSection} m²)`);
+            area += radiatorArea;
+        }
+
+        return area;
     }
 
     /**

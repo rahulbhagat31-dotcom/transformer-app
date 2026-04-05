@@ -458,21 +458,28 @@ async function showUnlockDialog(wo, stage) {
         return;
     }
 
-    const reason = prompt(`🔓 Unlock ${stage.toUpperCase()} stage?\n\nEnter reason (min 10 characters):`);
+    const effectiveWO = wo || window.currentWO;
+    const effectiveStage = stage || window.currentStage;
+
+    if (!effectiveWO || !effectiveStage) {
+        alert('⚠️ No active WO or stage');
+        return;
+    }
+
+    const reason = prompt(`🔓 Unlock ${effectiveStage.toUpperCase()} stage?\n\nEnter reason (min 10 characters):`);
     if (!reason || reason.length < 10) {
         alert('⚠️ Please enter a valid reason (minimum 10 characters)');
         return;
     }
 
     try {
-        const response = await unlockStage(wo, stage, reason);
+        const response = await unlockStage(effectiveWO, effectiveStage, reason);
         const result = response.data || response;
 
         console.log('🔓 Stage unlocked:', result);
-        alert(`✅ ${stage.toUpperCase()} stage unlocked by admin.\nReason: ${reason}`);
+        alert(`✅ ${effectiveStage.toUpperCase()} stage unlocked by admin.\nReason: ${reason}`);
 
-        // Reload stage status
-        await loadStageStatus(wo);
+        await loadStageStatus(effectiveWO);
 
     } catch (error) {
         console.error('❌ Error unlocking stage:', error);

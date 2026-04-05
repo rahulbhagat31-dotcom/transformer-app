@@ -160,14 +160,10 @@
          * Based on total losses and cooling surface area
          */
         oilTemperatureRise(totalLoss, coolingArea, coolingType = 'ONAN') {
-            // coolingCoefficient in CONSTANTS.COOLING is in W/m²·°C
-            // totalLoss is in kW → convert coefficient to kW/m²·°C by dividing by 1000
-            const coolingCoefficient = (CONSTANTS.COOLING[coolingType] || 1.2) / 1000; // kW/m²·°C
+            const coolingCoefficient = CONSTANTS.COOLING[coolingType] || 10.5;
 
-            // Δθ = P(kW) / (h(kW/m²·°C) * A(m²))
             const tempRise = totalLoss / (coolingCoefficient * coolingArea);
 
-            // Clamp to physically plausible range (≤150°C rise for ONAN)
             return Math.min(tempRise, 150);
         },
 

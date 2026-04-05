@@ -30,14 +30,14 @@
             },
             // IEC 60076-1 compliant loss coefficients
             hysteresisCoeff: {               // k_h for P_h = k_h × f × B^α × weight
-                M4: 0.85,
-                M5: 1.05,
-                M6: 1.25
+                M4: 0.0085,
+                M5: 0.0105,
+                M6: 0.0125
             },
             eddyCoeff: {                     // k_e for P_e = k_e × f² × B² × weight
-                M4: 0.020,
-                M5: 0.025,
-                M6: 0.030
+                M4: 0.00020,
+                M5: 0.00025,
+                M6: 0.00030
             },
             resistivity: 4.7e-7,             // Ω·m at 20°C
             specificLoss: {                  // W/kg at 1.7T, 50Hz (IEC 60404-8-7)
@@ -168,12 +168,22 @@
             }
         },
 
-        // Cooling coefficients (W/m²·°C)
+        // Cooling coefficients (W/m²·°C) - IEC 60076-2 compliant
+        // Plain tank surface dissipation: ~10-12 W/m²·°C (radiation + convection)
+        // Radiators provide additional cooling: ~15-20 W/m²·°C
         COOLING: {
-            ONAN: 1.2,                       // Oil Natural, Air Natural
-            ONAF: 2.2,                       // Oil Natural, Air Forced
-            OFAF: 3.0,                       // Oil Forced, Air Forced
-            OFWF: 4.5                        // Oil Forced, Water Forced
+            ONAN: 10.5,                       // Oil Natural, Air Natural (plain tank)
+            ONAF: 16.0,                       // Oil Natural, Air Forced (fans)
+            OFAF: 22.0,                       // Oil Forced, Air Forced (pumps + fans)
+            OFWF: 28.0                        // Oil Forced, Water Forced
+        },
+
+        // Standard radiator parameters for power transformers
+        RADIATOR: {
+            areaPerSection: 3.5,              // m² per radiator section (typical)
+            sectionsPerRadiator: 24,          // typical number of sections per bank
+            radiators: 4,                    // typical number of radiator banks (2 sides × 2 banks)
+            minMVAForRadiators: 1            // MVA threshold for automatic radiator addition
         },
 
         // BIL (Basic Impulse Level) - IEC 60076-3

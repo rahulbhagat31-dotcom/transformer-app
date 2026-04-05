@@ -763,99 +763,78 @@ async function calculateFullDesignMaster(inputParams) {
  * CORE PART DESIGN CALCULATION
  */
 function calculateCorePart(inputs) {
-    const f = inputs.frequency;
-    const Ki = inputs.sf;
-    const Kf = inputs.kf;
-    const vg = inputs.vectorGroup;
-    const hvLineKV = inputs.hv;
-    const lvLineKV = inputs.lv;
-    const Bm = inputs.fluxDensity || 1.7;
-    const S = inputs.mva;
-
-    // 1. PHASE VOLTAGES (Star/Delta Logic from Image 1)
-    const sqrt3 = Math.sqrt(3);
-    const isHVStar = vg.startsWith('Y') || vg.startsWith('YN');
-    const isLVDelta = vg.toLowerCase().includes('d');
-
-    const hvPhaseV = isHVStar ? (hvLineKV * 1000) / sqrt3 : (hvLineKV * 1000);
-    const lvPhaseV = isLVDelta ? (lvLineKV * 1000) : (lvLineKV * 1000) / sqrt3;
-
-    // 2. EMF & FLUX (Image 1, Sections A & B)
-    const et = hvPhaseV / (inputs.hvMainTurns + inputs.hvNormalTapTurns);
-    const ag = et / (4.44 * f * Bm * Ki * Kf); // Gross area m2
-    const coreDia = Math.sqrt(ag / (Math.PI / 4)) * 1000; // mm
-    const an = ag * Ki; // Net Area m2
-
-    const phiM = et / (4.44 * f); // Peak Flux (Wb)
-    const phiRMS = phiM / sqrt3; // (Using standard RMS approx from sheet logic)
-    const satMargin = ((1.9 - Bm) / 1.9) * 100;
-
-    // 3. RATED CURRENTS & AT (Image 1, Section C)
-    const hvLineI = (S * 1000000) / (sqrt3 * hvLineKV * 1000);
-    const lvLineI = (S * 1000000) / (sqrt3 * lvLineKV * 1000);
+    let mathFn;
+    if (typeof window !== 'undefined') {
+        mathFn = window._coreElectricalMath;
+    } else if (typeof require !== 'undefined') {
+        mathFn = require('./core-calc.js')._coreElectricalMath;
+    }
     
-    const hvPhaseI = isHVStar ? hvLineI : hvLineI / sqrt3;
-    const lvPhaseI = isLVDelta ? lvLineI / sqrt3 : lvLineI;
-
-    const atHV = (inputs.hvMainTurns + inputs.hvNormalTapTurns) * hvPhaseI;
-    const atLV = inputs.lvTurns * lvPhaseI;
-    const atBalance = atHV / atLV;
-    const totalMMF = (atHV + atLV) / 2;
-
-    // 4. CORE LOSS & NO-LOAD (Image 1, Section D)
+    // Core fallback values
     let coreWeight = inputs.coreWeight;
     if (coreWeight === 18000 || !coreWeight) { 
          coreWeight = Math.round(inputs.mva * 250); 
     }
 
-    const specificLoss7T = inputs.specificCoreLoss || 1.05; // W/kg
-    const totalCoreLossWatts = coreWeight * specificLoss7T;
-    const coreLossPercent = (totalCoreLossWatts / (S * 1000000)) * 100;
-    
-    const specificMagVA = inputs.specificMagVA || 1.8;
-    const totalMagVA = (coreWeight * specificMagVA) / 1000; // kVA
-    
-    const noLoadCurrent = (totalMagVA * 1000) / (sqrt3 * hvLineKV * 1000);
-    const noLoadCurrentPercent = (noLoadCurrent / hvLineI) * 100;
+    const S = inputs.mva;
+    const VHV = inputs.hv;
+    const VLV = inputs.lv;
+    const f = inputs.frequency;
+    const Bm = inputs.fluxDensity || 1.7;
 
-    const ph = totalCoreLossWatts * 0.60; // Hysteresis (60% approx from sheet)
-    const pe = totalCoreLossWatts * 0.40; // Eddy (40% approx from sheet)
+    const r = mathFn({
+        S: S,
+        VHV: VHV,
+        VLV: VLV,
+        f: f,
+        Sf: inputs.sf,
+        Bm: Bm,
+        Kf: inputs.kf,
+        hvMain: inputs.hvMainTurns,
+        hvNormTap: inputs.hvNormalTapTurns,
+        Wcore: coreWeight,
+        wsp: inputs.specificCoreLoss || 1.05,
+        magVA: inputs.specificMagVA || 1.8,
+        vecGroup: inputs.vectorGroup
+    });
+
+    const isHVStar = inputs.vectorGroup.startsWith('Y') || inputs.vectorGroup.includes('YN');
+    const isLVDelta = inputs.vectorGroup.toLowerCase().includes('d');
+    const hvPhaseV = isHVStar ? (VHV * 1000) / Math.sqrt(3) : (VHV * 1000);
+    const lvPhaseV = isLVDelta ? (VLV * 1000) : (VLV * 1000) / Math.sqrt(3);
 
     return {
-        et: et.toFixed(4),
-        an: (an).toFixed(4), // m2
-        ag: (ag).toFixed(4), // m2
-        d: coreDia.toFixed(2),
+        et: r.Et.toFixed(4),
+        an: r.An.toFixed(4), // m2
+        ag: r.Ag.toFixed(4), // m2
+        d: r.D.toFixed(2),
         bm: Bm.toFixed(3),
-        phiM: phiM.toFixed(4), // Wb
-        phiRMS: phiRMS.toFixed(4), // Wb
-        satMargin: satMargin.toFixed(1),
+        phiM: r.Phim.toFixed(4), // Wb
+        phiRMS: r.Phirms.toFixed(4), // Wb
+        satMargin: r.satMargin.toFixed(1),
         
         hvPhaseV: hvPhaseV.toFixed(1),
         lvPhaseV: lvPhaseV.toFixed(1),
-        hvTurns: (inputs.hvMainTurns + inputs.hvNormalTapTurns),
-        lvTurns: inputs.lvTurns,
-        turnsRatio: ((inputs.hvMainTurns + inputs.hvNormalTapTurns) / inputs.lvTurns).toFixed(4),
-        voltageRatio: (hvLineKV / lvLineKV).toFixed(4),
+        hvTurns: r.NHV_used,
+        lvTurns: r.NLV,
+        turnsRatio: r.turnRatio.toFixed(4),
+        voltageRatio: (VHV / VLV).toFixed(4),
 
-        hvLineI: hvLineI.toFixed(1),
-        lvLineI: lvLineI.toFixed(1),
-        atHV: atHV.toFixed(0),
-        atLV: atLV.toFixed(0),
-        atBalance: atBalance.toFixed(3),
-        totalMMF: totalMMF.toFixed(0),
+        hvLineI: r.IHV_line.toFixed(1),
+        lvLineI: r.ILV_line.toFixed(1),
+        atHV: r.AT_HV.toFixed(0),
+        atLV: r.AT_LV.toFixed(0),
+        atBalance: r.AT_bal.toFixed(3),
+        totalMMF: r.MMF_tot.toFixed(0),
 
         coreWeight: coreWeight.toLocaleString(),
-        coreLossKW: (totalCoreLossWatts / 1000).toFixed(3),
-        coreLossPercent: coreLossPercent.toFixed(4),
-        totalMagVA: totalMagVA.toFixed(2),
-        noLoadCurrent: noLoadCurrent.toFixed(4),
-        noLoadCurrentPercent: noLoadCurrentPercent.toFixed(4),
-        ph: (ph / 1000).toFixed(2),
-        pe: (pe / 1000).toFixed(2),
-        
-        stackingFactor: Ki.toFixed(3),
-        fillingFactor: Kf.toFixed(3)
+        coreLossKW: r.Pcore.toFixed(3),
+        coreLossPercent: r.coreLossPerc.toFixed(4),
+        totalMagVA: r.MagVAtotal.toFixed(2),
+        noLoadCurrent: r.I0.toFixed(4),
+        noLoadCurrentPercent: r.I0_percent.toFixed(4),
+        ph: r.Ph.toFixed(3),
+        pe: r.Pe.toFixed(3)
     };
 }
 
@@ -1744,7 +1723,8 @@ function calculateCoreDesign(inputs) {
 
     // SECTION 2: EMF & TURNS
     const Et = 4.44 * f * Phim;
-    const vecGroup = document.getElementById('vectorGroup')?.value || 'YNd11';
+    // Use inputs.vectorGroup (no DOM read — keeps this function headless-testable)
+    const vecGroup = inputs.vectorGroup || 'YNd11';
     const isHVStar = vecGroup.startsWith('Y');
     const isLVDelta = vecGroup.toLowerCase().includes('d');
 
@@ -2515,35 +2495,12 @@ function calculateTemperatureRise(inputs, results) {
     // Tank surface area
     const tankSurface = 2 * (width * depth + width * height + depth * height); // m²
 
-    // === HEAT DISSIPATION RATES ===
-    let dissipationRate; // W/m²/K
-    let oilVelocity = 0; // m/s
-
-    switch (inputs.cooling) {
-        case 'ONAN': // Oil Natural Air Natural
-            dissipationRate = 6.5;
-            oilVelocity = 0.01;
-            break;
-
-        case 'ONAF': // Oil Natural Air Forced
-            dissipationRate = 15;
-            oilVelocity = 0.02;
-            break;
-
-        case 'OFAF': // Oil Forced Air Forced
-            dissipationRate = 25;
-            oilVelocity = 0.5;
-            break;
-
-        case 'ONAN/ONAF':
-            dissipationRate = 12;
-            oilVelocity = 0.015;
-            break;
-
-        default:
-            dissipationRate = 6.5;
-            oilVelocity = 0.01;
-    }
+    // === HEAT DISSIPATION RATES (IEC 60076-2) ===
+    const IEC_COOLING = window.CALC_CONSTANTS?.COOLING || {
+        ONAN: 10.5, ONAF: 16.0, OFAF: 22.0, OFWF: 28.0
+    };
+    let dissipationRate = IEC_COOLING[inputs.cooling] || IEC_COOLING.ONAN;
+    let oilVelocity = 0;
 
     // === AVERAGE OIL TEMPERATURE RISE ===
     const avgOilRise = totalLoss / (tankSurface * dissipationRate);

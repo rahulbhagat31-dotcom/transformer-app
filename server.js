@@ -54,6 +54,10 @@ const cache = require('./utils/cache');
 const { initAutomatedBackups } = require('./utils/backup');
 const seedQuestions = require('./utils/seed-questions');
 
+// Phase 4: New services
+const assignmentService = require('./services/assignment.service');
+const auditRotation = require('./services/audit-rotation.service');
+
 // Phase 3: WebSocket and exports
 const http = require('http');
 const socketIO = require('socket.io');
@@ -216,6 +220,23 @@ process.on('uncaughtException', (error) => {
 
     // Phase 3: Initialize WebSocket
     initWebSocket(io);
+
+    // Phase 4: Assignment system — ensure user_assignments table exists
+    assignmentService.ensureTable();
+
+    // Phase 4: Audit rotation — ensure archive table exists, then schedule daily rotation
+    auditRotation.ensureArchiveTable();
+    const AUDIT_ROTATION_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+    setInterval(() => {
+        try {
+            const result = auditRotation.rotate();
+            if (result.archived > 0) {
+                logger.info(`🗂️ Audit rotation: archived ${result.archived} rows older than ${result.cutoff}`);
+            }
+        } catch (err) {
+            logger.error('Audit rotation error:', err);
+        }
+    }, AUDIT_ROTATION_INTERVAL_MS);
 
 
     const PORT = process.env.PORT || 3000;

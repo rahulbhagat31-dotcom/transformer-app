@@ -250,3 +250,59 @@ CREATE TABLE IF NOT EXISTS checklist_revisions (
     FOREIGN KEY (wo) REFERENCES transformers(wo)
 );
 CREATE INDEX IF NOT EXISTS idx_revisions_wo_stage ON checklist_revisions(wo, stage, revision DESC);
+
+-- ──────────────────────────────────────────────────────────────────────
+-- Phase 4 Migrations (safe to run multiple times — ALTER TABLE is idempotent
+--   under schema-init's try/catch)
+-- ──────────────────────────────────────────────────────────────────────
+
+-- Sign-off workflow: formal boolean flags alongside existing string names
+-- techSignedOff    = 1 when a technician has submitted their sign-off
+-- supervisorSignedOff = 1 when a shop supervisor has confirmed
+-- qaSignedOff      = 1 when a QA engineer has signed off (distinct from qaApproved)
+ALTER TABLE checklists ADD COLUMN techSignedOff       INTEGER DEFAULT 0;
+ALTER TABLE checklists ADD COLUMN supervisorSignedOff INTEGER DEFAULT 0;
+ALTER TABLE checklists ADD COLUMN qaSignedOff         INTEGER DEFAULT 0;
+ALTER TABLE checklists ADD COLUMN techSignedOffAt      TEXT;
+ALTER TABLE checklists ADD COLUMN supervisorSignedOffAt TEXT;
+ALTER TABLE checklists ADD COLUMN qaSignedOffAt        TEXT;
+ALTER TABLE checklists ADD COLUMN techSignedOffBy      TEXT;
+ALTER TABLE checklists ADD COLUMN supervisorSignedOffBy TEXT;
+ALTER TABLE checklists ADD COLUMN qaSignedOffBy        TEXT;
+
+-- Audit log retention: archive table (also created by AuditRotationService.ensureArchiveTable)
+CREATE TABLE IF NOT EXISTS audit_logs_archive (
+    id INTEGER PRIMARY KEY,
+    timestamp TEXT,
+    userId TEXT NOT NULL,
+    username TEXT,
+    role TEXT,
+    action TEXT NOT NULL,
+    entityType TEXT,
+    entityId TEXT,
+    details TEXT,
+    ipAddress TEXT,
+    previousHash TEXT,
+    currentHash TEXT,
+    archivedAt TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_archive_timestamp ON audit_logs_archive(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_archive_entity    ON audit_logs_archive(entityType, entityId);
+
+-- Assignment system: links users to specific Work Orders for per-WO auth
+-- (also created by AssignmentService.ensureTable at runtime)
+CREATE TABLE IF NOT EXISTS user_assignments (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    userId     TEXT NOT NULL,
+    wo         TEXT NOT NULL,
+    assignedBy TEXT NOT NULL,
+    assignedAt TEXT DEFAULT (datetime('now')),
+    expiresAt  TEXT,
+    notes      TEXT,
+    UNIQUE(userId, wo),
+    FOREIGN KEY (userId) REFERENCES users(userId),
+    FOREIGN KEY (wo)     REFERENCES transformers(wo)
+);
+CREATE INDEX IF NOT EXISTS idx_assignments_user ON user_assignments(userId);
+CREATE INDEX IF NOT EXISTS idx_assignments_wo   ON user_assignments(wo);
+

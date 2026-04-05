@@ -7,6 +7,21 @@ const { logAudit } = require('../utils/audit');
 const checklistService = require('../services/checklist.service');
 const templateService  = require('../services/template.service');
 const revisionService  = require('../services/revision.service');
+const assignmentService = require('../services/assignment.service');
+
+/**
+ * Middleware: enforce per-WO assignment for non-admin/non-quality roles.
+ * Extracts `wo` from req.body or req.params and checks user_assignments.
+ */
+function requireWOAccess(req, res, next) {
+    const wo = req.body?.wo || req.params?.wo;
+    if (!wo) return next(); // let body validation handle missing wo
+    if (assignmentService.isAuthorised(req.user.id, req.user.role, wo)) return next();
+    return res.status(403).json({
+        success: false,
+        error: `You are not assigned to Work Order '${wo}'. Contact an administrator to request access.`
+    });
+}
 
 const router = express.Router();
 
@@ -184,7 +199,9 @@ router.post('/save',
     ],
     handleValidationErrors,
     checkPermission('production'),
+    requireWOAccess,          // Assignment guard: production users must be assigned to the WO
     (req, res) => {
+
         try {
             const {
                 wo, stage, customerId, customer, itemNumber, rowId,
@@ -283,7 +300,7 @@ router.post('/save',
 /* ─────────────────────────────────────────────────────────────────────────
  * PRODUCTION SAVE  (POST /checklist/production/save)
  * ───────────────────────────────────────────────────────────────────────── */
-router.post('/production/save', checkPermission('production'), (req, res) => {
+router.post('/production/save', checkPermission('production'), requireWOAccess, (req, res) => {
     try {
         const { wo, customerId, customer, stage, itemNumber, rowId, productionNotes, shift, timestamp } = req.body;
 

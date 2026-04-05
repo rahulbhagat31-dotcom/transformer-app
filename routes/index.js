@@ -23,5 +23,6 @@ router.use('/customers', require('./customer.routes')); // Customer management
 router.use('/exam', require('./exam.routes'));           // MCQ Exam System (SPA tab)
 router.use('/questions', require('./questions.routes')); // MCQ Questions API
 router.use('/users', require('./users.routes'));          // User Management (admin only)
+router.use('/assignments', require('./assignment.routes')); // WO Assignment System (admin only)
 
 module.exports = router;

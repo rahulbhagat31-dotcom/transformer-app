@@ -1,0 +1,252 @@
+FAIL
+
+> transformer-manufacturing-system@1.0.0 test:all
+> npm run test:accuracy && npm run test:engine && npm run test:physics
+
+
+> transformer-manufacturing-system@1.0.0 test:accuracy
+> node tests/unit/accuracy-restoration.test.js
+
+
+╔═══════════════════════════════════════════════════════════╗
+║  Transformer Design Calculator v2.0.0              ║
+║  Industry-Standard Calculation Engine                    ║
+║  Standards: IEC 60076, IEEE C57, IS 2026                 ║
+╚═══════════════════════════════════════════════════════════╝
+
+🏗️ Setting up test inputs...
+🚀 Running calculation...
+🚀 Starting transformer design calculation...
+═══════════════════════════════════════════════
+
+📋 Phase 1: Validating inputs...
+   ✅ Inputs validated
+
+📊 Phase 2: Current calculations...
+📊 [Module 1] Calculating currents (IEC 60076-1)...
+   ✅ HV Current: 52.49 A
+   ✅ LV Current: 174.95 A
+
+🔧 Phase 3: Core design...
+🔧 [Module 2] Calculating core design (IEC 60076)...
+   Flux (Φ): 0.27027 Wb
+   Net core area: 1638 cm²
+   Gross core area: 1724.21 cm²
+   Core diameter: 468.5 mm
+   HV turns: 2117
+   LV turns: 635
+   Actual volts/turn: 59.999 V
+   Turns ratio: 3.3339
+   Voltage ratio: 3.3333
+   ✅ Core design complete
+
+🔄 Phase 4: Winding design...
+🔄 [Module 3] Calculating winding design...
+   HV conductor area: 21 mm²
+   LV conductor area: 69.98 mm²
+   LV winding: 501.7 - 603.3540495134575 mm
+   HV winding: 699.3540495134575 - 1000.1324544794312 mm
+   ✅ Winding design complete
+
+⚡ Phase 5: Conductor sizing...
+⚡ [Module 4] Calculating conductors & resistance (IEEE C57.12.90 Industry Standard)...
+   Core Dia: 468.5 mm
+   LV Mean Dia: 573.5 mm
+   HV Mean Dia: 718.5 mm
+   HV DC resistance: 14.3155 Ω
+   LV DC resistance: 1.028321 Ω
+   HV AC resistance: 14.8956 Ω (Factor: 1.041)
+   LV AC resistance: 1.0818 Ω (Factor: 1.052)
+   ✅ Conductor calculations complete
+
+📐 Phase 6: Dimensional calculations...
+📐 [Module 6] Calculating dimensions...
+   Window: 1320.1 × 1856.4 mm
+   Tank: 3900 × 1920 × 2656 mm
+   Cooling surface: 38.4 m²
+   Oil volume: 10557.2 liters
+   Total weight: 15063 kg
+   ✅ Dimensional calculations complete
+
+📉 Phase 7: Loss calculations...
+📉 [Module 5] Calculating losses (IEC 60076-1 Industry Standard)...
+   Core weight: 19628 kg
+   Core loss (No-Load): 45.31 kW
+     - Hysteresis: 18.59 kW
+     - Eddy Current: 26.72 kW
+   HV AC Resistance: 14.8956 Ω
+   LV AC Resistance: 1.0818 Ω
+   HV I²R Loss: 41.04 kW
+   LV I²R Loss: 99.33 kW
+   Total Eddy Loss: 6.51 kW
+   Stray Loss: 4.76 kW
+   Total Load Loss: 145.13 kW
+   Total Loss: 190.44 kW
+   Efficiency: 98.892%
+
+🌡️ Phase 8: Temperature rise...
+🌡️ [Module 7] Calculating temperature rise (IEC 60076-2)...
+   Top oil rise: 150 °C
+   Avg winding rise: 135.8 °C
+   Hot spot temp: 217.4 °C
+   Overload (110%) Hot Spot: 235.8 °C
+   ✅ Temperature calculations complete
+
+⚡ Phase 9: Impedance...
+⚡ [Module 8] Calculating impedance (IEC 60076-5)...
+   % Resistance: 0.7019%
+   % Reactance: 12.48%
+   % Impedance: 12.5%
+   Target Z: 12.5%, Error: 0%
+   ✅ Impedance calculations complete
+
+⚡ Phase 10: Short circuit forces...
+⚡ [Module 9] Calculating short circuit forces (IEC 60076-5)...
+   SC Current (RMS): 420 A
+   SC Current (Peak): 1092 A
+   Radial Force (Max): 1721.1 kN
+   Axial Force (Max): 258.2 kN
+   Hoop Stress: 6.2 MPa
+   Safety Factor: 35.7
+   ✅ Short circuit calculations complete
+
+🔬 Phase 11: Advanced features...
+🔬 [Module 10] Calculating advanced features...
+   ✅ Advanced calculations complete
+
+🔄 Phase 12: Tap Extremes...
+🔄 [Tap Extremes] Calculating OCTC tap positions...
+
+🛡️ Phase 13: IEC Validation...
+🛡️ [Validation] Analyzing design margins...
+
+📊 Phase 14: Generating summary...
+
+═══════════════════════════════════════════════
+✅ Design calculation complete in -1775405745585ms
+═══════════════════════════════════════════════
+
+
+--- ACCURACY RESTORATION VERIFICATION ---
+Methodology: IEC 60076-1 Industry Standard (Accurate)
+
+[CHECK 1: Core Weight Accuracy]
+✅ PASS: Limb-Yoke-Corner method is active.
+   - Limb Weight: 7537 kg
+   - Yoke Weight: 10950 kg
+   - Corner Weight: 1141 kg
+   - Total Weight: 19628 kg
+
+[CHECK 2: AC Resistance (Skin/Proximity)]
+✅ PASS: AC Resistance Factors active (HV: 1.041, LV: 1.052)
+
+[CHECK 3: Detailed Loss Breakdown]
+✅ PASS: Detailed loss components present.
+   - Eddy Loss: 6.51 kW
+   - Stray Loss: 4.76 kW
+   - Tank Loss: 2.11 kW
+
+-----------------------------------------
+🏆 OVERALL STATUS: ACCURACY RESTORED SUCCESSFULLY
+
+> transformer-manufacturing-system@1.0.0 test:engine
+> node tests/unit/engine-core.test.js
+
+
+📦 Utils — Math
+  ✅ round: rounds to 2 decimal places
+  ✅ round: rounds to 0 decimal places
+  ✅ clamp: clamps above max
+  ✅ clamp: clamps below min
+  ✅ clamp: leaves value in range unchanged
+  ✅ lerp: interpolates midpoint correctly
+  ✅ lerp: returns start when t=0
+  ✅ lerp: returns end when t=1
+  ✅ withinTolerance: value within 5% tolerance
+  ✅ withinTolerance: value outside 5% tolerance
+  ✅ percentDifference: returns correct signed %
+  ✅ deepClone: produces independent copy
+
+📦 Utils — Physics
+  ✅ resistanceAtTemp: copper resistance increases with temp
+  ✅ resistanceAtTemp: same temp returns same resistance
+  ✅ resistanceAtTemp: throws for unknown material
+  ✅ skinEffectFactor: returns factor > 1 for typical HV conductor
+  ✅ efficiency: 20 MVA transformer has > 98% efficiency
+  ✅ shortCircuitCurrent: 6% impedance gives 16.67x rated
+  ✅ meanTurnLength: uses π × mean diameter
+
+📦 Utils — coreLoss (IEC 60076-1)
+  ✅ coreLoss: returns object with total, hysteresis, eddy fields
+  ✅ coreLoss: total = hysteresis + eddy (within rounding)
+  ✅ coreLoss: all values > 0 for valid inputs
+  ✅ coreLoss: throws for unknown material
+  ✅ coreLoss: higher flux density → higher losses
+
+📦 Validator — Valid inputs
+  ✅ validateInputs: accepts complete valid 20 MVA dataset
+  ✅ validateInputs: fills optional fields with defaults
+  ✅ validateField: accepts valid mva value
+  ✅ validateField: coerces string number to float
+
+📦 Validator — Required field errors
+  ✅ validateInputs: throws when MVA is missing
+  ✅ validateInputs: throws for invalid vectorGroup
+
+📦 Validator — Range errors
+  ✅ validateField: throws when MVA < 0.01
+  ✅ validateField: throws when MVA > 1000
+  ✅ validateField: throws for non-numeric mva
+
+📦 Validator — Cross-field rules
+  ✅ validateCrossFields: throws when HV <= LV
+  ✅ validateCrossFields: throws when voltage ratio > 100
+  ✅ validateCrossFields: passes for valid HV > LV
+
+──────────────────────────────────────────────────
+Results: 36 passed, 0 failed
+🏆 ALL ENGINE CORE TESTS PASSED
+
+> transformer-manufacturing-system@1.0.0 test:physics
+> node tests/unit/physics-modules.test.js
+
+
+c:\Users\Hina\OneDrive\Desktop\transformer\public\js\calculation-engine\core\validator.js:234
+            throw new ValidationError(
+            ^
+
+ValidationError: Input validation failed: Tap changer type must be one of: NONE, OLTC, DETC
+    at validateInputs (c:\Users\Hina\OneDrive\Desktop\transformer\public\js\calculation-engine\core\validator.js:234:19)
+    at Object.<anonymous> (c:\Users\Hina\OneDrive\Desktop\transformer\tests\unit\physics-modules.test.js:50:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'VALIDATION_ERROR',
+  details: {
+    field: 'multiple',
+    value: null,
+    constraints: {
+      errors: [
+        {
+          name: 'ValidationError',
+          message: 'Tap changer type must be one of: NONE, OLTC, DETC',
+          code: 'VALIDATION_ERROR',
+          details: {
+            field: 'tapChangerType',
+            value: 'OCTC',
+            constraints: [Object]
+          },
+          timestamp: '2026-04-05T16:15:47.092Z'
+        }
+      ]
+    }
+  },
+  timestamp: '2026-04-05T16:15:47.093Z'
+}
+
+Node.js v24.12.0

@@ -543,10 +543,73 @@ function getStageData() {
                 ]
             }]
         },
+        winding4: {
+            title: 'WINDING - Additional Inspections',
+            subtitle: 'Page 4 of 6',
+            sections: [{
+                name: 'D - General Inspections',
+                items: [
+                    { point: 'Brazed joints quality (Visual)', specifiedValue: 'No sharp edges, full penetration' },
+                    { point: 'Insulation of brazed joints', specifiedValue: 'As per approved drawing' },
+                    { point: 'Winding resistance at room temperature', specifiedValue: 'Record values per phase', editableSpecifiedValue: true },
+                    { point: 'Verification of dimensional tolerances', specifiedValue: 'Within +/- 2mm' }
+                ]
+            }]
+        },
+        winding5: {
+            title: 'WINDING - Final Clearance & Sign-off',
+            subtitle: 'Page 5 of 6',
+            sections: [{
+                name: 'E - Final Checks Checklist',
+                items: [
+                    { point: 'Foreign material check / Cleanliness (Visual)', specifiedValue: 'No debris, dust and metal chips' },
+                    { point: 'Spacers and block tightness', specifiedValue: 'Manually verified tight' },
+                    { point: 'Final photographic evidence captured', specifiedValue: 'Photos saved to system' },
+                    { point: 'Approval for next stage (Core Coil) readiness', specifiedValue: 'Cleared' }
+                ]
+            }]
+        },
+        vpd: {
+            title: 'VPD (Vapour Phase Drying) Checklist',
+            subtitle: 'VPD Process Monitoring',
+            sections: [{
+                name: '1 - Pre-Drying Phase',
+                items: [
+                    { point: 'Chamber cleanliness and vacuum leak test', specifiedValue: 'Leak rate < acceptable limit' },
+                    { point: 'Loading of active part & thermocouple placement', specifiedValue: 'Checked and recorded' }
+                ]
+            }, {
+                name: '2 - Heating & Drying Phase',
+                items: [
+                    { point: 'Maximum temperature achieved', specifiedValue: 'As per process chart', editableSpecifiedValue: true },
+                    { point: 'Heating duration', specifiedValue: 'Completed as per process', editableSpecifiedValue: true },
+                    { point: 'Final vacuum pressure achieved', specifiedValue: 'Specify in mbar', editableSpecifiedValue: true }
+                ]
+            }]
+        },
+        tankFilling: {
+            title: 'OIL FILLING CHECKLIST',
+            subtitle: 'Tank Filling Operations',
+            sections: [{
+                name: '1 - Oil Filling Readiness',
+                items: [
+                    { point: 'Vacuum level before oil filling starts', specifiedValue: '< 1 Torr', editableSpecifiedValue: true },
+                    { point: 'Oil BDV (Breakdown Voltage) test before filling', specifiedValue: '> 60 kV', editableSpecifiedValue: true },
+                    { point: 'Oil Moisture content (PPM) before filling', specifiedValue: '< 10 ppm', editableSpecifiedValue: true }
+                ]
+            }, {
+                name: '2 - Filling Operations',
+                items: [
+                    { point: 'Oil filling completed under vacuum', specifiedValue: 'Verified' },
+                    { point: 'Oil level indicator (MOG) check', specifiedValue: 'At normal mark' },
+                    { point: 'Air release from all venting points (Bushings, radiators, etc.)', specifiedValue: 'Bleeded properly' }
+                ]
+            }]
+        },
 
         coreBuilding: {
             title: 'INSPECTION RECORD FOR EHV & UHV (Transformer)',
-            subtitle: 'Core Building - Form No: F/QAS/ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | Issue No: 00 | Issue Dt: 17/11/2025 | Rev No: 00 | Rev Dt: 17/11/2025',
+            subtitle: 'Core Building - Form No: F/QAS/ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â  | Issue No: 00 | Issue Dt: 17/11/2025 | Rev No: 00 | Rev Dt: 17/11/2025',
             sections: [
                 {
                     name: 'Core Building of Transformer (Core Table)',

@@ -1,0 +1,43 @@
+{
+  "coreLoss": 5880.34,
+  "noLoadLoss": 5880.34,
+  "copperLoss": {
+    "hv": 40.64,
+    "lv": 100.23,
+    "total": 140.87
+  },
+  "eddyLoss": 6.55,
+  "strayLoss": 6.98,
+  "loadLoss": 147.84,
+  "totalLoss": 6028.18,
+  "efficiency": 73.823,
+  "breakdown": {
+    "tank": 2.11,
+    "structural": 1.69,
+    "bushing": 3.07,
+    "leads": 0.1
+  },
+  "details": {
+    "coreWeight": 25475,
+    "coreWeightDetails": {
+      "totalWeight": "25475",
+      "limbWeight": "11437",
+      "yokeWeight": "12282",
+      "cornerWeight": "1757",
+      "methodology": "Limb-Yoke-Corner"
+    },
+    "iecLimits": {
+      "noLoad": 20,
+      "load": 120
+    }
+  },
+  "iecCompliance": {
+    "overall": "FAIL",
+    "details": {
+      "noLoad": "FAIL",
+      "load": "FAIL"
+    }
+  },
+  "methodology": "IEC 60076-1 Industry Standard (Accurate)",
+  "accuracy": "±2%"
+}

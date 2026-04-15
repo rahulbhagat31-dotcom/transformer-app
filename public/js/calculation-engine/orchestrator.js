@@ -80,7 +80,7 @@
         console.log('🚀 Starting transformer design calculation...');
         console.log('═══════════════════════════════════════════════');
 
-        const startTime = performance.now();
+        const startTime = Date.now();
         const results = {
             success: false,
             inputs: null,
@@ -182,7 +182,7 @@
             results.success = true;
 
             // Calculate execution time
-            const endTime = performance.now();
+            const endTime = Date.now();
             results.metadata.executionTime = Math.round(endTime - startTime);
 
             console.log('\n═══════════════════════════════════════════════');
@@ -201,7 +201,7 @@
                 details: error.details || {}
             });
 
-            const endTime = performance.now();
+            const endTime = Date.now();
             results.metadata.executionTime = Math.round(endTime - startTime);
 
             return results;

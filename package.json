@@ -11,7 +11,8 @@
     "test": "npm run test:accuracy",
     "test:accuracy": "node tests/unit/accuracy-restoration.test.js",
     "test:engine": "node tests/unit/engine-core.test.js",
-    "test:all": "npm run test:accuracy && npm run test:engine",
+    "test:physics": "node tests/unit/physics-modules.test.js",
+    "test:all": "npm run test:accuracy && npm run test:engine && npm run test:physics",
     "test:validation": "node tests/unit/run-validation.js",
     "backup": "node scripts/manual-backup.js"
   },

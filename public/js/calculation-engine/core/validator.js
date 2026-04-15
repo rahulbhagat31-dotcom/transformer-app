@@ -112,7 +112,7 @@
         tapChangerType: {
             type: 'string',
             required: false,
-            allowedValues: ['NONE', 'OLTC', 'DETC'],
+            allowedValues: ['NONE', 'OLTC', 'DETC', 'OCTC'],
             default: 'NONE',
             description: 'Tap changer type'
         },

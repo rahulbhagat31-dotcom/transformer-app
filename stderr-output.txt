@@ -1,0 +1,7 @@
+  FAIL LV conductor area >= HV conductor area (LV carries more current)
+     -> LV 24.99 should >= HV 116.64
+  FAIL rises.topOil < 70 deg C (IEC 55 rated + margin for 40 C ambient test)
+     -> Expected < 70 C, got 150 C
+  FAIL tap result has min or max voltage data
+     -> Keys: applicable, message
+SOME PHYSICS TESTS FAILED

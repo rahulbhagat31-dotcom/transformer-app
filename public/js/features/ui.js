@@ -75,9 +75,11 @@ function showChecklistStage(stage, element) {
 
     const stageTitles = {
         'winding': 'Winding Checklist',
+        'spa': 'SPA Checklist',
+        'vpd': 'VPD Checklist',
         'coreCoil': 'Core Coil Assembly',
         'tanking': 'Tanking Checklist',
-        'spa': 'SPA Checklist',
+        'tankFilling': 'Tank Filling Checklist',
         'coreBuilding': 'Core Building Checklist'
     };
 
@@ -99,18 +101,28 @@ function showChecklistStage(stage, element) {
         if (windingSubNav) windingSubNav.style.display = 'none';
         window.currentStage = 'spa';
         loadStageContent('spa');
-    } else if (stage === 'coreCoil') {
+    } else if (stage === 'vpd') {
         if (mainStageButtons[2]) mainStageButtons[2].classList.add('active');
+        if (windingSubNav) windingSubNav.style.display = 'none';
+        window.currentStage = 'vpd';
+        loadStageContent('vpd');
+    } else if (stage === 'coreCoil') {
+        if (mainStageButtons[3]) mainStageButtons[3].classList.add('active');
         if (windingSubNav) windingSubNav.style.display = 'none';
         window.currentStage = 'coreCoil';
         loadStageContent('coreCoil');
     } else if (stage === 'tanking') {
-        if (mainStageButtons[3]) mainStageButtons[3].classList.add('active');
+        if (mainStageButtons[4]) mainStageButtons[4].classList.add('active');
         if (windingSubNav) windingSubNav.style.display = 'none';
         window.currentStage = 'tanking';
         loadStageContent('tanking');
+    } else if (stage === 'tankFilling') {
+        if (mainStageButtons[5]) mainStageButtons[5].classList.add('active');
+        if (windingSubNav) windingSubNav.style.display = 'none';
+        window.currentStage = 'tankFilling';
+        loadStageContent('tankFilling');
     } else if (stage === 'coreBuilding') {
-        if (mainStageButtons[4]) mainStageButtons[4].classList.add('active');
+        if (mainStageButtons[6]) mainStageButtons[6].classList.add('active');
         if (windingSubNav) windingSubNav.style.display = 'none';
         window.currentStage = 'coreBuilding';
         loadStageContent('coreBuilding');
@@ -129,6 +141,21 @@ function showMainStage(mainStage, button) {
         btn.classList.remove('active');
     });
     if (button) button.classList.add('active');
+
+    const stageTitles = {
+        'winding': 'Winding Checklist',
+        'spa': 'SPA Checklist',
+        'vpd': 'VPD Checklist',
+        'coreCoil': 'Core Coil Assembly',
+        'tanking': 'Tanking Checklist',
+        'tankFilling': 'Tank Filling Checklist',
+        'coreBuilding': 'Core Building Checklist'
+    };
+
+    const viewTitle = document.getElementById('viewTitle');
+    if (viewTitle) {
+        viewTitle.textContent = stageTitles[mainStage] || 'Manufacturing Checklist';
+    }
 
     const windingSubNav = document.getElementById('windingSubNav');
 
@@ -167,8 +194,14 @@ function switchStage(stage, button) {
 }
 /* ===============================
    GET STAGE DATA STRUCTURE
+   FETCHES FROM MASTER CHECKLIST
 ================================ */
 function getStageData() {
+    // Use master checklist data from masterChecklist.js
+    if (typeof getMasterStageData === 'function') {
+        return getMasterStageData();
+    }
+    // Fallback if master checklist not loaded (should not happen)
     return {
         winding1: {
             title: 'INSPECTION RECORD FOR EHV & UHV - WINDING CHECKLIST',
@@ -468,6 +501,51 @@ function getStageData() {
                         { point: '2 Kv AC withstand test\n(Note: Leakage current values for reference purpose only)', specifiedValue: '2.0 kV AC shall withstand for 1 min', type: 'resistance-test-row' },
                         { point: 'Electrical Tests:\n- Magnetic balance test\n- Magnetic Current\n- Other Electrical Tests (If Any)', specifiedValue: 'Torque as per drawing', type: 'split-value' },
                         { point: 'Cleaning of Active parts', specifiedValue: 'Clean', type: 'visual-observed' }
+                    ]
+                },
+                {
+                    name: '6 — Tanking of Active Part',
+                    items: [
+                        {
+                            point: 'Trial tanking dimensions',
+                            specifiedValue: 'HV side: As per drg.\nLV Side: As per drg.',
+                            type: 'tanking-torque-row'
+                        },
+                        {
+                            point: 'Physical verification must be done around & top of the Tanking Part by the Production Engineer',
+                            specifiedValue: 'Reqd',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Re-verification and Interlock Barricading with beacon light must be done around & top of the Tanking by the Quality test Operator',
+                            specifiedValue: 'Reqd',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'IR (Megger) test After putting active part in bottom tank. (2.5 kV DC application for 1 Min)',
+                            specifiedValue: 'C-F: ......\nC-T: ......\nF-T: ......',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Isolation test After putting top tank.\n(i) 2.5 kV DC for 1 Min — C-F / C-T / F-T\n(ii) 2 kV AC for 1 Min — C-F / C-T / F-T',
+                            specifiedValue: 'C-F: ......\nC-T: ......\nF-T: ......',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Insulation arrangement in bottom tank for Job placement',
+                            specifiedValue: '',
+                            type: 'single-merged'
+                        },
+                        {
+                            point: 'Top tank fixing time / Dry air application time. Dew Point of dry air < (-40)',
+                            specifiedValue: '',
+                            type: 'single-merged'
+                        },
+                        {
+                            point: 'Humidity inside tank',
+                            specifiedValue: '< 60 %',
+                            type: 'single-merged'
+                        }
                     ]
                 },
                 {

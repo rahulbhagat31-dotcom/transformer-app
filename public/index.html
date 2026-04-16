@@ -936,6 +936,8 @@
                                 <div class="stage-nav" id="mainStageNav">
                                     <button class="stage-btn active" data-stage="winding"
                                         onclick="showMainStage('winding', this)">Winding</button>
+                                    <button class="stage-btn" data-stage="spa"
+                                        onclick="showMainStage('spa', this)">SPA</button>
                                     <button class="stage-btn" data-stage="vpd"
                                         onclick="showMainStage('vpd', this)">VPD</button>
                                     <button class="stage-btn" data-stage="coreCoil"
@@ -945,6 +947,8 @@
                                     <button class="stage-btn" data-stage="tankFilling"
                                         onclick="showMainStage('tankFilling', this)">Tank
                                         Filling</button>
+                                    <button class="stage-btn" data-stage="coreBuilding"
+                                        onclick="showMainStage('coreBuilding', this)">Core Building</button>
                                 </div>
 
                                 <div class="stage-nav" id="windingSubNav" style="display: none;">
@@ -3070,6 +3074,9 @@
 
     <!-- Week 1: Status Badge System (row badges, stage-tab badges, Submit button rename) -->
     <script defer src="/js/features/status-badges.js"></script>
+
+    <!-- MASTER CHECKLIST DATA - Single source of truth for all inspection checklists -->
+    <script defer src="/js/data/masterChecklist.js"></script>
 
     <!-- Priority 1: Print-Style Sign-Off Cell Generator (dependency for ui.js checklist rendering) -->
     <script defer src="/js/features/print-style-signoff.js"></script>

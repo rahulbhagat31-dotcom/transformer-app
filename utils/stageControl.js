@@ -2,7 +2,7 @@ const stageService = require('../services/stage.service');
 
 // Canonical stage order — single source of truth for the entire backend
 // Must match transformer.controller.js VALID_STAGES and frontend STAGE_ORDER
-const STAGE_ORDER = ['design', 'winding', 'vpd', 'coreCoil', 'tanking', 'tankFilling', 'testing', 'completed'];
+const STAGE_ORDER = ['design', 'winding', 'spa', 'vpd', 'coreCoil', 'tanking', 'tankFilling', 'coreBuilding', 'testing', 'completed'];
 
 // Sub-stages for winding
 const WINDING_SUBSTAGES = ['winding1', 'winding2', 'winding3', 'winding4', 'winding5'];

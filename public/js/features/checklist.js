@@ -43,7 +43,10 @@ async function loadStageStatus(wo) {
             winding: { status: 'in-progress', completionPercentage: 0, locked: false, completedAt: null, completedBy: null },
             spa: { status: 'pending', completionPercentage: 0, locked: false, completedAt: null, completedBy: null },
             coreCoil: { status: 'pending', completionPercentage: 0, locked: true, completedAt: null, completedBy: null },
-            tanking: { status: 'pending', completionPercentage: 0, locked: true, completedAt: null, completedBy: null }
+            tanking: { status: 'pending', completionPercentage: 0, locked: true, completedAt: null, completedBy: null },
+            vpd: { status: 'pending', completionPercentage: 0, locked: true, completedAt: null, completedBy: null },
+            tankFilling: { status: 'pending', completionPercentage: 0, locked: true, completedAt: null, completedBy: null },
+            coreBuilding: { status: 'pending', completionPercentage: 0, locked: true, completedAt: null, completedBy: null }
         };
         updateStageUI();
         return null;
@@ -62,12 +65,20 @@ function updateStageUI() {
     // Show the container
     stageContainer.style.display = 'block';
 
-    const stages = ['winding', 'spa', 'coreCoil', 'tanking'];
+    const stages = ['winding', 'spa', 'vpd', 'coreCoil', 'tanking', 'tankFilling', 'coreBuilding'];
+    const stageLabels = {
+        winding: 'Winding',
+        spa: 'SPA',
+        vpd: 'VPD',
+        coreCoil: 'Core Coil',
+        tanking: 'Tanking',
+        tankFilling: 'Tank Filling',
+        coreBuilding: 'Core Building'
+    };
     let html = '<div class="stage-badges">';
 
     stages.forEach(stage => {
-        const stageInfo = currentStageStatus[stage];
-        if (!stageInfo) return;
+        const stageInfo = currentStageStatus[stage] || { status: 'pending', completionPercentage: 0, locked: true };
 
         let badge = '';
         let icon = '';
@@ -86,7 +97,7 @@ function updateStageUI() {
             icon = '⏳';
         }
 
-        const label = stage.charAt(0).toUpperCase() + stage.slice(1);
+        const label = stageLabels[stage] || stage.charAt(0).toUpperCase() + stage.slice(1);
         const percentage = stageInfo.completionPercentage || 0;
 
         html += `<div class="stage-badge ${badge}" title="${percentage}% complete">

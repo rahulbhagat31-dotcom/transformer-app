@@ -157,8 +157,14 @@ function switchStage(stage, button) {
 }
 /* ===============================
    GET STAGE DATA STRUCTURE
+   FETCHES FROM MASTER CHECKLIST
 ================================ */
 function getStageData() {
+    // Use master checklist data from masterChecklist.js
+    if (typeof getMasterStageData === 'function') {
+        return getMasterStageData();
+    }
+    // Fallback if master checklist not loaded (should not happen)
     return {
         winding1: {
             title: 'INSPECTION RECORD FOR EHV & UHV - WINDING CHECKLIST',
@@ -455,6 +461,86 @@ function getStageData() {
                         { point: '2 Kv AC withstand test — 2.0 kV AC shall withstand for 1 min (Leakage current for reference only)', specifiedValue: 'C-F: ......  C-C: ......  CS-F: ......', type: 'split-value' },
                         { point: 'Electrical Tests: Magnetic balance test / Magnetic Current / Other Electrical Tests (If Any)', specifiedValue: '', type: 'split-value' },
                         { point: 'Cleaning of Active parts', specifiedValue: 'Clean', type: 'split-value' }
+                    ]
+                },
+                {
+                    name: '6 — Tanking of Active Part',
+                    items: [
+                        {
+                            point: 'Trial tanking dimensions',
+                            specifiedValue: 'HV side: As per drg.\nLV Side: As per drg.',
+                            type: 'tanking-torque-row'
+                        },
+                        {
+                            point: 'Physical verification must be done around & top of the Tanking Part by the Production Engineer',
+                            specifiedValue: 'Reqd',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Re-verification and Interlock Barricading with beacon light must be done around & top of the Tanking by the Quality test Operator',
+                            specifiedValue: 'Reqd',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'IR (Megger) test After putting active part in bottom tank. (2.5 kV DC application for 1 Min)',
+                            specifiedValue: 'C-F: ......\nC-T: ......\nF-T: ......',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Isolation test After putting top tank.\n(i) 2.5 kV DC for 1 Min — C-F / C-T / F-T\n(ii) 2 kV AC for 1 Min — C-F / C-T / F-T',
+                            specifiedValue: 'C-F: ......\nC-T: ......\nF-T: ......',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Insulation arrangement in bottom tank for Job placement',
+                            specifiedValue: '',
+                            type: 'single-merged'
+                        },
+                        {
+                            point: 'Top tank fixing time / Dry air application time. Dew Point of dry air < (-40)',
+                            specifiedValue: '',
+                            type: 'single-merged'
+                        },
+                        {
+                            point: 'Humidity inside tank',
+                            specifiedValue: '< 60 %',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Check for sharp edges on crimped joints, if any',
+                            specifiedValue: 'No sharp edges',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Core, Frame, Tank & Core Shield earthing connection',
+                            specifiedValue: 'Torque as per drawing',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Fibre Optic sensor connection (Sr.No. / Ok / Not Ok)\n— Winding\n— Top Yoke\n— Return Limb\n— Top Oil',
+                            specifiedValue: 'Sr.No. / Ok / Not Ok',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'OCTC Arrangement:\n- Synchronization\n- Shaft alignment\n- Shaft Insertion\n- Contact verification',
+                            specifiedValue: 'Visual',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Removal of ratchet belt & loose packing from OLTC',
+                            specifiedValue: 'Visual',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'OLTC / OCTC Details',
+                            specifiedValue: 'Type: ......\nSr. No: ......',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Before assembly of OLTC diverter switch ensure it should be on normal tap no.',
+                            specifiedValue: 'Tap Position No: ......',
+                            type: 'split-value'
+                        }
                     ]
                 }
             ]

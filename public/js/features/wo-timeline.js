@@ -50,7 +50,7 @@
         if (!sel) return;
 
         try {
-        const res = await fetch('/transformers', {
+            const res = await fetch('/transformers', {
                 credentials: 'include'
             });
             const data = await res.json();

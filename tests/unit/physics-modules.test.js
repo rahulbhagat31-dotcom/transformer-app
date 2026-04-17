@@ -32,10 +32,19 @@ const { validateInputs }              = require('../../public/js/calculation-eng
 let passed = 0, failed = 0;
 
 function test(description, fn) {
-    try { fn(); console.log(`  PASS ${description}`); passed++; }
-    catch (err) { console.error(`  FAIL ${description}\n     -> ${err.message}`); failed++; }
+    try {
+        fn();
+        console.log(`  PASS ${description}`);
+        passed++;
+    } catch (err) {
+        console.error(`  FAIL ${description}\n     -> ${err.message}`);
+        failed++;
+    }
 }
-function describe(group, fn) { console.log(`\n[${group}]`); fn(); }
+function describe(group, fn) {
+    console.log(`\n[${group}]`);
+    fn();
+}
 
 // ─── Reference fixture (20 MVA, 33/11 kV Dyn11) ──────────────────────────────
 const rawInputs = {
@@ -136,7 +145,7 @@ describe('Module 3 — Winding Design', () => {
 // ═══════════════════════════════════════════════════════════════
 describe('Module 4 — Conductor Sizing (IEEE C57.12.90)', () => {
     test('conductors.hv and conductors.lv exist', () => {
-        assert.ok(conductors.hv && conductors.lv, `Missing hv/lv conductor`);
+        assert.ok(conductors.hv && conductors.lv, 'Missing hv/lv conductor');
     });
     test('HV conductor area > 0 mm2', () => {
         assert.ok(parseFloat(conductors.hv.area) > 0, `Got ${conductors.hv.area}`);
@@ -177,8 +186,8 @@ describe('Module 5 — Loss Calculations (IEC 60076-1)', () => {
         assert.ok(losses.strayLoss > 0, `Got ${losses.strayLoss}`);
     });
     test('copperLoss breakdown has hv+lv+total', () => {
-        assert.ok(losses.copperLoss && losses.copperLoss.hv > 0, `No HV copper loss`);
-        assert.ok(losses.copperLoss.lv > 0, `No LV copper loss`);
+        assert.ok(losses.copperLoss && losses.copperLoss.hv > 0, 'No HV copper loss');
+        assert.ok(losses.copperLoss.lv > 0, 'No LV copper loss');
     });
     test('details.coreWeightDetails uses Limb-Yoke-Corner method', () => {
         const method = losses.details?.coreWeightDetails?.methodology;
@@ -260,7 +269,7 @@ describe('Module 9 — Short-Circuit Forces (IEC 60076-5)', () => {
     //                   stresses: { hoop, limit, safetyFactor }, status, thermalWithstand }
     test('forces object has radial and axial', () => {
         assert.ok(shortCirc.forces && shortCirc.forces.radial !== undefined,
-            `forces.radial missing`);
+            'forces.radial missing');
     });
     test('forces.radial > 0 kN', () => {
         assert.ok(Number(shortCirc.forces?.radial) > 0, `Got ${shortCirc.forces?.radial}`);

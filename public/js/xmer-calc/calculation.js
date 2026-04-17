@@ -14,7 +14,7 @@ let currentTapMode = 'normal';
  */
 function getCalculatorInputsFromDOM() {
     const inputs = {};
-    
+
     // Basic Transformer Parameters
     inputs.mva = parseFloat(document.getElementById('mva')?.value) || 100;
     inputs.hv = parseFloat(document.getElementById('hv')?.value) || 132;
@@ -22,7 +22,7 @@ function getCalculatorInputsFromDOM() {
     inputs.vg = inputs.vectorGroup = document.getElementById('vectorGroup')?.value || 'YNyn0';
     inputs.frequency = parseFloat(document.getElementById('frequency')?.value) || 50;
     inputs.cooling = document.getElementById('cooling')?.value || 'ONAN';
-    
+
     // Core Parameters
     inputs.fluxDensity = parseFloat(document.getElementById('fluxDensity')?.value) || 1.7;
     inputs.sf = parseFloat(document.getElementById('sf')?.value) || 0.96;
@@ -31,7 +31,7 @@ function getCalculatorInputsFromDOM() {
     inputs.specificMagVA = parseFloat(document.getElementById('specificMagVA')?.value) || 1.8;
     inputs.coreWeight = parseFloat(document.getElementById('coreWeight')?.value);
     inputs.oilVolume = parseFloat(document.getElementById('oilVolume')?.value);
-    
+
     // LV Winding Parameters
     inputs.bareWidthLV = parseFloat(document.getElementById('bareWidthLV')?.value);
     inputs.bareThicknessLV = parseFloat(document.getElementById('bareThicknessLV')?.value);
@@ -42,7 +42,7 @@ function getCalculatorInputsFromDOM() {
     inputs.innerWrapLV = parseFloat(document.getElementById('innerWrapLV')?.value);
     inputs.outerWrapLV = parseFloat(document.getElementById('outerWrapLV')?.value);
     inputs.leadLengthLV = parseFloat(document.getElementById('leadLengthLV')?.value);
-    
+
     // HV Winding Parameters
     inputs.bareWidthHV = parseFloat(document.getElementById('bareWidthHV')?.value);
     inputs.bareThicknessHV = parseFloat(document.getElementById('bareThicknessHV')?.value);
@@ -55,7 +55,7 @@ function getCalculatorInputsFromDOM() {
     inputs.innerWrapHV = parseFloat(document.getElementById('innerWrapHV')?.value);
     inputs.outerWrapHV = parseFloat(document.getElementById('outerWrapHV')?.value);
     inputs.leadLengthHV = parseFloat(document.getElementById('leadLengthHV')?.value);
-    
+
     // Tap Winding Parameters
     inputs.bareWidthTap = parseFloat(document.getElementById('bareWidthTap')?.value);
     inputs.bareThicknessTap = parseFloat(document.getElementById('bareThicknessTap')?.value);
@@ -65,17 +65,17 @@ function getCalculatorInputsFromDOM() {
     inputs.innerWrapTap = parseFloat(document.getElementById('innerWrapTap')?.value);
     inputs.outerWrapTap = parseFloat(document.getElementById('outerWrapTap')?.value);
     inputs.leadLengthTap = parseFloat(document.getElementById('leadLengthTap')?.value);
-    
+
     // Loss Parameters
     inputs.eddyStrayLoss = parseFloat(document.getElementById('eddyStrayLoss')?.value);
     inputs.guaranteedLoadLoss = parseFloat(document.getElementById('guaranteedLoadLoss')?.value);
     inputs.guaranteedNoLoad = parseFloat(document.getElementById('guaranteedNoLoad')?.value);
-    
+
     // Clearances
     inputs.wrappingPaper = parseFloat(document.getElementById('wrappingPaper')?.value) || 5;
     inputs.coreToLvOilDuct = parseFloat(document.getElementById('coreToLvOilDuct')?.value) || 15;
     inputs.coreDiaOverride = parseFloat(document.getElementById('coreDiaOverride')?.value);
-    
+
     // Full Design Additional Inputs (33-input mode)
     inputs.phases = parseFloat(document.getElementById('phases')?.value) || 3;
     inputs.voltsPerTurn = parseFloat(document.getElementById('voltsPerTurn')?.value);
@@ -92,7 +92,7 @@ function getCalculatorInputsFromDOM() {
     inputs.magVAsp = parseFloat(document.getElementById('magVAsp')?.value) || 3.5;
     inputs.windingMaterial = document.getElementById('windingMaterial')?.value || 'Copper';
     inputs.coreMaterial = document.getElementById('coreMaterial')?.value || 'CRGO';
-    
+
     // High fidelity winding parameters
     inputs.cornerRadius = parseFloat(document.getElementById('cornerRadius')?.value) || 0.5;
     inputs.parallelCoils = parseInt(document.getElementById('parallelCoils')?.value) || 1;
@@ -102,7 +102,7 @@ function getCalculatorInputsFromDOM() {
     inputs.leadCount = parseInt(document.getElementById('leadCount')?.value) || 3;
     inputs.windingConfig = document.getElementById('windingConfig')?.value || 'LV_HV';
     inputs.tv = parseFloat(document.getElementById('tv')?.value) || 0;
-    
+
     return inputs;
 }
 
@@ -334,7 +334,7 @@ function autoEstimateWindingParams(mva, hvLineKV, lvLineKV, vg) {
         };
 
     } catch (error) {
-        console.error("Auto Estimate Failed:", error);
+        console.error('Auto Estimate Failed:', error);
         throw error;
     }
 }
@@ -348,7 +348,7 @@ function autoEstimateWindingParams(mva, hvLineKV, lvLineKV, vg) {
 async function calculateWindingOnly(inputParams) {
     // If no inputs provided, extract from DOM (backward compatibility)
     let rawInputs = inputParams ? { ...inputParams } : getCalculatorInputsFromDOM();
-    
+
     const mva = rawInputs.mva;
     const hv = rawInputs.hv;
     const lv = rawInputs.lv;
@@ -402,7 +402,7 @@ async function calculateWindingOnly(inputParams) {
     const uiWrapper = rawInputs.wrappingPaper || 5;
     const uiOilDuct = rawInputs.coreToLvOilDuct || 15;
     const totalCoreClearance = uiWrapper + uiOilDuct;
-    
+
     // Core Dia
     const customCoreDia = rawInputs.coreDiaOverride;
     const coreDia = !isNaN(customCoreDia) ? customCoreDia : (rawInputs.idLV - 40);
@@ -566,16 +566,16 @@ async function calculateFullDesignMaster(inputParams) {
         const totalI2RLoss = parseFloat(windingResults.sr19);
         const eddyFactor = inputs.mva > 50 ? 0.25 : 0.20;
         const autoEddyLoss = Math.round(totalI2RLoss * eddyFactor);
-        
+
         inputs.eddyStrayLoss = autoEddyLoss;
-        windingResults.sr20 = autoEddyLoss.toFixed(0); 
+        windingResults.sr20 = autoEddyLoss.toFixed(0);
         const updatedTotalLoss = totalI2RLoss + autoEddyLoss;
         windingResults.sr21 = updatedTotalLoss.toFixed(0);
         windingResults.sr22 = (updatedTotalLoss / 1000).toFixed(2);
-        
+
         const impResults = calculateImpedancePart(inputs, coreResults, windingResults);
         const tankResults = calculateTankPart(inputs, coreResults, windingResults, impResults);
-        
+
         // Inline cooling/hot spot calculations for unit test mode
         const tankingInputs = {
             nll: parseFloat(windingResults.sr1) || 17500,
@@ -590,7 +590,7 @@ async function calculateFullDesignMaster(inputParams) {
         const avgOilFromTop = tankingInputs.topOilRise - (radDiff / 2) - 2;
         const avgOilFromWdg = tankingInputs.wdgRise - tankingInputs.gradient - 2;
         const coolingResults = { avgOilRiseSelected: Math.min(avgOilFromTop, avgOilFromWdg), totalLoss };
-        
+
         const R = tankingInputs.loadLoss / tankingInputs.nll;
         const x = 0.8;
         const delta_theta_or = tankingInputs.delta_bor * Math.pow((1 + R * Math.pow(tankingInputs.K, 2)) / (1 + R), x);
@@ -621,7 +621,7 @@ async function calculateFullDesignMaster(inputParams) {
         updateProgress(20, 'Designing Core... (Bm, Et, D, Area)');
         const coreResults = calculateCorePart(inputs);
         const coreDia = parseFloat(coreResults.d);
-        
+
         // NEW: Calculate specific stepped core laminations
         const steppedCore = calculateSteppedCore(coreDia);
         coreResults.stepped = steppedCore; // Attach for display
@@ -657,9 +657,9 @@ async function calculateFullDesignMaster(inputParams) {
         const hvtapGap = 35; // 20 oil + 8 pb + 7 oil
         const tapInnerWrap = inputs.innerWrapTap || 5.0;
         const tapOuterWrap = inputs.outerWrapTap || 5.0;
-        
+
         // Per user request: ID should include the wrap to match internal coil diameter
-        inputs.idTap = Math.round(inputs.odHV + (2 * hvtapGap) + (2 * tapInnerWrap)); 
+        inputs.idTap = Math.round(inputs.odHV + (2 * hvtapGap) + (2 * tapInnerWrap));
 
         // HV Tap Radial Build (Handwritten Sheet 4 logic)
         const tapLayers = (inputs.nCondTap || 15) * (inputs.nCoilTap || 1);
@@ -686,14 +686,14 @@ async function calculateFullDesignMaster(inputParams) {
         const totalI2RLoss = parseFloat(windingResults.sr19);
         const eddyFactor = inputs.mva > 50 ? 0.25 : 0.20; // 20% for small, 25% for larger transformers
         const autoEddyLoss = Math.round(totalI2RLoss * eddyFactor);
-        
+
         // Update input and result
         inputs.eddyStrayLoss = autoEddyLoss;
-        windingResults.sr20 = autoEddyLoss.toFixed(0); 
+        windingResults.sr20 = autoEddyLoss.toFixed(0);
         const updatedTotalLoss = totalI2RLoss + autoEddyLoss;
         windingResults.sr21 = updatedTotalLoss.toFixed(0);
         windingResults.sr22 = (updatedTotalLoss / 1000).toFixed(2);
-        
+
         // Sync with UI field if it exists
         const eddyEl = document.getElementById('eddyStrayLoss');
         if (eddyEl) eddyEl.value = autoEddyLoss;
@@ -705,7 +705,7 @@ async function calculateFullDesignMaster(inputParams) {
         // Step 8. Tank, Thermal & Detailed cooling
         updateProgress(90, 'Designing Tank & Thermal Systems...');
         const tankResults = calculateTankPart(inputs, coreResults, windingResults, impResults);
-        
+
         // Inline cooling/hot spot calculations for full design (using inputs from design)
         const fullDesignTankingInputs = {
             nll: parseFloat(windingResults.sr1) || 17500,
@@ -726,7 +726,7 @@ async function calculateFullDesignMaster(inputParams) {
             H_hs: 1.3,
             gr: 18
         };
-        
+
         // Run cooling/hot spot calculation inline
         const coolingTotalLoss = fullDesignTankingInputs.nll + fullDesignTankingInputs.loadLoss;
         const coolingRadDiff = 1.1 * Math.pow(coolingTotalLoss / 1000, 0.5);
@@ -734,7 +734,7 @@ async function calculateFullDesignMaster(inputParams) {
         const avgOilFromWdg = fullDesignTankingInputs.wdgRise - fullDesignTankingInputs.gradient - 2;
         const avgOilRiseSelected = Math.min(avgOilFromTop, avgOilFromWdg);
         const coolingResults = { avgOilRiseSelected, totalLoss: coolingTotalLoss };
-        
+
         const hotSpotR = fullDesignTankingInputs.loadLoss / fullDesignTankingInputs.nll;
         const hotSpotX = 0.8;
         const delta_theta_or = fullDesignTankingInputs.delta_bor * Math.pow((1 + hotSpotR * Math.pow(fullDesignTankingInputs.K, 2)) / (1 + hotSpotR), hotSpotX);
@@ -747,7 +747,7 @@ async function calculateFullDesignMaster(inputParams) {
         // Finalize and Display
         updateProgress(100, 'Calculations Final!');
         displayFullDesignReport(coreResults, windingResults, tankResults, impResults, inputs, coolingResults, hotSpotResults);
-        
+
         document.getElementById('loading').classList.remove('active');
         document.getElementById('windingResultsContainer').style.display = 'block';
         document.getElementById('windingResultsContainer').scrollIntoView({ behavior: 'smooth' });
@@ -769,11 +769,11 @@ function calculateCorePart(inputs) {
     } else if (typeof require !== 'undefined') {
         mathFn = require('./core-calc.js')._coreElectricalMath;
     }
-    
+
     // Core fallback values
     let coreWeight = inputs.coreWeight;
-    if (coreWeight === 18000 || !coreWeight) { 
-         coreWeight = Math.round(inputs.mva * 250); 
+    if (coreWeight === 18000 || !coreWeight) {
+        coreWeight = Math.round(inputs.mva * 250);
     }
 
     const S = inputs.mva;
@@ -812,7 +812,7 @@ function calculateCorePart(inputs) {
         phiM: r.Phim.toFixed(4), // Wb
         phiRMS: r.Phirms.toFixed(4), // Wb
         satMargin: r.satMargin.toFixed(1),
-        
+
         hvPhaseV: hvPhaseV.toFixed(1),
         lvPhaseV: lvPhaseV.toFixed(1),
         hvTurns: r.NHV_used,
@@ -867,7 +867,7 @@ function calculateTankPart(inputs, core, winding, imp) {
         oilWeight: oilWeight.toFixed(0),
         totalWeight: totalWeight.toFixed(0),
         cooling: inputs.cooling,
-        compliance: "Within Thermal Limits (IEC compliance verified)"
+        compliance: 'Within Thermal Limits (IEC compliance verified)'
     };
 }
 
@@ -979,10 +979,10 @@ function displayAtlantaThermalResults(d) {
     const f1  = v => (typeof v === 'number' && !isNaN(v)) ? v.toFixed(1)  : '—';
     const f0  = v => (typeof v === 'number' && !isNaN(v)) ? Math.round(v).toLocaleString() : '—';
     const okBadge = pass => pass
-        ? `<span style="background:#27ae60;color:white;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:bold;">✓ PASS</span>`
-        : `<span style="background:#e74c3c;color:white;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:bold;">✗ FAIL</span>`;
+        ? '<span style="background:#27ae60;color:white;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:bold;">✓ PASS</span>'
+        : '<span style="background:#e74c3c;color:white;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:bold;">✗ FAIL</span>';
 
-    const thStyle = `style="background:#1a3a5c;color:white;padding:8px 12px;"`;
+    const thStyle = 'style="background:#1a3a5c;color:white;padding:8px 12px;"';
 
     container.innerHTML = `
 
@@ -1211,7 +1211,7 @@ function displayTankingResultsOnly(results) {
 async function calculateOtherOnly(inputParams) {
     // If no inputs provided, extract from DOM (backward compatibility)
     const domInputs = inputParams ? null : getCalculatorInputsFromDOM();
-    
+
     const rawInputs = inputParams ? { ...inputParams } : {
         tapChangerType: domInputs?.tapChangerType || document.getElementById('tapChangerType').value,
         tappingRange: domInputs?.tappingRange || parseInt(document.getElementById('tappingRange').value),
@@ -1228,7 +1228,7 @@ async function calculateOtherOnly(inputParams) {
 
     // Validate Inputs
     if (isNaN(rawInputs.systemVoltage)) {
-        alert("Invalid input: System Voltage must be a valid number");
+        alert('Invalid input: System Voltage must be a valid number');
         return;
     }
 
@@ -1238,13 +1238,13 @@ async function calculateOtherOnly(inputParams) {
         const hvNormTap = inputParams.hvNormalTapTurns || 0;
         const lvTurns = inputParams.lvTurns || 0;
         const totalHVTurns = hvMain + hvNormTap;
-        
+
         const vg = rawInputs.vectorGroup;
         const isHVStar = vg.startsWith('Y') || vg.startsWith('YN');
         const hvVoltagePhase = isHVStar
             ? (rawInputs.systemVoltage * 1000) / Math.sqrt(3)
             : (rawInputs.systemVoltage * 1000);
-            
+
         const hvCurrent = rawInputs.mva > 0
             ? (rawInputs.mva * 1e6) / (Math.sqrt(3) * rawInputs.systemVoltage * 1000)
             : 0;
@@ -1351,7 +1351,7 @@ async function calculateOtherOnly(inputParams) {
             // Use the full advanced-features bundle if available
             calculateAndDisplayAdvancedFeatures(rawInputs, results);
         } else {
-            container.innerHTML = `<p>Advanced features module not loaded.</p>`;
+            container.innerHTML = '<p>Advanced features module not loaded.</p>';
         }
 
         document.getElementById('loading').classList.remove('active');
@@ -1460,7 +1460,7 @@ async function calculateDesign(inputParams) {
             // Show alert if target was missed
             if (results.optimizationMetadata.targetMissed) {
                 alert(
-                    `Target efficiency not fully achieved.\n\n` +
+                    'Target efficiency not fully achieved.\n\n' +
                     `Best achievable: ${results.optimizationMetadata.achievedEfficiency.toFixed(2)}%\n` +
                     `Deficit: ${results.optimizationMetadata.deficit}%\n\n` +
                     `Using optimized design with J = ${results.optimizationMetadata.finalCurrentDensity.toFixed(2)} A/mm²`
@@ -2805,7 +2805,7 @@ function designToEfficiency(inputs) {
 
     throw new Error(
         `Efficiency optimization failed after ${iterationCount} iterations.\n` +
-        `Please use Manual design mode.`
+        'Please use Manual design mode.'
     );
 }
 
@@ -3170,7 +3170,7 @@ function displayWindingResultsOnly(results, inputs) {
                         <th style="padding:12px 10px; text-align:center; background:#e8f4f8; border-right:1px solid #dee2e6;">LV Wdg.</th>
                         <th style="padding:12px 10px; text-align:center; background:#fdf2e9; border-right:1px solid #dee2e6;">HV Main Wdg.</th>
                         <th style="padding:12px 10px; text-align:center; background:#f4f6f6; border-right:1px solid #dee2e6;">HV TAP Wdg.</th>
-                        ${isTertiary ? `<th style="padding:12px 10px; text-align:center; background:#e9f7ef;">TV Wdg.</th>` : ''}
+                        ${isTertiary ? '<th style="padding:12px 10px; text-align:center; background:#e9f7ef;">TV Wdg.</th>' : ''}
                     </tr>
                 </thead>
                 <tbody>
@@ -4430,7 +4430,7 @@ function showDesignListModal(designs) {
                 <h2 style="margin-top: 0;">📁 Saved Designs</h2>
                 <div id="designListContent">
                     ${designs.length === 0 ? '<p>No saved designs found.</p>' :
-            designs.map(d => `
+        designs.map(d => `
                         <div style="
                             padding: 15px;
                             border: 1px solid #ddd;
@@ -4519,11 +4519,11 @@ function exportDesignJSON() {
         };
 
         // Create download link
-        const dataStr = "data:text/json;charset=utf-8," +
+        const dataStr = 'data:text/json;charset=utf-8,' +
             encodeURIComponent(JSON.stringify(exportData, null, 2));
         const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download",
+        downloadAnchor.setAttribute('href', dataStr);
+        downloadAnchor.setAttribute('download',
             `transformer_design_${inputs.mva}MVA_${new Date().getTime()}.json`);
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();

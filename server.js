@@ -20,13 +20,13 @@ if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
 if (process.env.NODE_ENV === 'production') {
     const requiredSecrets = ['JWT_SECRET'];
     const missingSecrets = requiredSecrets.filter(s => !process.env[s]);
-    
+
     if (missingSecrets.length > 0) {
         console.error('FATAL ERROR: Missing required environment variables for production:');
         missingSecrets.forEach(s => console.error('   - ' + s));
         process.exit(1);
     }
-    
+
     // Warn about optional but recommended configurations
     if (!process.env.ALLOWED_ORIGIN) {
         console.warn('WARNING: ALLOWED_ORIGIN not set for production - using default localhost (insecure)');

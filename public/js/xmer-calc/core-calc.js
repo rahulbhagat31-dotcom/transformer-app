@@ -114,7 +114,7 @@ function _coreElectricalMath(params) {
     const emfDom = _calcEMFDomain(VHV_phase, VLV_phase, totalHVTurns, fluxDom.Phim, f, VHV, VLV);
     const currDom = _calcCurrentsDomain(S, VHV, VLV, emfDom.NHV_used, emfDom.NLV, isHVStar, isLVDelta);
     const lossDom = _calcLossDomain(S, VHV, Wcore, wsp, magVA, currDom.IHV_line);
-    
+
     const compliance = _validateComplianceDomain(
         Bm, fluxDom.An, fluxDom.Phim, emfDom.Et, emfDom.NHV_used, lossDom.Pcore, lossDom.I0_percent, currDom.AT_bal
     );
@@ -189,23 +189,23 @@ function displayCoreResults(r, inp, chk) {
     const f2 = (v) => (typeof v === 'number' && !isNaN(v)) ? v.toFixed(2) : '—';
     const f1 = (v) => (typeof v === 'number' && !isNaN(v)) ? v.toFixed(1) : '—';
     const fi = (v) => Math.round(v).toLocaleString();
-    const ok  = (pass, note='') => pass
-        ? `<span style="color:#27ae60;font-weight:bold;">✓ OK</span>`
-        : `<span style="color:#e74c3c;font-weight:bold;">✗ CHECK${note ? ' '+note : ''}</span>`;
+    const ok  = (pass, _note='') => pass
+        ? '<span style="color:#27ae60;font-weight:bold;">✓ OK</span>'
+        : '<span style="color:#e74c3c;font-weight:bold;">✗ CHECK${_note ? \' \' + _note : \'\'}</span>';
     const row = (p, v, u, p2='', v2='', u2='') => `
     <tr>
-      <td>${p}</td><td style="color:#1565c0;font-weight:bold;">${v}</td><td>${u}</td>
-      ${p2 ? `<td>${p2}</td><td style="color:#1565c0;font-weight:bold;">${v2}</td><td>${u2}</td>` : '<td colspan="3"></td>'}
+      <td>${p}</td><td style='color:#1565c0;font-weight:bold;'>${v}</td><td>${u}</td>
+      ${p2 ? `<td>${p2}</td><td style='color:#1565c0;font-weight:bold;'>${v2}</td><td>${u2}</td>` : '<td colspan="3"></td>'}
     </tr>`;
 
-    const thStyle = `style="background:#1a3a5c;color:white;padding:7px 12px;text-align:left;"`;
-    const tblHdr = `<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;">
+    const thStyle = 'style=\'background:#1a3a5c;color:white;padding:7px 12px;text-align:left;\'';
+    const tblHdr = `<table style='width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;'>
     <thead><tr>
       <th ${thStyle}>Parameter</th><th ${thStyle}>Value</th><th ${thStyle}>Unit</th>
       <th ${thStyle}>Parameter</th><th ${thStyle}>Value</th><th ${thStyle}>Unit</th>
     </tr></thead><tbody>`;
     const sectionHdr = (icon, title, color='#1a3a5c') =>
-        `<div style="background:${color};color:white;padding:8px 15px;font-weight:bold;font-size:13px;margin-top:12px;border-radius:4px 4px 0 0;">${icon} ${title}</div>`;
+        `<div style='background:${color};color:white;padding:8px 15px;font-weight:bold;font-size:13px;margin-top:12px;border-radius:4px 4px 0 0;'>${icon} ${title}</div>`;
 
     container.innerHTML = `
   <!-- Header Banner -->
@@ -348,7 +348,7 @@ function updateCoreDiaLive() {
             const calculatedOil = Math.round(1200 * Math.sqrt(mva));
             const of2 = document.getElementById('oilVolume'); if (of2) of2.value = calculatedOil;
         }
-    } catch(e) {
+    } catch {
         const out = document.getElementById('cd_diameter');
         if (out) out.value = '';
     }

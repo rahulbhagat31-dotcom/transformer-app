@@ -16,7 +16,9 @@ function invalidateToken(token) {
 }
 
 function isTokenBlacklisted(token) {
-    if (!token) return false;
+    if (!token) {
+        return false;
+    }
     return cache.get('blacklist:' + token) !== undefined;
 }
 

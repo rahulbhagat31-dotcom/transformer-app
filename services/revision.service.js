@@ -77,8 +77,12 @@ class RevisionService {
          * Arrays are left in their original order (order matters for lists).
          */
         const stableStringify = (val) => {
-            if (val === null || typeof val !== 'object') return JSON.stringify(val);
-            if (Array.isArray(val)) return '[' + val.map(stableStringify).join(',') + ']';
+            if (val === null || typeof val !== 'object') {
+                return JSON.stringify(val);
+            }
+            if (Array.isArray(val)) {
+                return '[' + val.map(stableStringify).join(',') + ']';
+            }
             const sortedPairs = Object.keys(val).sort()
                 .map(k => JSON.stringify(k) + ':' + stableStringify(val[k]));
             return '{' + sortedPairs.join(',') + '}';
@@ -92,7 +96,9 @@ class RevisionService {
         const modified = [];
 
         for (const rowId of Object.keys(mapA)) {
-            if (!mapB[rowId]) continue;
+            if (!mapB[rowId]) {
+                continue;
+            }
             const a = mapA[rowId];
             const b = mapB[rowId];
             const changes = {};

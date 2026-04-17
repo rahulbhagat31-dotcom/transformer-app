@@ -60,9 +60,9 @@ async function loadSectionsIntoDropdown() {
         }
         renderSectionFilterBtns(sections);
         return true;
-    } catch (e) { 
-        console.error('Failed to load sections into dropdown', e);
-        throw e;
+    } catch {
+        console.error('Failed to load sections into dropdown');
+        throw new Error('Failed to load sections');
     }
 }
 
@@ -88,7 +88,7 @@ async function renderSectionsPanel() {
         sections = (await r.json()).data || [];
         _allSections = sections;
         buildSectionMeta(sections);
-    } catch (e) {
+    } catch {
         container.innerHTML = '<p style="color:red;">Failed to load sections.</p>';
         return;
     }
@@ -188,7 +188,9 @@ async function addSection() {
             await renderSectionsPanel();
             await loadSectionsIntoDropdown();
         } else alert('❌ ' + (r.error || 'Failed'));
-    } catch (e) { alert('❌ ' + e.message); }
+    } catch {
+        alert('❌ Failed to add section');
+    }
 }
 
 // ── Delete section ────────────────────────────────────────────────────────────
@@ -200,7 +202,9 @@ async function deleteSection(key, label) {
             await renderSectionsPanel();
             await loadSectionsIntoDropdown();
         } else alert('❌ ' + (r.error || 'Failed'));
-    } catch (e) { alert('❌ ' + e.message); }
+    } catch {
+        alert('❌ Failed to delete section');
+    }
 }
 
 // ── Load all questions from server ────────────────────────────────────────────
@@ -280,7 +284,7 @@ async function addQuestion() {
     const sectionEl = document.getElementById('qSection');
     const textEl = document.getElementById('qText');
     if (!sectionEl || !textEl) return;
-    
+
     const section = sectionEl.value;
     const text = textEl.value?.trim();
     const optionA = document.getElementById('qOptA')?.value?.trim();
@@ -384,7 +388,7 @@ async function renderExamLinks() {
         const r = await fetch('/questions/sections');
         const d = await r.json();
         sections = d.data || [];
-    } catch (e) {
+    } catch {
         sections = [];
     }
 
@@ -491,7 +495,7 @@ async function createExamLink() {
             const r = await fetch('/api/server-ip');
             const d = await r.json();
             if (d.base) lanBase = d.base;
-        } catch (e) { }
+        } catch { }
 
         createBtn.textContent = '🌐 Getting public URL...';
         let publicBase = null;
@@ -499,7 +503,7 @@ async function createExamLink() {
             const tr = await fetch('/api/public-url');
             const td = await tr.json();
             if (td.active && td.url) publicBase = td.url;
-        } catch (e) { }
+        } catch { }
 
         const examUrl = `${publicBase || lanBase}/exam/${section}?count=${count}&duration=${duration}`;
         const lanUrl = `${lanBase}/exam/${section}?count=${count}&duration=${duration}`;

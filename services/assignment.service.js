@@ -49,7 +49,9 @@ class AssignmentService {
      * @param {string} wo
      */
     isAuthorised(userId, role, wo) {
-        if (GLOBAL_ACCESS_ROLES.includes(role)) return true;
+        if (GLOBAL_ACCESS_ROLES.includes(role)) {
+            return true;
+        }
 
         const row = db.prepare(`
             SELECT id FROM user_assignments
@@ -129,7 +131,7 @@ class AssignmentService {
      * Remove all expired assignments (maintenance cleanup).
      */
     purgeExpired() {
-        return db.prepare("DELETE FROM user_assignments WHERE expiresAt IS NOT NULL AND expiresAt <= datetime('now')")
+        return db.prepare('DELETE FROM user_assignments WHERE expiresAt IS NOT NULL AND expiresAt <= datetime(\'now\')')
             .run().changes;
     }
 }

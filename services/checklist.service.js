@@ -3,7 +3,12 @@ const db = require('../config/database');
 // Lazy reference avoids circular dependency (checklist ↔ revision) while keeping
 // the dependency explicit and mockable from tests.
 let _revisionService = null;
-const revSvc = () => { if (!_revisionService) _revisionService = require('./revision.service'); return _revisionService; };
+const revSvc = () => {
+    if (!_revisionService) {
+        _revisionService = require('./revision.service');
+    }
+    return _revisionService;
+};
 
 class ChecklistService {
     /**
@@ -13,7 +18,9 @@ class ChecklistService {
         const checklist = db.prepare(
             'SELECT * FROM checklists WHERE wo = ? AND stage = ?'
         ).get(wo, stage);
-        if (!checklist) return null;
+        if (!checklist) {
+            return null;
+        }
         return { ...checklist, items: checklist.items ? JSON.parse(checklist.items) : [] };
     }
 
@@ -34,8 +41,14 @@ class ChecklistService {
      */
     getItems(wo, stage) {
         const row = db.prepare('SELECT items FROM checklists WHERE wo = ? AND stage = ?').get(wo, stage);
-        if (!row) return [];
-        try { return JSON.parse(row.items) || []; } catch { return []; }
+        if (!row) {
+            return [];
+        }
+        try {
+            return JSON.parse(row.items) || [];
+        } catch {
+            return [];
+        }
     }
 
     /**
@@ -140,7 +153,9 @@ class ChecklistService {
      */
     lockChecklist(wo, stage, _userId) {
         const checklist = this.getChecklist(wo, stage);
-        if (!checklist) throw new Error('Checklist not found');
+        if (!checklist) {
+            throw new Error('Checklist not found');
+        }
 
         const items = checklist.items || [];
         if (items.length === 0) {
@@ -161,7 +176,9 @@ class ChecklistService {
             WHERE wo = ? AND stage = ?
         `).run(wo, stage);
 
-        if (result.changes === 0) throw new Error('Checklist not found');
+        if (result.changes === 0) {
+            throw new Error('Checklist not found');
+        }
         return this.getChecklist(wo, stage);
     }
 
@@ -178,7 +195,9 @@ class ChecklistService {
             WHERE wo = ? AND stage = ?
         `).run(supervisorUsername, wo, stage);
 
-        if (result.changes === 0) throw new Error('Checklist not found');
+        if (result.changes === 0) {
+            throw new Error('Checklist not found');
+        }
         return this.getChecklist(wo, stage);
     }
 
@@ -192,7 +211,9 @@ class ChecklistService {
             WHERE wo = ? AND stage = ?
         `).run(reason, wo, stage);
 
-        if (result.changes === 0) throw new Error('Checklist not found');
+        if (result.changes === 0) {
+            throw new Error('Checklist not found');
+        }
         return this.getChecklist(wo, stage);
     }
 
@@ -201,7 +222,9 @@ class ChecklistService {
      */
     getSupervisorPendingItems(wo, stage) {
         const checklist = this.getChecklist(wo, stage);
-        if (!checklist) return [];
+        if (!checklist) {
+            return [];
+        }
         return (checklist.items || []).filter(i => i.techSignedOff && !i.supervisorSignedOff);
     }
 
@@ -210,7 +233,9 @@ class ChecklistService {
      */
     getQAPendingItems(wo, stage) {
         const checklist = this.getChecklist(wo, stage);
-        if (!checklist) return [];
+        if (!checklist) {
+            return [];
+        }
         return (checklist.items || []).filter(i => i.supervisorSignedOff && !i.qaSignedOff);
     }
 
@@ -219,7 +244,9 @@ class ChecklistService {
      */
     getChecklistSummary(wo, stage) {
         const checklist = this.getChecklist(wo, stage);
-        if (!checklist) return { total: 0, techDone: 0, supervisorDone: 0, qaDone: 0 };
+        if (!checklist) {
+            return { total: 0, techDone: 0, supervisorDone: 0, qaDone: 0 };
+        }
         const items = checklist.items || [];
         return {
             total:          items.length,

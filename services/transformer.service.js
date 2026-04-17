@@ -126,7 +126,9 @@ class TransformerService {
      */
     _parseTransformer(transformer) {
         const safeParse = (str, fieldName) => {
-            if (!str) return null;
+            if (!str) {
+                return null;
+            }
             try {
                 return JSON.parse(str);
             } catch (error) {
@@ -134,7 +136,7 @@ class TransformerService {
                 return null;
             }
         };
-        
+
         return {
             ...transformer,
             customerVisible: transformer.customerVisible === 1,

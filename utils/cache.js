@@ -28,7 +28,7 @@ function get(key) {
         logger.warn('Cache get: invalid key', { key });
         return undefined;
     }
-    
+
     const value = cache.get(key);
     if (value !== undefined) {
         stats.hits++;
@@ -56,7 +56,7 @@ function set(key, value, ttl) {
         logger.warn('Cache set: cannot cache undefined value', { key });
         return false;
     }
-    
+
     stats.sets++;
     const success = cache.set(key, value, ttl);
     if (success) {

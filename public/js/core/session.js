@@ -66,7 +66,7 @@
         // Clear the HttpOnly cookie server-side (browser JS cannot do this directly)
         try {
             await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
-        } catch (_) { /* ignore network errors during logout */ }
+        } catch { /* ignore network errors during logout */ }
 
         // Remove only non-sensitive user profile data from localStorage
         localStorage.removeItem('user');

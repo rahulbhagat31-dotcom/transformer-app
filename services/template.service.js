@@ -107,7 +107,7 @@ class TemplateService {
             throw new Error('Template not found');
         }
 
-        let wos = woList && woList.length > 0
+        const wos = woList && woList.length > 0
             ? woList
             : db.prepare('SELECT DISTINCT wo FROM checklists WHERE stage = ?').all(template.stage).map(r => r.wo);
 
@@ -145,7 +145,9 @@ class TemplateService {
 
         return templateItems.map(tplItem => {
             const existing = existingMap[tplItem.rowId];
-            if (!existing) return { ...tplItem };
+            if (!existing) {
+                return { ...tplItem };
+            }
             return {
                 ...tplItem,
                 actualValue:          existing.actualValue,

@@ -5,7 +5,7 @@
  * Write operations (assign, revoke) require admin role.
  */
 const express = require('express');
-const { body, param } = require('express-validator');
+const { body } = require('express-validator');
 const { authenticate, requireRole } = require('../middlewares/auth');
 const { handleValidationErrors } = require('../middlewares/validation');
 const { errorResponse } = require('../utils/response');

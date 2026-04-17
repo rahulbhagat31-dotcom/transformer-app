@@ -15,8 +15,12 @@ const assignmentService = require('../services/assignment.service');
  */
 function requireWOAccess(req, res, next) {
     const wo = req.body?.wo || req.params?.wo;
-    if (!wo) return next(); // let body validation handle missing wo
-    if (assignmentService.isAuthorised(req.user.id, req.user.role, wo)) return next();
+    if (!wo) {
+        return next(); // let body validation handle missing wo
+    }
+    if (assignmentService.isAuthorised(req.user.id, req.user.role, wo)) {
+        return next();
+    }
     return res.status(403).json({
         success: false,
         error: `You are not assigned to Work Order '${wo}'. Contact an administrator to request access.`
@@ -674,4 +678,4 @@ router.get('/summary/:wo', (req, res) => {
         res.status(500).json(errorResponse(error));
     }
 });
-module.exports = router;
+module.exports = router;

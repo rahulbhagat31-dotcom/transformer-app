@@ -48,7 +48,7 @@ const WindingCalc = {
             hvMain: hvPhaseI.toFixed(2),
             hvTap: hvPhaseI.toFixed(2)
         };
-        showWorking.sr1 = `(MVA × 10⁶) / (3 × PhaseVoltage)`;
+        showWorking.sr1 = '(MVA × 10⁶) / (3 × PhaseVoltage)';
 
         // 2. Bare Copper Size (mm)
         results.sr2 = {
@@ -81,7 +81,7 @@ const WindingCalc = {
             hvMain: hvMainGross.toFixed(3),
             hvTap: hvTapGross.toFixed(3)
         };
-        showWorking.sr5 = `Width × Thickness`;
+        showWorking.sr5 = 'Width × Thickness';
 
         // 6. Corner Radius (mm)
         results.sr6 = {
@@ -102,7 +102,7 @@ const WindingCalc = {
             hvMain: hvMainRed.toFixed(3),
             hvTap: hvTapRed.toFixed(3)
         };
-        showWorking.sr7 = `(4 - π) × r²`;
+        showWorking.sr7 = '(4 - π) × r²';
 
         // 8. Total Net CSA (mm2)
         // Formula: (GrossCSA - Reduction) * n_cond * n_coil
@@ -115,7 +115,7 @@ const WindingCalc = {
             hvMain: hvMainNet.toFixed(3),
             hvTap: hvTapNet.toFixed(3)
         };
-        showWorking.sr8 = `(Gross - Reduction) × n_cond × n_coil`;
+        showWorking.sr8 = '(Gross - Reduction) × n_cond × n_coil';
 
         // 9. Current Density (A/mm2)
         // Formula: PhaseCurrent / NetCSA
@@ -128,7 +128,7 @@ const WindingCalc = {
             hvMain: hvMainJ.toFixed(3),
             hvTap: hvTapJ.toFixed(3)
         };
-        showWorking.sr9 = `PhaseCurrent / NetCSA`;
+        showWorking.sr9 = 'PhaseCurrent / NetCSA';
 
         // 10. No. of Turns
         // FIXED: Use provided LV turns if available to ensure exact ratio consistency
@@ -144,7 +144,7 @@ const WindingCalc = {
             hvTap: tapTurnsForEt
         };
         results.et = et.toFixed(4);
-        showWorking.sr10 = `PhaseVoltage / Et (rounded to nearest integer)`;
+        showWorking.sr10 = 'PhaseVoltage / Et (rounded to nearest integer)';
 
         // 11. Coil ID (mm)
         // Formula: Core Dia + 2 × (Wrapping Paper each side + Core-to-LV Oil Duct)
@@ -153,7 +153,7 @@ const WindingCalc = {
             hvMain: inputs.idHV,
             hvTap: inputs.idTap
         };
-        showWorking.sr11 = `LV: Core Dia + 2×(Wrapping Paper + Oil Duct) | HV: LV OD + LV-HV Duct`;
+        showWorking.sr11 = 'LV: Core Dia + 2×(Wrapping Paper + Oil Duct) | HV: LV OD + LV-HV Duct';
 
         // 12. Coil OD (mm) — Calculated from Refined Radial Build (Manual Sheet Logic)
         // Formula: Coil OD = Coil ID + 2 × Radial Build
@@ -172,11 +172,11 @@ const WindingCalc = {
         const hvMainRadialBuild = (inputs.bareThicknessHV * hvMainLayers) + hvMainPaper + hvMainWrap;
 
         // HV Tap (Sheet 4): (Thick * Layers) + Paper + Wrap
-        const tapLayers = (inputs.nCondTap || 15) * (inputs.nCoilTap || 1); 
+        const tapLayers = (inputs.nCondTap || 15) * (inputs.nCoilTap || 1);
         const tapPaper = 0.25 * tapLayers;
         const tapWrap = (inputs.innerWrapTap || 0) + (inputs.outerWrapTap || 0);
         const hvTapRadialBuild = (inputs.bareThicknessTap * tapLayers) + tapPaper + tapWrap;
-        
+
         const lvOD = inputs.odLV || (parseFloat(inputs.idLV) + 2 * lvRadialBuild);
         const hvMainOD = inputs.odHV || (parseFloat(inputs.idHV) + 2 * hvMainRadialBuild);
         const hvTapOD = inputs.odTap || (parseFloat(inputs.idTap) + 2 * hvTapRadialBuild);
@@ -186,7 +186,7 @@ const WindingCalc = {
             hvMain: parseFloat(hvMainOD).toFixed(1),
             hvTap: parseFloat(hvTapOD).toFixed(1)
         };
-        showWorking.sr12 = `Build = (Thick × Layers) + (Paper × Layers) + Duct + Wrap; OD = ID + 2×Build`;
+        showWorking.sr12 = 'Build = (Thick × Layers) + (Paper × Layers) + Duct + Wrap; OD = ID + 2×Build';
 
         // Use calculated ODs for downstream calculations (Lmt, Weight, etc.)
         const lvODfinal = lvOD;
@@ -205,7 +205,7 @@ const WindingCalc = {
             hvMain: hvMainLmt.toFixed(1),
             hvTap: hvTapLmt.toFixed(1)
         };
-        showWorking.sr13 = `π × (ID + OD) / 2`;
+        showWorking.sr13 = 'π × (ID + OD) / 2';
 
         // 14. Bare Copper Weight (kg)
         // Formula: (NetCSA * Lmt * Turns * 3 * Density) / 10^6
@@ -219,7 +219,7 @@ const WindingCalc = {
             hvMain: hvMainWeight.toFixed(2),
             hvTap: hvTapWeight.toFixed(2)
         };
-        showWorking.sr14 = `(NetCSA × Lmt × Turns × 3 × 8.89) / 10⁶`;
+        showWorking.sr14 = '(NetCSA × Lmt × Turns × 3 × 8.89) / 10⁶';
 
         // 14a. Lead Copper Weight (kg)
         const calcLeadWeight = (leadLength, csa) => ((leadLength || 0) * csa * 3 * this.DENSITY_CU) / 1000000;
@@ -232,7 +232,7 @@ const WindingCalc = {
             hvMain: hvMainLeadWeight.toFixed(2),
             hvTap: hvTapLeadWeight.toFixed(2)
         };
-        showWorking.sr14a = `(LeadLength × NetCSA × 3 × 8.89) / 10⁶`;
+        showWorking.sr14a = '(LeadLength × NetCSA × 3 × 8.89) / 10⁶';
 
         // 15. Total Copper Weight (kg)
         const lvTotalWeight = lvWeight + lvLeadWeight;
@@ -244,7 +244,7 @@ const WindingCalc = {
             hvMain: hvMainTotalWeight.toFixed(2),
             hvTap: hvTapTotalWeight.toFixed(2)
         };
-        showWorking.sr15 = `BareWeight + LeadWeight`;
+        showWorking.sr15 = 'BareWeight + LeadWeight';
 
         // 16. Resistivity (ohm-mm2/m) at 75°C
         results.sr16 = {
@@ -268,7 +268,7 @@ const WindingCalc = {
             hvMain: hvMainResist.toFixed(5),
             hvTap: hvTapResist.toFixed(5)
         };
-        showWorking.sr17 = `(ρ × Lmt × Turns) / (1000 × NetCSA)`;
+        showWorking.sr17 = '(ρ × Lmt × Turns) / (1000 × NetCSA)';
 
         // 18. I2R Loss (W) at 75°C
         // Formula: 3 * (PhaseCurrent^2) * Resistance
@@ -282,7 +282,7 @@ const WindingCalc = {
             hvMain: hvMainLoss.toFixed(0),
             hvTap: hvTapLoss.toFixed(0)
         };
-        showWorking.sr18 = `3 × I² × R`;
+        showWorking.sr18 = '3 × I² × R';
 
         // Summary Calculations for 19-22
         const totalI2RLoss = lvLoss + hvMainLoss + hvTapLoss;

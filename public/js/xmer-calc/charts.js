@@ -24,7 +24,7 @@ function createCharts(results, inputs) {
  */
 function destroyExistingCharts() {
     // In Chart.js v2, we iterate over Chart.instances
-    for (const [key, chart] of Object.entries(Chart.instances)) {
+    for (const [, chart] of Object.entries(Chart.instances)) {
         chart.destroy();
     }
 }

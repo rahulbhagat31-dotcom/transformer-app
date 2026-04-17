@@ -4108,8 +4108,6 @@ window.viewAnswerKey = viewAnswerKey;
 window.closeAnswerKey = closeAnswerKey;
 window.updateExamCount = updateExamCount;
 
-
-
 /* Added for xmer-calc integration */
 window.showCalcView = function(viewId, btn) {
     document.querySelectorAll('.xmer-calc-tab').forEach(t => t.classList.remove('active'));

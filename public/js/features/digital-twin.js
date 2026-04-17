@@ -1195,3 +1195,4 @@ window.toggleStageSection = window.DigitalTwinUI.toggleStageSection; // correctl
 window.renderDTPlaceholders = renderDTPlaceholders;
 window.navigateToDashboard = navigateToDashboard;
 window.renderComparison = renderComparison;
+window.initDigitalTwin = initDigitalTwin;

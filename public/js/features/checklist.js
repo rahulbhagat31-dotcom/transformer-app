@@ -115,8 +115,8 @@ function updateStageUI() {
 }
 
 function hideAllStagePanels() {
-    ['stageControlButtons', 'stageLockMessage', 'stageApprovedMessage', 
-     'stageRejectedMessage', 'stageAwaitingQAMessage'].forEach(id => {
+    ['stageControlButtons', 'stageLockMessage', 'stageApprovedMessage',
+        'stageRejectedMessage', 'stageAwaitingQAMessage'].forEach(id => {
         const div = document.getElementById(id);
         if (div) div.style.display = 'none';
     });
@@ -184,7 +184,7 @@ function renderLockedCompletedState(isAdmin, isQA) {
 function renderInProgressState(stageInfo, isAdmin, isProduction, isLocked, status) {
     const controlDiv = document.getElementById('stageControlButtons');
     const rejectedMessageDiv = document.getElementById('stageRejectedMessage');
-    
+
     // Show rejection notice if stage was previously rejected
     if (stageInfo.rejectionReason) {
         if (rejectedMessageDiv) {
@@ -230,7 +230,7 @@ function updateStageControlButtons() {
 
     const mainStage = currentStage.startsWith('winding') ? 'winding' : currentStage;
     const stageInfo = currentStageStatus[mainStage];
-    
+
     if (!stageInfo) return;
 
     const userRole = window.currentUserRole;
@@ -548,8 +548,6 @@ async function loadChecklistTransformers() {
         }
     }
 }
-
-
 
 /* ===============================
    W.O. SELECTION CHANGE

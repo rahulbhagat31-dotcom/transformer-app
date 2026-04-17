@@ -60,8 +60,11 @@ router.get('/logs', checkPermission('quality'), (req, res) => {
             let parsedDetails = null;
             if (log.details) {
                 if (typeof log.details === 'string') {
-                    try { parsedDetails = JSON.parse(log.details); } 
-                    catch (e) { parsedDetails = log.details; }
+                    try {
+                        parsedDetails = JSON.parse(log.details);
+                    } catch {
+                        parsedDetails = log.details;
+                    }
                 } else {
                     parsedDetails = log.details;
                 }

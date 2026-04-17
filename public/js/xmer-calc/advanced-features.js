@@ -1,7 +1,7 @@
 /* ===============================
    ADVANCED FEATURES BUNDLE
    1. OLTC Design Calculator
-   2. BIL & Insulation Calculator  
+   2. BIL & Insulation Calculator
    3. Cooling System Design
    Add this to calculation.js
 ================================ */
@@ -77,7 +77,7 @@ function calculateOLTC(inputs, results) {
 /**
  * Generate complete tap position table
  */
-function generateTapTable(oltc, inputs, baseCurrent) {
+function generateTapTable(oltc, inputs, _baseCurrent) {
     const table = [];
     const steps = oltc.totalSteps;
     const centerStep = Math.ceil(steps / 2);
@@ -109,7 +109,7 @@ function generateTapTable(oltc, inputs, baseCurrent) {
 /**
  * Calculate BIL (Basic Impulse Level) and Insulation Design
  */
-function calculateBIL(inputs, results) {
+function calculateBIL(inputs, _results) {
     const bil = {};
 
     // Standard BIL values based on system voltage (IEC 60076-3)
@@ -139,7 +139,6 @@ function calculateBIL(inputs, results) {
 
     // Clearance calculations (IEC 60076-3)
     // Formula: Clearance (mm) = k × BIL (kV)
-    const k_air = 10; // 10 mm per kV for air
     const k_oil = 3.5; // 3.5 mm per kV for oil
 
     bil.clearances = {
@@ -1038,7 +1037,7 @@ function calculateAccessoriesCost(inputs) {
 /**
  * Display cost estimation results
  */
-function displayCostEstimation(costs, inputs) {
+function displayCostEstimation(costs, _inputs) {
     const costHTML = `
         <div class="result-section" style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white;">
             <h4 style="color: white; border-color: white;">💰 Material Cost Estimation</h4>
@@ -1214,7 +1213,7 @@ function checkLossGuarantees(inputs, results) {
 /**
  * Display loss guarantee check results
  */
-function displayLossGuarantees(check, inputs) {
+function displayLossGuarantees(check, _inputs) {
     const html = `
         <div class="result-section" style="background: linear-gradient(135deg, #16a085 0%, #138871 100%); color: white;">
             <h4 style="color: white; border-color: white;">✅ Performance Guarantee Verification</h4>

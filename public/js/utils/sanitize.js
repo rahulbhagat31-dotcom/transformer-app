@@ -6,7 +6,7 @@
 function sanitizeHTML(str) {
     if (str == null) return '';
     if (typeof str !== 'string') return String(str);
-    
+
     return str
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -23,7 +23,7 @@ function sanitizeObject(obj) {
     if (obj == null) return null;
     if (typeof obj === 'string') return sanitizeHTML(obj);
     if (typeof obj !== 'object') return obj;
-    
+
     const sanitized = Array.isArray(obj) ? [] : {};
     for (const key in obj) {
         if (obj.hasOwnProperty(key)) {

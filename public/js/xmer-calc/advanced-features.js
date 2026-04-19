@@ -14,7 +14,36 @@
  * Calculate OLTC (On-Load Tap Changer) Design
  */
 function calculateOLTC(inputs, results) {
-    // Check if OLTC is required
+    // ⭐ NEW: Use accurate physics-based calculation if available
+    if (window.calculateOLTCAccurate && inputs.tapChangerType === 'OLTC') {
+        try {
+            const accurateResult = window.calculateOLTCAccurate(inputs, { coreMaterial: inputs.coreMaterial || 'CRGO' }, { material: inputs.windingMaterial || 'Copper' });
+            
+            // Convert new accurate format to legacy format for display compatibility
+            return {
+                enabled: true,
+                type: inputs.tapChangerType,
+                tapRange: `±${inputs.tappingRange || 10}%`,
+                totalSteps: accurateResult.tapTable?.length || 17,
+                tapTable: accurateResult.tapTable || [],
+                thermalAnalysis: accurateResult.thermalAnalysis,
+                designValidation: accurateResult.designValidation,
+                warnings: accurateResult.warnings || [],
+                voltageRange: (inputs.hv * 1000 * ((inputs.tappingRange || 10) / 100)).toFixed(0),
+                minVoltage: (inputs.hv * (1 - (inputs.tappingRange || 10) / 100)).toFixed(2),
+                maxVoltage: (inputs.hv * (1 + (inputs.tappingRange || 10) / 100)).toFixed(2),
+                nominalVoltage: inputs.hv,
+                nominalCurrent: (results.currents?.hvCurrent || 0).toFixed(2),
+                oltcRating: inputs.mva,
+                oltcType: inputs.hv >= 132 ? 'Resistor Type' : 'Vacuum Type'
+            };
+        } catch (e) {
+            console.warn('⚠️ Accurate OLTC calculation failed, falling back to standard:', e);
+            // Fall through to old calculation below
+        }
+    }
+
+    // ❌ OLD: Fallback to standard calculation (OCTC or OLTC without accuracy enhancement)
     if (inputs.tapChangerType === 'NONE') {
         return {
             enabled: false,
@@ -24,9 +53,9 @@ function calculateOLTC(inputs, results) {
 
     const oltc = {};
     oltc.enabled = true;
-    oltc.type = inputs.tapChangerType; // OLTC or DETC
+    oltc.type = inputs.tapChangerType;
 
-    // Standard tap ranges - now user-selectable
+    // Standard tap ranges
     const tapRanges = {
         5: { percent: 5, steps: 9 },
         10: { percent: 10, steps: 17 },
@@ -34,14 +63,10 @@ function calculateOLTC(inputs, results) {
         20: { percent: 20, steps: 33 }
     };
 
-    // Use user-selected tap range
     const selectedRange = tapRanges[inputs.tappingRange];
     oltc.tapRange = `±${inputs.tappingRange}%`;
     oltc.totalSteps = selectedRange.steps;
     oltc.percentRange = selectedRange.percent;
-
-    // ... rest of the function stays the same ...
-    // (keep all the existing calculations)
 
     // Voltage calculations
     const hvVoltage = inputs.hv * 1000;
@@ -56,12 +81,12 @@ function calculateOLTC(inputs, results) {
     oltc.maxVoltage = ((hvVoltage + voltageRange) / 1000).toFixed(2);
     oltc.nominalVoltage = inputs.hv;
 
-    const hvTurns = results.windings.hvTurns;
+    const hvTurns = results.windings?.hvTurns || results.turns?.hv || 400;
     const turnsPerStep = Math.round((hvTurns * (voltsPerStep / hvVoltage)));
     oltc.turnsPerStep = turnsPerStep;
     oltc.totalTappingTurns = turnsPerStep * (selectedRange.steps - 1);
 
-    const baseCurrent = parseFloat(results.currents.hvCurrent);
+    const baseCurrent = parseFloat(results.currents?.hvCurrent || results.currents?.hv || 100);
     oltc.minTapCurrent = (baseCurrent * (hvVoltage / (hvVoltage - voltageRange))).toFixed(2);
     oltc.maxTapCurrent = (baseCurrent * (hvVoltage / (hvVoltage + voltageRange))).toFixed(2);
     oltc.nominalCurrent = baseCurrent.toFixed(2);

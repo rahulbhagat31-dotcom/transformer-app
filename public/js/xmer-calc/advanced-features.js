@@ -1176,28 +1176,30 @@ window.formatIndianCurrency = formatIndianCurrency;
 function checkLossGuarantees(inputs, results) {
     const check = {};
 
-    const calculatedNoLoad = parseFloat(results.losses.coreLoss);
-    const calculatedLoad = parseFloat(results.losses.totalCopperLoss);
-    const calculatedEfficiency = parseFloat(results.losses.efficiency);
+    // Safe parsing with fallback for missing results
+    const calculatedNoLoad = results && results.losses ? parseFloat(results.losses.coreLoss) : 0;
+    const calculatedLoad = results && results.losses ? parseFloat(results.losses.totalCopperLoss) : 0;
+    const calculatedEfficiency = results && results.losses ? parseFloat(results.losses.efficiency) : 0;
 
     check.noLoad = {
-        calculated: calculatedNoLoad.toFixed(2),
-        guaranteed: inputs.guaranteedNoLoad ? inputs.guaranteedNoLoad.toFixed(2) : 'Not specified',
-        status: inputs.guaranteedNoLoad ?
-            (calculatedNoLoad <= inputs.guaranteedNoLoad ? 'PASS' : 'FAIL') : 'N/A'
+        calculated: !isNaN(calculatedNoLoad) ? calculatedNoLoad.toFixed(2) : 'N/A',
+        guaranteed: inputs.guaranteedNoLoad ? parseFloat(inputs.guaranteedNoLoad).toFixed(2) : 'Not specified',
+        status: inputs.guaranteedNoLoad && !isNaN(calculatedNoLoad) ?
+            (calculatedNoLoad <= parseFloat(inputs.guaranteedNoLoad) ? 'PASS' : 'FAIL') : 'N/A'
     };
 
     check.load = {
-        calculated: calculatedLoad.toFixed(2),
-        guaranteed: inputs.guaranteedLoadLoss ? inputs.guaranteedLoadLoss.toFixed(2) : 'Not specified',
-        status: inputs.guaranteedLoadLoss ?
-            (calculatedLoad <= inputs.guaranteedLoadLoss ? 'PASS' : 'FAIL') : 'N/A'
+        calculated: !isNaN(calculatedLoad) ? calculatedLoad.toFixed(2) : 'N/A',
+        guaranteed: inputs.guaranteedLoadLoss ? parseFloat(inputs.guaranteedLoadLoss).toFixed(2) : 'Not specified',
+        status: inputs.guaranteedLoadLoss && !isNaN(calculatedLoad) ?
+            (calculatedLoad <= parseFloat(inputs.guaranteedLoadLoss) ? 'PASS' : 'FAIL') : 'N/A'
     };
 
     check.efficiency = {
-        calculated: calculatedEfficiency,
-        minimum: inputs.minEfficiency.toFixed(1),
-        status: calculatedEfficiency >= inputs.minEfficiency ? 'PASS' : 'FAIL'
+        calculated: !isNaN(calculatedEfficiency) ? calculatedEfficiency.toFixed(2) : 'N/A',
+        minimum: inputs.minEfficiency ? parseFloat(inputs.minEfficiency).toFixed(1) : 'Not specified',
+        status: inputs.minEfficiency && !isNaN(calculatedEfficiency) ? 
+            (calculatedEfficiency >= parseFloat(inputs.minEfficiency) ? 'PASS' : 'FAIL') : 'N/A'
     };
 
     check.environmental = {

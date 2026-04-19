@@ -67,9 +67,9 @@ function getCalculatorInputsFromDOM() {
     inputs.leadLengthTap = parseFloat(document.getElementById('leadLengthTap')?.value);
 
     // Loss Parameters
-    inputs.eddyStrayLoss = parseFloat(document.getElementById('eddyStrayLoss')?.value);
-    inputs.guaranteedLoadLoss = parseFloat(document.getElementById('guaranteedLoadLoss')?.value);
-    inputs.guaranteedNoLoad = parseFloat(document.getElementById('guaranteedNoLoad')?.value);
+    inputs.eddyStrayLoss = parseFloat(document.getElementById('eddyStrayLoss')?.value) || null;
+    inputs.guaranteedLoadLoss = parseFloat(document.getElementById('guaranteedLoadLoss')?.value) || null;
+    inputs.guaranteedNoLoad = parseFloat(document.getElementById('guaranteedNoLoad')?.value) || null;
 
     // Clearances
     inputs.wrappingPaper = parseFloat(document.getElementById('wrappingPaper')?.value) || 5;

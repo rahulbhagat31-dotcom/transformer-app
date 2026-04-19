@@ -1018,7 +1018,7 @@ function loadStageContent(stage) {
                                     <col style="width:68px;"><col style="width:56px;"><col style="width:56px;">
                                 </colgroup>
                                 <thead>
-                                    <tr>
+                                   <tr>
                                         <th rowspan="2" style="${TH_DATE}">Date</th>
                                         <th colspan="3" style="${TH_GRP}">Reading 1</th>
                                         <th colspan="3" style="${TH_GRP}">Reading 2</th>
@@ -2992,6 +2992,57 @@ function loadStageContent(stage) {
                 `;
                 checklistHTML += customRowHTML;
                 return;
+            } else if (item.type === 'bushing-details') {
+                // Bushing Details: one sub-row per bushing type (HV, IV, LV1, Neutral, Tertiary)
+                const types = item.bushingTypes || [];
+                const saveBtnBD = !isCustomer ? `<button class="btn-login" id="save_${rowId}" style="width:auto;padding:6px 10px;font-size:11px;background:var(--green);" onclick="saveNewChecklistItem('${stage}', ${itemCounter}, '${rowId}')">🔄 Update</button>` : '';
+                customRowHTML = types.map((bushing, idx) => {
+                    const bId = bushing.replace(/\s+/g, '_');
+                    const fi = idx === 0;
+                    const tIn = !isCustomer ? `<input type="text" id="technician_${rowId}_${bId}" placeholder="Name" class="technician-input" ${disabledAttr} style="width:100%;border:1px solid #ddd;padding:3px 4px;font-size:10px;box-sizing:border-box;">` : '<span style="color:#999;font-size:10px;">—</span>';
+                    const ssIn = isProduction ? `<div style="font-size:10px;font-weight:bold;text-align:center;">${window.currentUserName||''}</div><input type="hidden" id="shopSup_${rowId}_${bId}" value="${window.currentUserName||''}">` : (isAdmin ? `<input type="text" id="shopSup_${rowId}_${bId}" readonly placeholder="—" style="width:100%;border:1px solid #ddd;padding:3px 4px;font-size:10px;background:#f5f5f5;box-sizing:border-box;">` : '<span style="color:#999;font-size:10px;">—</span>');
+                    const qaIn = isQuality ? `<div style="font-size:10px;font-weight:bold;text-align:center;">${window.currentUserName||''}</div><input type="hidden" id="qaSup_${rowId}_${bId}" value="${window.currentUserName||''}">` : (isAdmin ? `<input type="text" id="qaSup_${rowId}_${bId}" readonly placeholder="—" style="width:100%;border:1px solid #ddd;padding:3px 4px;font-size:10px;background:#f5f5f5;box-sizing:border-box;">` : '<span style="color:#999;font-size:10px;">—</span>');
+                    return `<tr${fi ? ` id="${rowId}"` : ''}>
+                        ${fi ? `<td rowspan="${types.length}" style="text-align:center;vertical-align:top;padding:8px;font-weight:bold;border-right:1px solid #ddd;">${itemCounter}</td><td rowspan="${types.length}" style="vertical-align:top;padding:8px;">${item.point}</td>` : ''}
+                        <td style="padding:6px 8px;font-size:10px;color:#555;font-weight:600;white-space:nowrap;">${bushing}</td>
+                        <td colspan="2" style="padding:0;"><input type="text" id="actualValue_${rowId}_${bId}" ${disabledAttr} placeholder="Enter Sr. No." style="width:100%;padding:6px 8px;border:none;font-size:10px;background:transparent;box-sizing:border-box;"></td>
+                        <td style="padding:0;"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;height:100%;">
+                            <div style="border-right:1px solid #ddd;padding:4px;"><div style="font-size:9px;font-weight:bold;text-align:center;margin-bottom:2px;">Technician</div>${tIn}</div>
+                            <div style="border-right:1px solid #ddd;padding:4px;"><div style="font-size:9px;font-weight:bold;text-align:center;margin-bottom:2px;">Shop Sup.</div>${ssIn}</div>
+                            <div style="padding:4px;"><div style="font-size:9px;font-weight:bold;text-align:center;margin-bottom:2px;">Quality Sup.</div>${qaIn}</div>
+                        </div></td>
+                        <td style="padding:4px;"><input type="text" id="remark_${rowId}_${bId}" ${disabledAttr} placeholder="Optional" style="width:100%;padding:4px;border:1px solid #ddd;font-size:10px;box-sizing:border-box;"></td>
+                        ${fi ? `<td rowspan="${types.length}" style="text-align:center;vertical-align:top;padding:6px;">${saveBtnBD}</td>` : ''}
+                    </tr>`;
+                }).join('');
+                checklistHTML += customRowHTML;
+                return;
+
+            } else if (item.type === 'bushing-mounting') {
+                // Bushing Mounting: one sub-row per phase (U phase / V phase / W phase, or HV / LV)
+                const phases = item.phases || [];
+                const saveBtnBM = !isCustomer ? `<button class="btn-login" id="save_${rowId}" style="width:auto;padding:6px 10px;font-size:11px;background:var(--green);" onclick="saveNewChecklistItem('${stage}', ${itemCounter}, '${rowId}')">🔄 Update</button>` : '';
+                customRowHTML = phases.map((phase, idx) => {
+                    const pId = phase.replace(/\s+/g, '_');
+                    const fi = idx === 0;
+                    const tIn = !isCustomer ? `<input type="text" id="technician_${rowId}_${pId}" placeholder="Name" class="technician-input" ${disabledAttr} style="width:100%;border:1px solid #ddd;padding:3px 4px;font-size:10px;box-sizing:border-box;">` : '<span style="color:#999;font-size:10px;">—</span>';
+                    const ssIn = isProduction ? `<div style="font-size:10px;font-weight:bold;text-align:center;">${window.currentUserName||''}</div><input type="hidden" id="shopSup_${rowId}_${pId}" value="${window.currentUserName||''}">` : (isAdmin ? `<input type="text" id="shopSup_${rowId}_${pId}" readonly placeholder="—" style="width:100%;border:1px solid #ddd;padding:3px 4px;font-size:10px;background:#f5f5f5;box-sizing:border-box;">` : '<span style="color:#999;font-size:10px;">—</span>');
+                    const qaIn = isQuality ? `<div style="font-size:10px;font-weight:bold;text-align:center;">${window.currentUserName||''}</div><input type="hidden" id="qaSup_${rowId}_${pId}" value="${window.currentUserName||''}">` : (isAdmin ? `<input type="text" id="qaSup_${rowId}_${pId}" readonly placeholder="—" style="width:100%;border:1px solid #ddd;padding:3px 4px;font-size:10px;background:#f5f5f5;box-sizing:border-box;">` : '<span style="color:#999;font-size:10px;">—</span>');
+                    return `<tr${fi ? ` id="${rowId}"` : ''}>
+                        ${fi ? `<td rowspan="${phases.length}" style="text-align:center;vertical-align:top;padding:8px;font-weight:bold;border-right:1px solid #ddd;">${itemCounter}</td><td rowspan="${phases.length}" style="vertical-align:top;padding:8px;">${item.point}</td><td rowspan="${phases.length}" style="vertical-align:middle;padding:8px;font-size:10px;color:#555;">${item.specifiedValue||''}</td>` : ''}
+                        <td colspan="2" style="padding:0;"><div style="display:flex;align-items:center;padding:6px 8px;gap:6px;"><span style="font-size:10px;font-weight:600;color:#333;min-width:55px;">${phase}</span><input type="text" id="actualValue_${rowId}_${pId}" ${disabledAttr} placeholder="Value" style="flex:1;padding:4px;border:1px solid #ddd;font-size:10px;box-sizing:border-box;"></div></td>
+                        <td style="padding:0;"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;height:100%;">
+                            <div style="border-right:1px solid #ddd;padding:4px;"><div style="font-size:9px;font-weight:bold;text-align:center;margin-bottom:2px;">Technician</div>${tIn}</div>
+                            <div style="border-right:1px solid #ddd;padding:4px;"><div style="font-size:9px;font-weight:bold;text-align:center;margin-bottom:2px;">Shop Sup.</div>${ssIn}</div>
+                            <div style="padding:4px;"><div style="font-size:9px;font-weight:bold;text-align:center;margin-bottom:2px;">Quality Sup.</div>${qaIn}</div>
+                        </div></td>
+                        <td style="padding:4px;"><input type="text" id="remark_${rowId}_${pId}" ${disabledAttr} placeholder="Optional" style="width:100%;padding:4px;border:1px solid #ddd;font-size:10px;box-sizing:border-box;"></td>
+                        ${fi ? `<td rowspan="${phases.length}" style="text-align:center;vertical-align:top;padding:6px;">${saveBtnBM}</td>` : ''}
+                    </tr>`;
+                }).join('');
+                checklistHTML += customRowHTML;
+                return;
+
             } else if (item.type === 'remarks-lines') {
                 // Remarks (If Any) — 7 full-width dotted lines matching paper form
                 const lines = Array.from({ length: 7 }, () =>

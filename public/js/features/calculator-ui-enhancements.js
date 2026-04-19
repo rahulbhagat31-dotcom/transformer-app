@@ -129,21 +129,43 @@
     }
 
     /**
-     * Prevent OLTC selection with validation error
+     * Enable OLTC selection with accurate calculations
+     * OLTC (On-Load Tap Changer) support is now available with:
+     * - Physics-based flux calculations
+     * - Complete tap position tables
+     * - Thermal analysis (contact heating, diverter losses)
+     * - IEC 60076-1 compliance checks
      */
     function setupOLTCValidation() {
         const calculatorForm = document.getElementById('calculatorForm');
         if (!calculatorForm) return;
 
-        calculatorForm.addEventListener('submit', function (e) {
-            const tapChangerType = document.getElementById('tapChangerType');
-            if (tapChangerType && tapChangerType.value === 'OLTC') {
-                e.preventDefault();
-                alert('⚠️ OLTC electrical and thermal modeling is not supported in this version.\n\nPlease select OCTC (Off-Circuit) or NONE.');
-                tapChangerType.value = 'NONE';
-                return false;
-            }
-        });
+        // Show info message when OLTC is selected
+        const tapChangerType = document.getElementById('tapChangerType');
+        if (tapChangerType) {
+            tapChangerType.addEventListener('change', function (e) {
+                if (e.target.value === 'OLTC') {
+                    // Show info that OLTC is now supported
+                    const infoDiv = document.getElementById('oltcInfoMessage');
+                    if (!infoDiv) {
+                        const msg = document.createElement('div');
+                        msg.id = 'oltcInfoMessage';
+                        msg.style.cssText = 'padding:12px;margin:10px 0;background:#e8f4f8;border-left:4px solid #06b6d4;border-radius:4px;color:#0369a1;font-size:14px;';
+                        msg.innerHTML = '✅ <strong>OLTC Support Enabled</strong><br/>Physics-based calculations with thermal analysis and IEC 60076-1 compliance checks are now available.';
+                        const formGroup = tapChangerType.closest('.form-group') || tapChangerType.parentElement;
+                        if (formGroup) {
+                            formGroup.insertAdjacentElement('afterend', msg);
+                        }
+                    }
+                } else {
+                    // Remove info message
+                    const infoDiv = document.getElementById('oltcInfoMessage');
+                    if (infoDiv) {
+                        infoDiv.remove();
+                    }
+                }
+            });
+        }
     }
 
     console.log('✅ Calculator UI enhancements initialized');

@@ -990,3 +990,83 @@ body.dark-mode .badge-fail {
         color: #000 !important;
     }
 }
+
+/* ============================================
+   LIVE CALCULATION FEEDBACK
+   Visual feedback for auto-filled and auto-calculated fields
+   ============================================ */
+
+/* Auto-filled field (values populated from defaults) */
+.auto-filled {
+    position: relative !important;
+    animation: highlightFill 1s ease-out;
+    border-color: #f39c12 !important;
+    background: rgba(243, 156, 18, 0.03) !important;
+}
+
+.auto-filled::after {
+    content: '●';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #f39c12;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+@keyframes highlightFill {
+    0% {
+        background-color: rgba(243, 156, 18, 0.15);
+        box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.6);
+    }
+    100% {
+        background-color: rgba(243, 156, 18, 0.03);
+        box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+    }
+}
+
+/* Auto-calculated field (computed output) */
+.auto-calculated {
+    position: relative !important;
+    animation: highlightCalc 1.2s ease-out;
+    border-color: #27ae60 !important;
+    background: rgba(39, 174, 96, 0.04) !important;
+}
+
+.auto-calculated::after {
+    content: '✓';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+@keyframes highlightCalc {
+    0% {
+        background-color: rgba(39, 174, 96, 0.15);
+        box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.6);
+    }
+    100% {
+        background-color: rgba(39, 174, 96, 0.04);
+        box-shadow: 0 0 0 0 rgba(39, 174, 96, 0);
+    }
+}
+
+/* Highlight update (temporary emphasis on change) */
+.highlight-update {
+    animation: pulse-update 0.6s cubic-bezier(0.4, 0, 0.6, 1);
+    border-color: #3498db !important;
+}
+
+@keyframes pulse-update {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(52, 152, 219, 0);
+    }
+}

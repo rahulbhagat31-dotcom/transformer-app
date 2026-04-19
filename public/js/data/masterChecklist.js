@@ -405,6 +405,76 @@ function getMasterStageData() {
                     ]
                 },
                 {
+                    name: '7 — Bushing Details & Final Assembly',
+                    items: [
+                        {
+                            point: 'Bushing Details',
+                            specifiedValue: 'Sr. No.',
+                            type: 'bushing-details',
+                            bushingTypes: ['HV', 'IV', 'LV1', 'Neutral', 'Tertiary']
+                        },
+                        {
+                            point: 'HV Bushing Mounting<br>- Connections tightening<br>- Cleaning of bushing BCT area.<br>- Checking smoothness at surface of corona.',
+                            specifiedValue: 'Should be tight & Torque as per drawing',
+                            type: 'bushing-mounting',
+                            phases: ['U phase', 'V phase', 'W phase']
+                        },
+                        {
+                            point: 'IV Bushing Mounting<br>- Connections tightening<br>- Cleaning of bushing BCT area.<br>- Checking smoothness at surface of corona.',
+                            specifiedValue: 'Should be tight & Torque as per drawing',
+                            type: 'bushing-mounting',
+                            phases: ['U phase', 'V phase', 'W phase']
+                        },
+                        {
+                            point: 'LV Bushing Mounting<br>- Connections tightening<br>- Cleaning of bushing BCT area.<br>- Checking smoothness at surface of corona.',
+                            specifiedValue: 'Should be tight & Torque as per drawing',
+                            type: 'bushing-mounting',
+                            phases: ['U phase', 'V phase', 'W phase']
+                        },
+                        {
+                            point: 'N Bushing Mounting<br>- Connections tightening<br>- Cleaning of bushing BCT area.<br>- Checking smoothness at surface of corona.',
+                            specifiedValue: 'Should be tight & Torque as per drawing',
+                            type: 'bushing-mounting',
+                            phases: ['HV', 'LV']
+                        },
+                        {
+                            point: 'Check for cleanliness after terminal connection',
+                            specifiedValue: 'Reqd',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Verification and interlock Barricading with beacon light must be done around & top of the active part by the Quality test operator',
+                            specifiedValue: 'Reqd',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Isolation test before application of vacuum.<br>- 2 kV AC application for 1 Min<br>- 2.5 kV DC application for 1 Min',
+                            specifiedValue: 'C-F: ......<br>C-T: ......<br>F-T: ......',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Final Cleanliness of Job LV Side',
+                            specifiedValue: 'Visual',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Final Cleanliness of Job HV Side',
+                            specifiedValue: 'Visual',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Final electrical Tests.<br>- Ratio<br>- Other electrical Tests (If Any)',
+                            specifiedValue: 'Perform',
+                            type: 'split-value'
+                        },
+                        {
+                            point: 'Time at which dry air applied for leak detection.',
+                            specifiedValue: 'Date & Time',
+                            type: 'split-value'
+                        }
+                    ]
+                },
+                {
                     name: 'Remarks (If Any)',
                     items: [
                         { point: '', specifiedValue: '', type: 'remarks-lines' }

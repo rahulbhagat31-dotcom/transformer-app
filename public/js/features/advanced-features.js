@@ -238,7 +238,7 @@ function calculateCoolingSystem(inputs, results) {
     const cooling = {};
 
     // Total heat to dissipate (losses)
-    const totalLoss = parseFloat(results.losses.totalLoss); // kW
+    const totalLoss = parseFloat(results?.losses?.totalLoss || 0); // kW
     cooling.heatToDissipate = totalLoss;
 
     // Ambient temperature (standard)
@@ -814,7 +814,7 @@ function calculateMaterialCost(inputs, results) {
     const costs = {};
 
     // 1. CORE MATERIAL COST
-    const coreWeight = parseFloat(results.core.weight); // kg
+    const coreWeight = parseFloat(results?.core?.weight || results?.losses?.coreLoss || 0); // kg
     const corePrice = inputs.coreMaterial === 'CRGO' ?
         MATERIAL_PRICES.crgoSteel :
         MATERIAL_PRICES.crngoSteel;
@@ -877,14 +877,14 @@ function calculateMaterialCost(inputs, results) {
  * Calculate winding material cost
  */
 function calculateWindingCost(inputs, results) {
-    const hvTurns = results.windings.hvTurns;
-    const lvTurns = results.windings.lvTurns;
-    const hvArea = parseFloat(results.conductors.hvArea); // mm²
-    const lvArea = parseFloat(results.conductors.lvArea); // mm²
+    const hvTurns = results?.windings?.hvTurns || 400;
+    const lvTurns = results?.windings?.lvTurns || 100;
+    const hvArea = parseFloat(results?.conductors?.hvArea || results?.hvArea || 50); // mm²
+    const lvArea = parseFloat(results?.conductors?.lvArea || results?.lvArea || 200); // mm²
 
     // Calculate mean turn length (approximation)
-    const hvMeanDia = parseFloat(results.windings.hvOuterDiameter); // mm
-    const lvMeanDia = parseFloat(results.windings.lvInnerDiameter); // mm
+    const hvMeanDia = parseFloat(results?.windings?.hvOuterDiameter || 400); // mm
+    const lvMeanDia = parseFloat(results?.windings?.lvInnerDiameter || 100); // mm
 
     const hvTurnLength = Math.PI * hvMeanDia / 1000; // meters
     const lvTurnLength = Math.PI * lvMeanDia / 1000; // meters
@@ -923,7 +923,7 @@ function calculateWindingCost(inputs, results) {
  */
 function calculateInsulationCost(inputs, results) {
     // Approximate insulation weight (5-8% of core weight)
-    const coreWeight = parseFloat(results.core.weight);
+    const coreWeight = parseFloat(results?.core?.weight || 0);
     const pressboardWeight = coreWeight * 0.05;
     const paperWeight = coreWeight * 0.03;
 
@@ -942,8 +942,8 @@ function calculateInsulationCost(inputs, results) {
  */
 function calculateTankCost(inputs, results) {
     // Approximate tank weight (20-25% of total transformer weight)
-    const coreWeight = parseFloat(results.core.weight);
-    const windingWeight = parseFloat(results.winding.totalWeight);
+    const coreWeight = parseFloat(results?.core?.weight || 0);
+    const windingWeight = parseFloat(results?.winding?.totalWeight || 0);
     const transformerWeight = coreWeight + windingWeight;
     const tankWeight = transformerWeight * 0.22;
 
@@ -1003,7 +1003,7 @@ function calculateBushingsCost(inputs) {
  * Calculate cooling system cost
  */
 function calculateCoolingCost(inputs, results) {
-    const totalLoss = parseFloat(results.losses.totalLoss);
+    const totalLoss = parseFloat(results?.losses?.totalLoss || 0);
 
     // Radiator area (approx 1 m² per 1.2 kW loss)
     const radiatorArea = totalLoss / 1.2;

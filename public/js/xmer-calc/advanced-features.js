@@ -1203,10 +1203,10 @@ function checkLossGuarantees(inputs, results) {
     };
 
     check.environmental = {
-        ambientTemp: inputs.ambientTemp,
-        altitude: inputs.altitude,
-        installationType: inputs.installationType,
-        altitudeDerating: inputs.altitude > 1000 ? ((inputs.altitude - 1000) / 1000 * 5).toFixed(1) + '%' : 'None'
+        ambientTemp: inputs.ambientTemp || 50,
+        altitude: inputs.altitude || 1000,
+        installationType: inputs.installationType || 'outdoor',
+        altitudeDerating: (inputs.altitude || 1000) > 1000 ? (((inputs.altitude || 1000) - 1000) / 1000 * 5).toFixed(1) + '%' : 'None'
     };
 
     return check;
@@ -1260,7 +1260,7 @@ function displayLossGuarantees(check, _inputs) {
             
             <div class="result-row" style="color: white; border-color: rgba(255,255,255,0.3);">
                 <span class="result-label" style="color: white;">Installation Type</span>
-                <span class="result-value" style="color: white;">${check.environmental.installationType.toUpperCase()}</span>
+                <span class="result-value" style="color: white;">${(check.environmental.installationType || 'outdoor').toUpperCase()}</span>
                 <span class="result-unit" style="color: rgba(255,255,255,0.7);">-</span>
             </div>
         </div>

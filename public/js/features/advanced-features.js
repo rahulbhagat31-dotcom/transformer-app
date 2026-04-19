@@ -7,6 +7,40 @@
 ================================ */
 
 // ========================================
+// 🔧 STATE MANAGEMENT
+// ========================================
+
+/**
+ * AdvancedFeaturesState - Track calculation state, errors, and validation
+ * Similar to CoreCalcState for consistency
+ */
+const AdvancedFeaturesState = {
+    lastValidInputs: null,
+    isCalculating: false,
+    lastError: null,
+    lastWarnings: [],
+    calculationTimestamp: null,
+    logger: (msg, type = 'log') => {
+        const timestamp = new Date().toLocaleTimeString();
+        const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+        console.log(`[${timestamp}] ${prefix} Advanced Features: ${msg}`);
+    },
+    recordInput: function(inputs) {
+        this.lastValidInputs = JSON.parse(JSON.stringify(inputs));
+    },
+    recordError: function(error) {
+        this.lastError = error;
+        this.logger(error, 'error');
+    },
+    recordWarnings: function(warnings) {
+        this.lastWarnings = warnings;
+        if (warnings.length > 0) {
+            this.logger(`${warnings.length} warnings detected`, 'warning');
+        }
+    }
+};
+
+// ========================================
 // 1️⃣ OLTC DESIGN CALCULATOR
 // ========================================
 
@@ -1294,10 +1328,97 @@ function displayLossGuarantees(check, _inputs) {
     document.getElementById('resultsContainer').insertAdjacentHTML('beforeend', html);
 }
 
-// Export the new functions
+// ========================================
+// 🎨 VISUAL FEEDBACK & ANIMATIONS
+// ========================================
+
+/**
+ * Apply visual feedback to input field when it's being processed
+ */
+function applyVisualFeedback(fieldId, type = 'processing') {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+
+    // Remove previous classes
+    field.classList.remove('auto-filled', 'auto-calculated', 'highlight-update');
+
+    // Add appropriate class
+    if (type === 'filled') {
+        field.classList.add('auto-filled'); // Orange
+    } else if (type === 'calculated') {
+        field.classList.add('auto-calculated'); // Green
+    } else if (type === 'processing') {
+        field.classList.add('highlight-update'); // Blue pulse
+    }
+
+    // Remove after animation completes
+    setTimeout(() => {
+        field.classList.remove('auto-filled', 'auto-calculated', 'highlight-update');
+    }, 2000);
+}
+
+/**
+ * Initialize debounced listeners for real-time feedback on key input fields
+ */
+function initializeAdvancedFeaturesDebouncing() {
+    const debounceTimers = {};
+
+    const fieldsToDebouce = [
+        'guaranteedNoLoad', 'guaranteedLoadLoss', 'minEfficiency',
+        'tapChangerType', 'tappingRange', 'ambientTemp', 'altitude', 'installationType'
+    ];
+
+    fieldsToDebouce.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+
+        field.addEventListener('input', () => {
+            // Clear previous timer
+            if (debounceTimers[fieldId]) clearTimeout(debounceTimers[fieldId]);
+
+            // Show processing state
+            applyVisualFeedback(fieldId, 'processing');
+
+            // Debounce for 300ms
+            debounceTimers[fieldId] = setTimeout(() => {
+                AdvancedFeaturesState.logger(`Input changed: ${fieldId}`, 'log');
+                applyVisualFeedback(fieldId, 'filled');
+            }, 300);
+        });
+    });
+
+    AdvancedFeaturesState.logger('Advanced features debouncing initialized', 'log');
+}
+
+// ========================================
+// 📊 INITIALIZATION
+// ========================================
+
+/**
+ * Initialize advanced features on page load
+ */
+function initializeAdvancedFeatures() {
+    try {
+        AdvancedFeaturesState.logger('Initializing advanced features module...', 'log');
+        initializeAdvancedFeaturesDebouncing();
+        AdvancedFeaturesState.logger('Advanced features ready', 'success');
+    } catch (e) {
+        AdvancedFeaturesState.logger(`Initialization failed: ${e.message}`, 'error');
+    }
+}
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAdvancedFeatures);
+} else {
+    initializeAdvancedFeatures();
+}
+
+// Export the functions and state
+window.AdvancedFeaturesState = AdvancedFeaturesState;
 window.checkLossGuarantees = checkLossGuarantees;
 window.displayLossGuarantees = displayLossGuarantees;
+window.applyVisualFeedback = applyVisualFeedback;
+window.initializeAdvancedFeatures = initializeAdvancedFeatures;
 
-console.log('✅ Advanced Features Module Loaded');
-
-console.log('✅ Advanced Features Module Loaded');
+console.log('✅ Advanced Features Module Loaded (with State Management & Debouncing)');
